@@ -12,37 +12,35 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DbController = void 0;
+exports.UserController = void 0;
 const express_1 = __importDefault(require("express"));
-class DbController {
-    // public static getInstance(){
-    //     if(!DbController.instance){
-    //         DbController.instance = new DbController()
-    //     }
-    //     return DbController.instance;
-    // }
-    constructor() {
-        // @ts-ignore
-        // private client: MongoClient;
-        // @ts-ignore
-        // private db: Db;
-        // static instance:DbController;
-        this.path = '/ahoj';
+class UserController {
+    constructor(userService) {
+        this.userService = userService;
+        this.path = '/users';
         this.router = express_1.default.Router();
-        // private async connect(){
-        //     // const dbConnection = DbConnection.getInstance()
-        //     // this.client = await dbConnection.getDbClient()
-        //     // this.db = this.client.db('test')
-        //     // DbController.getInstance()
-        // }
-        this.insert = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            res.status(200).send('ahoj');
+        this.insertUser = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            const user = {
+                id: "",
+                first_name: "",
+                last_name: "",
+                email: "",
+                phone: "",
+                age: new Date(),
+                createdIn: new Date(),
+                validated: false
+            };
+            this.userService.createNewUser(user).then(response => {
+                if (response.acknowledged)
+                    res.status(200).send(response);
+                else
+                    res.status(400).send({});
+            });
         });
         this.initRouter();
-        // this.connect().then()
     }
     initRouter() {
-        this.router.get('/ahoj', this.insert);
+        this.router.get('/create', this.insertUser);
     }
 }
-exports.DbController = DbController;
+exports.UserController = UserController;

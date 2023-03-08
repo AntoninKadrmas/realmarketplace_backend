@@ -1,6 +1,6 @@
-import { MongoClient, ServerApiVersion } from 'mongodb'
-export class DbConnection{
-    static instance:DbConnection
+import { MongoClient } from 'mongodb'
+export class DBConnection{
+    static instance:DBConnection
     private mongoClient:Promise<MongoClient>
     private uri = "mongodb+srv://new_user:paKJQXHd99YNsvjy@realmarket.4lhdcrr.mongodb.net/?retryWrites=true&w=majority";
     constructor(){
@@ -9,13 +9,13 @@ export class DbConnection{
             return res;
         })
     }
-    public getDbClient(){
+    public async getDbClient():Promise<MongoClient>{
         return this.mongoClient;
     }
     public static getInstance(){
-        if(!DbConnection.instance){
-            DbConnection.instance = new DbConnection()
+        if(!DBConnection.instance){
+            DBConnection.instance = new DBConnection()
         }
-        return DbConnection.instance;
+        return DBConnection.instance;
     }
 }
