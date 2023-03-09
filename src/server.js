@@ -13,10 +13,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Server = void 0;
-// Importing module
 const express_1 = __importDefault(require("express"));
 const userController_1 = require("./controller/userController");
 const userService_1 = require("./service/userService");
+const enumController_1 = require("./controller/enumController");
 class Server {
     constructor() {
         this.app = (0, express_1.default)();
@@ -24,7 +24,9 @@ class Server {
     }
     setControllers() {
         const userController = new userController_1.UserController(new userService_1.UserService());
+        const enumControl = new enumController_1.EnumController();
         this.app.use(userController.path, userController.router);
+        this.app.use(enumControl.path, enumControl.router);
     }
     start() {
         return __awaiter(this, void 0, void 0, function* () {

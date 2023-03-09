@@ -14,10 +14,7 @@ const mongodb_1 = require("mongodb");
 class DBConnection {
     constructor() {
         this.uri = "mongodb+srv://new_user:paKJQXHd99YNsvjy@realmarket.4lhdcrr.mongodb.net/?retryWrites=true&w=majority";
-        this.mongoClient = mongodb_1.MongoClient.connect(this.uri).then(res => {
-            console.log(res);
-            return res;
-        });
+        this.mongoClient = mongodb_1.MongoClient.connect(this.uri);
     }
     getDbClient() {
         return __awaiter(this, void 0, void 0, function* () {

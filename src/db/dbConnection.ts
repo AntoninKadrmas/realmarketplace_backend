@@ -4,10 +4,7 @@ export class DBConnection{
     private mongoClient:Promise<MongoClient>
     private uri = "mongodb+srv://new_user:paKJQXHd99YNsvjy@realmarket.4lhdcrr.mongodb.net/?retryWrites=true&w=majority";
     constructor(){
-        this.mongoClient = MongoClient.connect(this.uri).then(res=>{
-            console.log(res);
-            return res;
-        })
+        this.mongoClient = MongoClient.connect(this.uri)
     }
     public async getDbClient():Promise<MongoClient>{
         return this.mongoClient;

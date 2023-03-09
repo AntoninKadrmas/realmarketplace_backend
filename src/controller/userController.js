@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserController = void 0;
 const express_1 = __importDefault(require("express"));
+require('dotenv').config();
 class UserController {
     constructor(userService) {
         this.userService = userService;
@@ -21,26 +22,49 @@ class UserController {
         this.router = express_1.default.Router();
         this.insertUser = (req, res) => __awaiter(this, void 0, void 0, function* () {
             const user = {
-                id: "",
                 first_name: "",
                 last_name: "",
                 email: "",
                 phone: "",
-                age: new Date(),
                 createdIn: new Date(),
-                validated: false
+                age: new Date(),
+                validated: false,
+                idCard: "",
+                password: ""
             };
             this.userService.createNewUser(user).then(response => {
-                if (response.acknowledged)
+                if (!!response)
                     res.status(200).send(response);
                 else
                     res.status(400).send({});
             });
         });
+        this.getFullUserById = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            const collection = process.env.USER_COLLECTION;
+            if (!!req.params.id)
+                res.status(400).send({});
+            const response = yield this.userService.getUserDataById(req.params.id, collection);
+            if (!!response)
+                res.status(400).send({});
+            else
+                res.status(200).send(response);
+        });
+        this.getLightUserById = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            const collection = process.env.LIGHT_USER_COLLECTION;
+            if (!!req.params.id)
+                res.status(400).send({});
+            const response = yield this.userService.getUserDataById(req.params.id, collection);
+            if (!!response)
+                res.status(400).send({});
+            else
+                res.status(200).send(response);
+        });
         this.initRouter();
     }
     initRouter() {
-        this.router.get('/create', this.insertUser);
+        this.router.post('/create', this.insertUser);
+        this.router.get('/full/:id', this.getFullUserById);
+        this.router.get('/light/:id', this.getLightUserById);
     }
 }
 exports.UserController = UserController;

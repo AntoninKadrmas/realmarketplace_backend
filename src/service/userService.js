@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
+const mongodb_1 = require("mongodb");
 const dbConnection_1 = require("../db/dbConnection");
 require('dotenv').config();
 class UserService {
@@ -25,7 +26,50 @@ class UserService {
     }
     createNewUser(user) {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.db.collection(process.env.USER_COLLECTION).insertOne(user);
+            let new_user;
+            try {
+                new_user = yield this.db.collection(process.env.USER_COLLECTION).insertOne(user);
+                if (!new_user.acknowledged)
+                    return null;
+                yield this.createLightUser(user, new_user);
+                return new_user;
+            }
+            catch (_a) {
+                return null;
+            }
+        });
+    }
+    createLightUser(createdUser, new_user_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let new_user;
+            try {
+                const lightUser = {
+                    userId: new_user_id.insertedId,
+                    first_name: createdUser.first_name,
+                    last_name: createdUser.last_name,
+                    email: createdUser.email,
+                    phone: createdUser.phone,
+                    createdIn: createdUser.createdIn
+                };
+                new_user = yield this.db.collection(process.env.LIGHT_USER_COLLECTION).insertOne(lightUser);
+                if (!new_user.acknowledged)
+                    throw new URIError();
+            }
+            catch (_a) {
+                throw new Error();
+            }
+        });
+    }
+    getUserDataById(userId, collection) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const result = yield this.db.collection(collection).find({ '_id': new mongodb_1.ObjectId(userId) });
+                console.log(result);
+                return result;
+            }
+            catch (e) {
+                return null;
+            }
         });
     }
 }
