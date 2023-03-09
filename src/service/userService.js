@@ -63,8 +63,8 @@ class UserService {
     getUserDataById(userId, collection) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const result = yield this.db.collection(collection).find({ '_id': new mongodb_1.ObjectId(userId) });
-                console.log(result);
+                const _id = new mongodb_1.ObjectId(userId);
+                const result = yield this.db.collection(collection).findOne({ '_id': _id });
                 return result;
             }
             catch (e) {

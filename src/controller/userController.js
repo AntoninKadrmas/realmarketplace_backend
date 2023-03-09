@@ -35,29 +35,26 @@ class UserController {
             this.userService.createNewUser(user).then(response => {
                 if (!!response)
                     res.status(200).send(response);
-                else
-                    res.status(400).send({});
+                res.status(400).send();
             });
         });
         this.getFullUserById = (req, res) => __awaiter(this, void 0, void 0, function* () {
             const collection = process.env.USER_COLLECTION;
-            if (!!req.params.id)
-                res.status(400).send({});
+            if (!req.params.id)
+                res.status(400).send(); //null as parameter
             const response = yield this.userService.getUserDataById(req.params.id, collection);
             if (!!response)
-                res.status(400).send({});
-            else
-                res.status(200).send(response);
+                res.status(200).send(response); //not null result
+            res.status(400).send();
         });
         this.getLightUserById = (req, res) => __awaiter(this, void 0, void 0, function* () {
             const collection = process.env.LIGHT_USER_COLLECTION;
-            if (!!req.params.id)
-                res.status(400).send({});
+            if (!req.params.id)
+                res.status(400).send(); //null as parameter
             const response = yield this.userService.getUserDataById(req.params.id, collection);
             if (!!response)
-                res.status(400).send({});
-            else
-                res.status(200).send(response);
+                res.status(200).send(response); //not null result
+            res.status(400).send();
         });
         this.initRouter();
     }

@@ -29,21 +29,21 @@ export class UserController implements GenericController{
         } 
         this.userService.createNewUser(user).then(response=>{            
             if(!!response)res.status(200).send(response)
-            else res.status(400).send({})
+            res.status(400).send()
         })
     }
     getFullUserById:RequestHandler = async (req,res)=>{
         const collection= process.env.USER_COLLECTION
-        if(!!req.params.id)res.status(400).send({})
+        if(!req.params.id)res.status(400).send()//null as parameter
         const response = await this.userService.getUserDataById(req.params.id,collection)
-        if(!!response)res.status(400).send({})
-        else res.status(200).send(response)
+        if(!!response)res.status(200).send(response)//not null result
+        res.status(400).send()
     }
     getLightUserById:RequestHandler = async (req,res)=>{
         const collection = process.env.LIGHT_USER_COLLECTION
-        if(!!req.params.id)res.status(400).send({})
+        if(!req.params.id)res.status(400).send()//null as parameter
         const response = await this.userService.getUserDataById(req.params.id,collection)
-        if(!!response)res.status(400).send({})
-        else res.status(200).send(response)
+        if(!!response)res.status(200).send(response)//not null result
+        res.status(400).send()
     }
 }

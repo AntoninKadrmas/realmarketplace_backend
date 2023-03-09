@@ -44,10 +44,10 @@ export class UserService{
             throw new Error()
         }
     }
-    async getUserDataById(userId?:string,collection?:string):Promise<UserModel|null>{
+    async getUserDataById(userId?:string,collection?:string):Promise<UserModel | null>{
         try{    
-            const result =  await this.db.collection(collection).find({'_id':new ObjectId(userId)})
-            console.log(result);
+            const _id = new ObjectId(userId)    
+            const result =  await this.db.collection(collection).findOne({'_id':_id})
             return result
         }catch(e){     
             return null
