@@ -2,7 +2,8 @@ import express, { RequestHandler} from "express";
 import { UserService } from "../service/userService";
 import { UserModel } from "../model/userModel";
 import { GenericController } from "./genericController";
-require('dotenv').config();
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 export class UserController implements GenericController{
     path:string ='/users'

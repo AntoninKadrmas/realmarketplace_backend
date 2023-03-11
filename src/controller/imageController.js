@@ -35,38 +35,42 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Server = void 0;
+exports.ImageController = void 0;
 const express_1 = __importDefault(require("express"));
-const cors_1 = __importDefault(require("cors"));
-const userController_1 = require("./controller/userController");
-const userService_1 = require("./service/userService");
-const enumController_1 = require("./controller/enumController");
+const imageMiddleware_1 = require("../middleware/imageMiddleware");
 const dotenv = __importStar(require("dotenv"));
-const imageController_1 = require("./controller/imageController");
+const path = require('path');
+const fs_1 = __importDefault(require("fs"));
+const userAuthMiddleware_1 = require("../middleware/userAuthMiddleware");
 dotenv.config();
-class Server {
+class ImageController {
     constructor() {
-        this.app = (0, express_1.default)();
-        this.app.use(require('body-parser').json());
-        this.app.use((0, cors_1.default)());
-    }
-    setControllers() {
-        const userController = new userController_1.UserController(new userService_1.UserService());
-        const enumControl = new enumController_1.EnumController();
-        const imageController = new imageController_1.ImageController();
-        this.app.use(userController.path, userController.router);
-        this.app.use(enumControl.path, enumControl.router);
-        this.app.use(imageController.path, imageController.router);
-    }
-    start() {
-        return __awaiter(this, void 0, void 0, function* () {
-            this.setControllers();
-            this.app.listen(process.env.PORT, () => {
-                console.log('The application is listening '
-                    + 'on port http://localhost:' + process.env.PORT);
-            });
+        this.path = '/image';
+        this.router = express_1.default.Router();
+        this.uploadImagePublic = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            var _a, _b;
+            const imageUrl = `${this.path}/${(_a = req.file) === null || _a === void 0 ? void 0 : _a.filename}`;
+            const dirUrl = __dirname.split('src')[0] + "public/" + ((_b = req.file) === null || _b === void 0 ? void 0 : _b.filename);
+            if (!fs_1.default.existsSync(dirUrl)) {
+                res.status(401).send();
+            }
+            else {
+                res.status(200).send();
+            }
         });
+        this.uploadImagePrivate = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            var _c;
+            const imageUrl = `${this.path}/${(_c = req.file) === null || _c === void 0 ? void 0 : _c.filename}`;
+            console.log(imageUrl);
+        });
+        this.initRouter();
+    }
+    initRouter() {
+        const upload_public = new imageMiddleware_1.ImageMiddleWare().getStorage(true);
+        const upload_private = new imageMiddleware_1.ImageMiddleWare().getStorage(false);
+        this.router.post('/public', [userAuthMiddleware_1.userAuthMiddleware, upload_public.single('uploaded_file')], this.uploadImagePublic);
+        this.router.post('/private', upload_private.single('uploaded_file'), this.uploadImagePrivate);
+        this.router.use(express_1.default.static(path.join(__dirname.split('src')[0], process.env.IMAGE_PUBLIC)));
     }
 }
-exports.Server = Server;
-new Server().start();
+exports.ImageController = ImageController;

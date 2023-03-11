@@ -1,23 +1,26 @@
 import { Db, MongoClient, ObjectId } from "mongodb";
 import { DBConnection } from "../db/dbConnection";
 import { LightUserModel, UserModel } from "../model/userModel";
-require('dotenv').config();
+import { GenericService } from "./genericService";
+import * as dotenv from 'dotenv';
 
-export class UserService{
-    private client:MongoClient|any;
-    private db:Db|any
+export class UserService extends GenericService{
     constructor(){
+        super()
         this.connect().then()
     }
-    private async connect(){
+    override async connect(){
+        dotenv.config();
         const instance = DBConnection.getInstance()
         this.client = await instance.getDbClient()        
         this.db = this.client.db(process.env.DB_NAME)
+        this.collection.push(process.env.USER_COLLECTION)
+        this.collection.push(process.env.LIGHT_USER_COLLECTION)
     }
     async createNewUser(user:UserModel):Promise<object|null>{
         let new_user;
         try{
-            new_user = await this.db.collection(process.env.USER_COLLECTION).insertOne(user)
+            new_user = await this.db.collection(this.collection[0]).insertOne(user)
             if(!new_user.acknowledged)return null
             await this.createLightUser(user,new_user)
             return new_user
@@ -37,13 +40,14 @@ export class UserService{
                 phone: createdUser.phone,
                 createdIn: createdUser.createdIn
             }
-            new_user = await this.db.collection(process.env.LIGHT_USER_COLLECTION).insertOne(lightUser)
+            new_user = await this.db.collection(this.collection[1]).insertOne(lightUser)
             if(!new_user.acknowledged)throw new URIError()
         }
         catch{
             throw new Error()
         }
     }
+    //prepsat
     async getUserDataById(userId?:string,collection?:string):Promise<UserModel | null>{
         try{    
             const _id = new ObjectId(userId)    
@@ -53,4 +57,12 @@ export class UserService{
             return null
         }
     }
+    // async getUserDataCardId(cardId?:string,collection?:string):Promise<UserModel | null>{
+    //     try{    
+    //         const result =  await this.db.collection(collection).findOne({'cardId':cardId})
+    //         return result
+    //     }catch(e){     
+    //         return null
+    //     }
+    // }
 }
