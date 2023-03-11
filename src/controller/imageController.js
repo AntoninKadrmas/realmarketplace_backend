@@ -47,16 +47,19 @@ class ImageController {
         this.path = '/image';
         this.router = express_1.default.Router();
         this.uploadImagePublic = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            let error = false;
             if (req.files == undefined)
                 res.status(401).send();
             else {
                 try {
                     //@ts-ignore 
                     for (let file of req.files) {
-                        const imageUrl = `${this.path}/${file.filename}`;
                         const dirUrl = __dirname.split('src')[0] + "public/" + file.filename;
                         if (!fs_1.default.existsSync(dirUrl)) {
-                            res.status(401).send();
+                            error = true;
+                        }
+                        else {
+                            const imageUrl = `${this.path}/${file.filename}`;
                         }
                     }
                 }
@@ -64,6 +67,8 @@ class ImageController {
                     res.status(401).send();
                 }
             }
+            if (error)
+                res.status(401).send();
             res.status(200).send();
         });
         this.uploadImagePrivate = (req, res) => __awaiter(this, void 0, void 0, function* () {
