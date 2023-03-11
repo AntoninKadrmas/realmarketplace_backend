@@ -41,26 +41,34 @@ const imageMiddleware_1 = require("../middleware/imageMiddleware");
 const dotenv = __importStar(require("dotenv"));
 const path = require('path');
 const fs_1 = __importDefault(require("fs"));
-const userAuthMiddleware_1 = require("../middleware/userAuthMiddleware");
 dotenv.config();
 class ImageController {
     constructor() {
         this.path = '/image';
         this.router = express_1.default.Router();
         this.uploadImagePublic = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
-            const imageUrl = `${this.path}/${(_a = req.file) === null || _a === void 0 ? void 0 : _a.filename}`;
-            const dirUrl = __dirname.split('src')[0] + "public/" + ((_b = req.file) === null || _b === void 0 ? void 0 : _b.filename);
-            if (!fs_1.default.existsSync(dirUrl)) {
+            if (req.files == undefined)
                 res.status(401).send();
-            }
             else {
-                res.status(200).send();
+                try {
+                    //@ts-ignore 
+                    for (let file of req.files) {
+                        const imageUrl = `${this.path}/${file.filename}`;
+                        const dirUrl = __dirname.split('src')[0] + "public/" + file.filename;
+                        if (!fs_1.default.existsSync(dirUrl)) {
+                            res.status(401).send();
+                        }
+                    }
+                }
+                catch (_a) {
+                    res.status(401).send();
+                }
             }
+            res.status(200).send();
         });
         this.uploadImagePrivate = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            var _c;
-            const imageUrl = `${this.path}/${(_c = req.file) === null || _c === void 0 ? void 0 : _c.filename}`;
+            var _b;
+            const imageUrl = `${this.path}/${(_b = req.file) === null || _b === void 0 ? void 0 : _b.filename}`;
             console.log(imageUrl);
         });
         this.initRouter();
@@ -68,8 +76,8 @@ class ImageController {
     initRouter() {
         const upload_public = new imageMiddleware_1.ImageMiddleWare().getStorage(true);
         const upload_private = new imageMiddleware_1.ImageMiddleWare().getStorage(false);
-        this.router.post('/public', [userAuthMiddleware_1.userAuthMiddleware, upload_public.single('uploaded_file')], this.uploadImagePublic);
-        this.router.post('/private', upload_private.single('uploaded_file'), this.uploadImagePrivate);
+        this.router.post('/public', upload_public.array('uploaded_file', 10), this.uploadImagePublic);
+        this.router.post('/private', upload_private.array('uploaded_file', 10), this.uploadImagePrivate);
         this.router.use(express_1.default.static(path.join(__dirname.split('src')[0], process.env.IMAGE_PUBLIC)));
     }
 }

@@ -42,6 +42,14 @@ class ImageMiddleWare {
     }
     getStorage(publicFolder) {
         return (0, multer_1.default)({
+            fileFilter(req, file, callback) {
+                if (!file.originalname.match(/\.(png|jpg|jpeg)$/)) {
+                    return callback(new Error('Image is in bad format.'));
+                }
+                else {
+                    callback(null, true);
+                }
+            },
             storage: multer_1.default.diskStorage({
                 destination: (req, file, callback) => {
                     const publicFolder = process.env.IMAGE_PUBLIC != undefined ? process.env.IMAGE_PUBLIC : "public";
@@ -54,7 +62,7 @@ class ImageMiddleWare {
                     const extension = this.type[file.mimetype.toString()];
                     callback(null, `${(0, uuid_1.v4)()}_${new Date().getTime()}.${extension}`);
                 }
-            })
+            }),
         });
     }
     existsFolder(path) {

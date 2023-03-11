@@ -5,6 +5,7 @@ import * as dotenv from 'dotenv';
 const path = require('path')
 import fs from 'fs';
 import { userAuthMiddleware } from "../middleware/userAuthMiddleware";
+import multer from "multer";
 dotenv.config();
 
 export class ImageController implements GenericController{
@@ -16,19 +17,34 @@ export class ImageController implements GenericController{
     initRouter(){
         const upload_public = new ImageMiddleWare().getStorage(true)
         const upload_private = new ImageMiddleWare().getStorage(false)
-        this.router.post('/public',[userAuthMiddleware,upload_public.single('uploaded_file')],this.uploadImagePublic)
-        this.router.post('/private',upload_private.single('uploaded_file'),this.uploadImagePrivate)
+        this.router.post('/public',upload_public.array('uploaded_file',10),this.uploadImagePublic)
+        this.router.post('/private',upload_private.array('uploaded_file',10),this.uploadImagePrivate)
         this.router.use(express.static(path.join(__dirname.split('src')[0],process.env.IMAGE_PUBLIC)))
 
     }
     uploadImagePublic: RequestHandler = async (req, res) => {
-        const imageUrl = `${this.path}/${req.file?.filename}`
-        const dirUrl = __dirname.split('src')[0]+"public/"+req.file?.filename
-        if(!fs.existsSync(dirUrl)){
-            res.status(401).send()
-        }else{
-            res.status(200).send()
+        let error =false
+        if(req.files==undefined)res.status(401).send()
+        else{
+            try{
+                //@ts-ignore 
+                for(let file of req.files){
+                    const dirUrl = __dirname.split('src')[0]+"public/"+file.filename
+                    if(!fs.existsSync(dirUrl)){
+                        error=true
+                    }
+                    else{
+                        const imageUrl = `${this.path}/${file.filename}`
+                    }
+                }
+
+            }
+            catch{
+                res.status(401).send()
+            }
         }
+        if(error)res.status(401).send()
+        res.status(200).send()
     }
     uploadImagePrivate: RequestHandler = async (req, res) => {
         const imageUrl = `${this.path}/${req.file?.filename}`
