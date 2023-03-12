@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PriceOptionsEnum = void 0;
+exports.PriceOption = exports.PriceOptionsEnum = void 0;
 var PriceOptionsEnum;
 (function (PriceOptionsEnum) {
     PriceOptionsEnum["EXACT_PRICE"] = "Exact Price";
@@ -11,3 +11,15 @@ var PriceOptionsEnum;
     PriceOptionsEnum["FOR_RIDE"] = "For Ride";
     PriceOptionsEnum["OFFER"] = "Offer";
 })(PriceOptionsEnum = exports.PriceOptionsEnum || (exports.PriceOptionsEnum = {}));
+class PriceOption {
+}
+exports.PriceOption = PriceOption;
+PriceOption.data = [
+    ["EXACT_PRICE", "Exact Price"],
+    ["APPROXIMATE_PRICE", "Approximate Price"],
+    ["FREE", "Free"],
+    ["IN_TEXT", "In Text"],
+    ["ON_ARGUMENT", "On Argument"],
+    ["FOR_RIDE", "For Ride"],
+    ["OFFER", "Offer"],
+];

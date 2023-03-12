@@ -31,7 +31,7 @@ class EnumController {
             res.status(200).send(genreEnum_1.GenreNonFictionEnum);
         });
         this.getPriceOption = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            res.status(200).send(priceOptionsEnum_1.PriceOptionsEnum);
+            res.status(200).send(priceOptionsEnum_1.PriceOption.data);
         });
         this.initRouter();
     }

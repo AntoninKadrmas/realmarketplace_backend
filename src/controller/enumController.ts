@@ -3,7 +3,7 @@ import { GenericController } from "./genericController";
 import express, { RequestHandler} from "express";
 import { BookConditionEnum } from "../model/bookConditionEnum";
 import { GenreFictionEnum, GenreNonFictionEnum } from "../model/genreEnum";
-import { PriceOptionsEnum } from "../model/priceOptionsEnum";
+import { PriceOption, PriceOptionsEnum } from "../model/priceOptionsEnum";
 
 export class EnumController implements GenericController{
     path: string = "/enum";
@@ -27,6 +27,6 @@ export class EnumController implements GenericController{
         res.status(200).send(GenreNonFictionEnum)
     }
     getPriceOption: RequestHandler = async (req, res) => {
-        res.status(200).send(PriceOptionsEnum)
+        res.status(200).send(PriceOption.data)
     }
 }
