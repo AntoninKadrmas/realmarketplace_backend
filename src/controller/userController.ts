@@ -5,7 +5,7 @@ import { GenericController } from "./genericController";
 require('dotenv').config();
 
 export class UserController implements GenericController{
-    path:string ='/users'
+    path:string ='/user'
     router:express.Router = express.Router()
     constructor(private userService:UserService){
         this.initRouter()
@@ -16,17 +16,25 @@ export class UserController implements GenericController{
         this.router.get('/light/:id',this.getLightUserById)
     }
     insertUser: RequestHandler = async (req, res) => {
-        const user:UserModel ={
-            first_name: "",
-            last_name: "",
-            email: "",
-            phone: "",
-            createdIn: new Date(),
-            age: new Date(),
-            idCard: "",
-            password: "",
-            validated: new UserValid
-        } 
+        let user:UserModel= new UserModel()
+        try{
+            if(req.body==null){res.status(400).send({error:"Body does not contains user model"})}
+            user = req.body
+        }
+        catch(e){
+            res.status(400).send({error:"Body does not contains user model"})
+        }
+        user.createdIn = new Date()
+        // const user:UserModel ={
+        //     first_name: "",
+        //     last_name: "",
+        //     email: "",
+        //     phone: "",
+        //     createdIn: new Date(),
+        //     idCard: "",
+        //     password: "",
+        //     validated: new UserValid
+        // } 
         this.userService.createNewUser(user).then(response=>{            
             if(!!response)res.status(200).send(response)
             res.status(400).send()

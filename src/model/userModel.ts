@@ -2,11 +2,10 @@ export class UserModel{
     _id?:string;
     first_name!:string;
     last_name!:string;
-    idCard!:string;
+    cardId!:string;
     password!:string;
     email!:string;
     phone!:string;  
-    age!:Date;
     createdIn!:Date;
     validated!:UserValid
     gender?:string;

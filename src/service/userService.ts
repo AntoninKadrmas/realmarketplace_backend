@@ -17,7 +17,8 @@ export class UserService{
     async createNewUser(user:UserModel):Promise<object|null>{
         let new_user;
         try{
-            new_user = await this.db.collection(process.env.USER_COLLECTION).insertOne(user)
+            new_user = await this.db.collection(process.env.USER_COLLECTION).insertOne({user,uniqueField:"cardId"})
+            console.log(new_user);
             if(!new_user.acknowledged)return null
             await this.createLightUser(user,new_user)
             return new_user

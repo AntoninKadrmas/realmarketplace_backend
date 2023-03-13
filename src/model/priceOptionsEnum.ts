@@ -10,7 +10,6 @@ export enum PriceOptionsEnum{
 export class PriceOption{
     public static data = [
         "Exact Price",
-        "Approximate Price",
         "Free",
         "In Text",
         "On Argument",
