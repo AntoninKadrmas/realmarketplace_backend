@@ -22,7 +22,7 @@ class EnumController {
         this.path = "/enum";
         this.router = express_1.default.Router();
         this.getBookCondition = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            res.status(200).send(bookConditionEnum_1.BookConditionEnum);
+            res.status(200).send(bookConditionEnum_1.BookCondition.data);
         });
         this.getFiction = (req, res) => __awaiter(this, void 0, void 0, function* () {
             res.status(200).send(genreEnum_1.GenreFictionEnum);
@@ -37,8 +37,8 @@ class EnumController {
     }
     initRouter() {
         this.router.get('/book-condition', this.getBookCondition);
-        this.router.get('/genre/fiction', this.getFiction);
-        this.router.get('/genre/non-fiction', this.getNonFiction);
+        // this.router.get('/genre/fiction',this.getFiction)
+        // this.router.get('/genre/non-fiction',this.getNonFiction)
         this.router.get('/price-option', this.getPriceOption);
     }
 }

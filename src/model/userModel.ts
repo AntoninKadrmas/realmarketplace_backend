@@ -8,7 +8,7 @@ export class UserModel{
     phone!:string;  
     age!:Date;
     createdIn!:Date;
-    validated:boolean=false;
+    validated!:UserValid
     gender?:string;
 }
 export class LightUserModel{
@@ -19,4 +19,11 @@ export class LightUserModel{
     email!:string;
     phone!:string;  
     createdIn!:Date;
+}
+export class UserValid{
+    validIdFront=false;
+    validIdBack=false;
+    validSecondIdFront=false;
+    valideSeoncIdBack=false;
+    validIdAndFace=false;
 }

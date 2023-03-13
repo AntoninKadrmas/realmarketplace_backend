@@ -56,3 +56,4 @@ export enum GenreFictionEnum{
     SPORT_AND_LEISURE='Sports and leisure',
     TRAVEL='Travel',
   }
+  

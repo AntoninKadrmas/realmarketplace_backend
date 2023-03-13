@@ -2,7 +2,6 @@ import express from 'express';
 import {UserController} from "./controller/userController";
 import { UserService } from './service/userService';
 import { EnumController } from './controller/enumController';
-
 export class Server{
     private app:express.Express
     constructor(){

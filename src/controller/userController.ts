@@ -1,6 +1,6 @@
 import express, { RequestHandler} from "express";
 import { UserService } from "../service/userService";
-import { UserModel } from "../model/userModel";
+import { UserModel, UserValid } from "../model/userModel";
 import { GenericController } from "./genericController";
 require('dotenv').config();
 
@@ -23,9 +23,9 @@ export class UserController implements GenericController{
             phone: "",
             createdIn: new Date(),
             age: new Date(),
-            validated: false,
             idCard: "",
-            password: ""
+            password: "",
+            validated: new UserValid
         } 
         this.userService.createNewUser(user).then(response=>{            
             if(!!response)res.status(200).send(response)

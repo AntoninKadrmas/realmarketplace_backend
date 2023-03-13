@@ -15,11 +15,11 @@ class PriceOption {
 }
 exports.PriceOption = PriceOption;
 PriceOption.data = [
-    ["EXACT_PRICE", "Exact Price"],
-    ["APPROXIMATE_PRICE", "Approximate Price"],
-    ["FREE", "Free"],
-    ["IN_TEXT", "In Text"],
-    ["ON_ARGUMENT", "On Argument"],
-    ["FOR_RIDE", "For Ride"],
-    ["OFFER", "Offer"],
+    "Exact Price",
+    "Approximate Price",
+    "Free",
+    "In Text",
+    "On Argument",
+    "For Ride",
+    "Offer",
 ];

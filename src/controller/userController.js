@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserController = void 0;
 const express_1 = __importDefault(require("express"));
+const userModel_1 = require("../model/userModel");
 require('dotenv').config();
 class UserController {
     constructor(userService) {
@@ -28,9 +29,9 @@ class UserController {
                 phone: "",
                 createdIn: new Date(),
                 age: new Date(),
-                validated: false,
                 idCard: "",
-                password: ""
+                password: "",
+                validated: new userModel_1.UserValid
             };
             this.userService.createNewUser(user).then(response => {
                 if (!!response)
