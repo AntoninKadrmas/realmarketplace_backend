@@ -28,10 +28,14 @@ class UserService {
         return __awaiter(this, void 0, void 0, function* () {
             let new_user;
             try {
-                new_user = yield this.db.collection(process.env.USER_COLLECTION).insertOne(user);
-                if (!new_user.acknowledged)
-                    return null;
-                yield this.createLightUser(user, new_user);
+                new_user = yield this.db.collection(process.env.USER_COLLECTION).update({
+                    cardId: user.cardId
+                }, {
+                    $setOnInsert: user
+                }, { upsert: true });
+                if (!new_user.upsertedId)
+                    return { error: "user with same cardId already exists" };
+                yield this.createLightUser(user, new_user.upsertedId);
                 return new_user;
             }
             catch (_a) {
@@ -44,7 +48,7 @@ class UserService {
             let new_user;
             try {
                 const lightUser = {
-                    userId: new_user_id.insertedId,
+                    userId: new_user_id,
                     first_name: createdUser.first_name,
                     last_name: createdUser.last_name,
                     email: createdUser.email,

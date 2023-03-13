@@ -17,21 +17,28 @@ export class UserService{
     async createNewUser(user:UserModel):Promise<object|null>{
         let new_user;
         try{
-            new_user = await this.db.collection(process.env.USER_COLLECTION).insertOne({user,uniqueField:"cardId"})
-            console.log(new_user);
-            if(!new_user.acknowledged)return null
-            await this.createLightUser(user,new_user)
-            return new_user
+            new_user = await this.db.collection(process.env.USER_COLLECTION).update(
+                {
+                  cardId : user.cardId
+                }, 
+                 {
+                  $setOnInsert: user
+                 },
+                 {upsert: true}
+            )
+            if(!new_user.upsertedId)return {error:"user with same cardId already exists"}
+            await this.createLightUser(user,new_user.upsertedId)
+            return {"_id":new_user.upsertedId}
         }
         catch{
             return null
         }
     }
-    private async createLightUser(createdUser:UserModel,new_user_id:any):Promise<void>{
+    private async createLightUser(createdUser:UserModel,new_user_id:string):Promise<void>{
         let new_user;
         try{
             const lightUser:LightUserModel={
-                userId:new_user_id.insertedId,
+                userId:new_user_id,
                 first_name: createdUser.first_name,
                 last_name: createdUser.last_name,
                 email: createdUser.email,

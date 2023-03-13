@@ -19,20 +19,30 @@ require('dotenv').config();
 class UserController {
     constructor(userService) {
         this.userService = userService;
-        this.path = '/users';
+        this.path = '/user';
         this.router = express_1.default.Router();
         this.insertUser = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            const user = {
-                first_name: "",
-                last_name: "",
-                email: "",
-                phone: "",
-                createdIn: new Date(),
-                age: new Date(),
-                idCard: "",
-                password: "",
-                validated: new userModel_1.UserValid
-            };
+            let user = new userModel_1.UserModel();
+            try {
+                if (req.body == null) {
+                    res.status(400).send({ error: "Body does not contains user model" });
+                }
+                user = req.body;
+            }
+            catch (e) {
+                res.status(400).send({ error: "Body does not contains user model" });
+            }
+            user.createdIn = new Date();
+            // const user:UserModel ={
+            //     first_name: "",
+            //     last_name: "",
+            //     email: "",
+            //     phone: "",
+            //     createdIn: new Date(),
+            //     idCard: "",
+            //     password: "",
+            //     validated: new UserValid
+            // } 
             this.userService.createNewUser(user).then(response => {
                 if (!!response)
                     res.status(200).send(response);

@@ -16,7 +16,6 @@ class PriceOption {
 exports.PriceOption = PriceOption;
 PriceOption.data = [
     "Exact Price",
-    "Approximate Price",
     "Free",
     "In Text",
     "On Argument",
