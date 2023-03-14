@@ -1,18 +1,21 @@
 import { Db, MongoClient, ObjectId } from "mongodb";
 import { DBConnection } from "../db/dbConnection";
 import { LightUserModel, UserModel } from "../model/userModel";
-require('dotenv').config();
+import { GenericService } from "./genericService";
+import * as dotenv from 'dotenv';
 
-export class UserService{
-    private client:MongoClient|any;
-    private db:Db|any
+export class UserService extends GenericService{
     constructor(){
+        super()
         this.connect().then()
     }
-    private async connect(){
+    override async connect(){
+        dotenv.config();
         const instance = DBConnection.getInstance()
         this.client = await instance.getDbClient()        
         this.db = this.client.db(process.env.DB_NAME)
+        this.collection.push(process.env.USER_COLLECTION)
+        this.collection.push(process.env.LIGHT_USER_COLLECTION)
     }
     async createNewUser(user:UserModel):Promise<{_id:string}|{error:string}>{
         let new_user;
@@ -20,7 +23,7 @@ export class UserService{
             new_user = await this.db.collection(process.env.USER_COLLECTION).update(
                 {
                   cardId : user.cardId
-                }, 
+                },
                  {
                   $setOnInsert: user
                  },
@@ -45,7 +48,7 @@ export class UserService{
                 phone: createdUser.phone,
                 createdIn: createdUser.createdIn
             }
-            new_user = await this.db.collection(process.env.LIGHT_USER_COLLECTION).insertOne(lightUser)
+            new_user = await this.db.collection(this.collection[1]).insertOne(lightUser)
             if(!new_user.acknowledged)throw new URIError()
         }
         catch{
@@ -58,16 +61,16 @@ export class UserService{
             const result =  await this.db.collection(collection).findOne({'_id':_id})
             return result
         }catch(e){     
-            return {error:"Database dose not response."} 
+            return {error:"Database dose not response."}
         }
     }
     async getUserDataByCardId(cardId?:string,collection?:string):Promise<UserModel | {error:string}>{
-        try{    
+        try{
             const result =  await this.db.collection(collection).findOne({'cardId':cardId})
             console.log(result);
             return result
-        }catch(e){     
-            return {error:"Database dose not response."} 
+        }catch(e){
+            return {error:"Database dose not response."}
         }
     }
 }

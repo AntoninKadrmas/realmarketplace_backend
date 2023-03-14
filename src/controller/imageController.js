@@ -35,57 +35,55 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserController = void 0;
+exports.ImageController = void 0;
 const express_1 = __importDefault(require("express"));
+const imageMiddleware_1 = require("../middleware/imageMiddleware");
 const dotenv = __importStar(require("dotenv"));
+const path = require('path');
+const fs_1 = __importDefault(require("fs"));
 dotenv.config();
-class UserController {
-    constructor(userService) {
-        this.userService = userService;
-        this.path = '/users';
+class ImageController {
+    constructor() {
+        this.path = '/image';
         this.router = express_1.default.Router();
-        this.insertUser = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            const user = {
-                first_name: "",
-                last_name: "",
-                email: "",
-                phone: "",
-                createdIn: new Date(),
-                age: new Date(),
-                validated: false,
-                idCard: "",
-                password: ""
-            };
-            this.userService.createNewUser(user).then(response => {
-                if (!!response)
-                    res.status(200).send(response);
-                res.status(400).send();
-            });
+        this.uploadImagePublic = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            let error = false;
+            if (req.files == undefined)
+                res.status(401).send();
+            else {
+                try {
+                    //@ts-ignore 
+                    for (let file of req.files) {
+                        const dirUrl = __dirname.split('src')[0] + "public/" + file.filename;
+                        if (!fs_1.default.existsSync(dirUrl)) {
+                            error = true;
+                        }
+                        else {
+                            const imageUrl = `${this.path}/${file.filename}`;
+                        }
+                    }
+                }
+                catch (_a) {
+                    res.status(401).send();
+                }
+            }
+            if (error)
+                res.status(401).send();
+            res.status(200).send();
         });
-        this.getFullUserById = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            const collection = process.env.USER_COLLECTION;
-            if (!req.params.id)
-                res.status(400).send(); //null as parameter
-            const response = yield this.userService.getUserDataById(req.params.id, collection);
-            if (!!response)
-                res.status(200).send(response); //not null result
-            res.status(400).send();
-        });
-        this.getLightUserById = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            const collection = process.env.LIGHT_USER_COLLECTION;
-            if (!req.params.id)
-                res.status(400).send(); //null as parameter
-            const response = yield this.userService.getUserDataById(req.params.id, collection);
-            if (!!response)
-                res.status(200).send(response); //not null result
-            res.status(400).send();
+        this.uploadImagePrivate = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            var _b;
+            const imageUrl = `${this.path}/${(_b = req.file) === null || _b === void 0 ? void 0 : _b.filename}`;
+            console.log(imageUrl);
         });
         this.initRouter();
     }
     initRouter() {
-        this.router.post('/create', this.insertUser);
-        this.router.get('/full/:id', this.getFullUserById);
-        this.router.get('/light/:id', this.getLightUserById);
+        const upload_public = new imageMiddleware_1.ImageMiddleWare().getStorage(true);
+        const upload_private = new imageMiddleware_1.ImageMiddleWare().getStorage(false);
+        this.router.post('/public', upload_public.array('uploaded_file', 10), this.uploadImagePublic);
+        this.router.post('/private', upload_private.array('uploaded_file', 10), this.uploadImagePrivate);
+        this.router.use(express_1.default.static(path.join(__dirname.split('src')[0], process.env.IMAGE_PUBLIC)));
     }
 }
-exports.UserController = UserController;
+exports.ImageController = ImageController;

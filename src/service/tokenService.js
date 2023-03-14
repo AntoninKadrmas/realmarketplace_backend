@@ -32,74 +32,85 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserService = void 0;
+exports.TokenService = void 0;
 const mongodb_1 = require("mongodb");
 const dbConnection_1 = require("../db/dbConnection");
-const genericService_1 = require("./genericService");
 const dotenv = __importStar(require("dotenv"));
-class UserService extends genericService_1.GenericService {
+const genericService_1 = require("./genericService");
+class TokenService extends genericService_1.GenericService {
     constructor() {
         super();
-        this.connect().then();
     }
     connect() {
         return __awaiter(this, void 0, void 0, function* () {
             dotenv.config();
             const instance = dbConnection_1.DBConnection.getInstance();
             this.client = yield instance.getDbClient();
+            this.collection.push(process.env.TOKEN_COLLECTION);
             this.db = this.client.db(process.env.DB_NAME);
-            this.collection.push(process.env.USER_COLLECTION);
-            this.collection.push(process.env.LIGHT_USER_COLLECTION);
         });
     }
-    createNewUser(user) {
+    static getInstance() {
         return __awaiter(this, void 0, void 0, function* () {
-            let new_user;
-            try {
-                new_user = yield this.db.collection(this.collection[0]).insertOne(user);
-                if (!new_user.acknowledged)
-                    return null;
-                yield this.createLightUser(user, new_user);
-                return new_user;
+            if (!TokenService.instance) {
+                TokenService.instance = new TokenService();
+                yield TokenService.instance.connect();
             }
-            catch (_a) {
-                return null;
-            }
+            return TokenService.instance;
         });
     }
-    createLightUser(createdUser, new_user_id) {
+    createToken(userId) {
         return __awaiter(this, void 0, void 0, function* () {
-            let new_user;
             try {
-                const lightUser = {
-                    userId: new_user_id.insertedId,
-                    first_name: createdUser.first_name,
-                    last_name: createdUser.last_name,
-                    email: createdUser.email,
-                    phone: createdUser.phone,
-                    createdIn: createdUser.createdIn
+                const token = {
+                    userId: userId,
+                    expirationTime: this.getActualValidTime()
                 };
-                new_user = yield this.db.collection(this.collection[1]).insertOne(lightUser);
-                if (!new_user.acknowledged)
-                    throw new URIError();
-            }
-            catch (_a) {
-                throw new Error();
-            }
-        });
-    }
-    //prepsat
-    getUserDataById(userId, collection) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const _id = new mongodb_1.ObjectId(userId);
-                const result = yield this.db.collection(collection).findOne({ '_id': _id });
-                return result;
+                return yield this.db.collection(this.collection[0]).insertOne(token);
             }
             catch (e) {
-                return null;
+                return "";
             }
         });
     }
+    updateTokenByTokenId(tokenId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            //mozna jenom find pokud se to bude volat pouze z middleware
+            const token = yield this.db.collection(this.collection[0]).findOneAndUpdate({ _id: new mongodb_1.ObjectId(tokenId) }, { $inc: { expirationTime: this.getActualValidTime() } });
+            return yield this.tokenIsValid(token.value);
+        });
+    }
+    updateTokenByUserId(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const token = yield this.db.collection(this.collection[0]).findOneAndUpdate({ userId: userId }, { $inc: { expirationTime: this.getActualValidTime() } });
+            return yield this.tokenIsValid(token.value);
+        });
+    }
+    tokenExists(tokenId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const token = yield this.db.collection(this.collection[0]).findOne({ _id: new mongodb_1.ObjectId(tokenId) });
+                return yield this.tokenIsValid(token);
+            }
+            catch (e) {
+                return false;
+            }
+        });
+    }
+    tokenIsValid(token) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const valid = token.expirationTime <= this.getActualValidTime();
+            try {
+                if (!valid)
+                    yield this.db.collection(this.collection[0]).deleteOne({ _id: new mongodb_1.ObjectId(token._id) });
+            }
+            catch (e) { }
+            return valid;
+        });
+    }
+    getActualValidTime() {
+        const expirationTime = process.env.TOKEN_EXPIRATION_TIME != null ? parseInt(process.env.TOKEN_EXPIRATION_TIME) : 1800000;
+        return new Date().getTime() + expirationTime;
+    }
 }
-exports.UserService = UserService;
+exports.TokenService = TokenService;

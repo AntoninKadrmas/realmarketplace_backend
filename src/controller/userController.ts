@@ -2,6 +2,8 @@ import express, { RequestHandler} from "express";
 import { UserService } from "../service/userService";
 import { UserModel, UserValid } from "../model/userModel";
 import { GenericController } from "./genericController";
+import * as dotenv from 'dotenv';
+dotenv.config();
 import bcrypt from 'bcrypt';
 require('dotenv').config();
 
@@ -13,7 +15,6 @@ export class UserController implements GenericController{
     }
     initRouter(){
         this.router.post('/create',this.insertUser)
-        this.router.get('/login',this.userLogin)
         this.router.get('/full/:id',this.getFullUserById)
         this.router.get('/light/:id',this.getLightUserById)
     }
@@ -24,7 +25,7 @@ export class UserController implements GenericController{
             user = req.body
             user.createdIn = new Date()
             user.password = await this.hashPassword(user.password)
-            this.userService.createNewUser(user).then((response:{_id:string}|{error:string})=>{            
+            this.userService.createNewUser(user).then((response:{_id:string}|{error:string})=>{
                 if(response.hasOwnProperty("_id"))res.status(200).send(response)
                 else res.status(400).send(response)
             })
