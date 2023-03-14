@@ -73,10 +73,10 @@ class UserController {
         this.userLogin = (req, res) => __awaiter(this, void 0, void 0, function* () {
             let user;
             try {
-                if (req.body == null) {
+                if (req.query.cardId == null || req.query.password == null) {
                     res.status(400).send({ error: "Body does not contains user login model." });
                 }
-                user = req.body;
+                user = { cardId: req.query.cardId, password: req.query.password };
                 const userResponse = yield this.userService.getUserDataByCardId(user.cardId, user.password);
                 if (userResponse.hasOwnProperty("error"))
                     res.status(400).send(userResponse);
