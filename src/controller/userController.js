@@ -59,7 +59,7 @@ class UserController {
                     const userIds = createUserResponse;
                     const token = yield this.tokenService.createToken(userIds.userId, userIds.lightUserId);
                     if (!token.hasOwnProperty("error"))
-                        return res.status(200).send(token);
+                        return res.status(200).send({ "token": token });
                     else
                         res.status(400).send(token);
                 }
@@ -84,7 +84,7 @@ class UserController {
                     const tempUserResponse = userResponse;
                     const token = yield this.tokenService.createToken(tempUserResponse._id, tempUserResponse.lightUserId);
                     if (!token.hasOwnProperty("error"))
-                        return res.status(200).send(token);
+                        return res.status(200).send({ "token": token });
                     res.status(400).send(token);
                 }
             }
