@@ -43,7 +43,6 @@ export class UserController implements GenericController{
         try{
             if(req.query.cardId==null||req.query.password==null){res.status(400).send({error:"Body does not contains user login model."})}
             user = {cardId:(req.query.cardId as string),password:(req.query.password as string)}
-            console.log(user)
             const userResponse:UserModel | {error:string} = await this.userService.getUserDataByCardId(user.cardId,user.password)
             if(userResponse.hasOwnProperty("error"))res.status(400).send(userResponse)
             else{
