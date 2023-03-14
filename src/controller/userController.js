@@ -25,28 +25,19 @@ class UserController {
             let user = new userModel_1.UserModel();
             try {
                 if (req.body == null) {
-                    res.status(400).send({ error: "Body does not contains user model" });
+                    res.status(400).send({ error: "Body does not contains user model." });
                 }
                 user = req.body;
             }
             catch (e) {
-                res.status(400).send({ error: "Body does not contains user model" });
+                res.status(400).send({ error: "Body does not contains correct user model." });
             }
             user.createdIn = new Date();
-            // const user:UserModel ={
-            //     first_name: "",
-            //     last_name: "",
-            //     email: "",
-            //     phone: "",
-            //     createdIn: new Date(),
-            //     idCard: "",
-            //     password: "",
-            //     validated: new UserValid
-            // } 
-            this.userService.createNewUser(user).then(response => {
-                if (!!response)
+            this.userService.createNewUser(user).then((response) => {
+                if (response.hasOwnProperty("_id"))
                     res.status(200).send(response);
-                res.status(400).send();
+                else
+                    res.status(400).send(response);
             });
         });
         this.getFullUserById = (req, res) => __awaiter(this, void 0, void 0, function* () {

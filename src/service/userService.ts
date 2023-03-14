@@ -14,7 +14,7 @@ export class UserService{
         this.client = await instance.getDbClient()        
         this.db = this.client.db(process.env.DB_NAME)
     }
-    async createNewUser(user:UserModel):Promise<object|null>{
+    async createNewUser(user:UserModel):Promise<{_id:string}|{error:string}>{
         let new_user;
         try{
             new_user = await this.db.collection(process.env.USER_COLLECTION).update(
@@ -26,12 +26,12 @@ export class UserService{
                  },
                  {upsert: true}
             )
-            if(!new_user.upsertedId)return {error:"user with same cardId already exists"}
+            if(!new_user.upsertedId)return {error:"User with same National ID number already exists."}
             await this.createLightUser(user,new_user.upsertedId)
             return {"_id":new_user.upsertedId}
         }
         catch{
-            return null
+            return {error:"Database dose not response."}
         }
     }
     private async createLightUser(createdUser:UserModel,new_user_id:string):Promise<void>{

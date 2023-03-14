@@ -18,26 +18,16 @@ export class UserController implements GenericController{
     insertUser: RequestHandler = async (req, res) => {
         let user:UserModel= new UserModel()
         try{
-            if(req.body==null){res.status(400).send({error:"Body does not contains user model"})}
+            if(req.body==null){res.status(400).send({error:"Body does not contains user model."})}
             user = req.body
         }
         catch(e){
-            res.status(400).send({error:"Body does not contains user model"})
+            res.status(400).send({error:"Body does not contains correct user model."})
         }
         user.createdIn = new Date()
-        // const user:UserModel ={
-        //     first_name: "",
-        //     last_name: "",
-        //     email: "",
-        //     phone: "",
-        //     createdIn: new Date(),
-        //     idCard: "",
-        //     password: "",
-        //     validated: new UserValid
-        // } 
-        this.userService.createNewUser(user).then(response=>{            
-            if(!!response)res.status(200).send(response)
-            res.status(400).send()
+        this.userService.createNewUser(user).then((response:{_id:string}|{error:string})=>{            
+            if(response.hasOwnProperty("_id"))res.status(200).send(response)
+            else res.status(400).send(response)
         })
     }
     getFullUserById:RequestHandler = async (req,res)=>{

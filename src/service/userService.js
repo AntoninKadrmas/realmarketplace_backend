@@ -34,12 +34,12 @@ class UserService {
                     $setOnInsert: user
                 }, { upsert: true });
                 if (!new_user.upsertedId)
-                    return { error: "user with same cardId already exists" };
+                    return { error: "User with same National ID number already exists." };
                 yield this.createLightUser(user, new_user.upsertedId);
-                return new_user;
+                return { "_id": new_user.upsertedId };
             }
             catch (_a) {
-                return null;
+                return { error: "Database dose not response." };
             }
         });
     }
