@@ -61,9 +61,12 @@ class UserService extends genericService_1.GenericService {
         return __awaiter(this, void 0, void 0, function* () {
             user.password = yield this.hashPassword(user.password);
             try {
-                const userExists = yield this.db.collection(this.collection[0]).findOne({ cardId: user.cardId });
+                let userExists = yield this.db.collection(this.collection[0]).findOne({ cardId: user.cardId });
                 if (userExists != null)
                     return { error: "User with same National ID number already exists." };
+                userExists = yield this.db.collection(this.collection[0]).findOne({ email: user.email });
+                if (userExists != null)
+                    return { error: "User with same Email Address already exists." };
                 const light_user = yield this.createLightUser(user);
                 if (light_user == "") {
                     return { error: "Database dose not response." };
@@ -115,12 +118,12 @@ class UserService extends genericService_1.GenericService {
             }
         });
     }
-    getUserDataByCardId(cardId, password) {
+    getUserDataByEmail(email, password) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const result = yield this.db.collection(this.collection[0]).findOne({ 'cardId': cardId });
+                const result = yield this.db.collection(this.collection[0]).findOne({ 'email': email });
                 if (!result)
-                    return { error: "Nor user exists with this National ID number." };
+                    return { error: "Nor user exists with this Email Address." };
                 if (yield this.comparePassword(password, result.password)) {
                     delete result.password;
                     return result;

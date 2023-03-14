@@ -39,11 +39,11 @@ export class UserController implements GenericController{
         }
     }
     userLogin: RequestHandler = async (req, res) => {
-        let user:{cardId:string,password:string}
+        let user:{email:string,password:string}
         try{
-            if(req.query.cardId==null||req.query.password==null){res.status(400).send({error:"Body does not contains user login model."})}
-            user = {cardId:(req.query.cardId as string),password:(req.query.password as string)}
-            const userResponse:UserModel | {error:string} = await this.userService.getUserDataByCardId(user.cardId,user.password)
+            if(req.query.email==null||req.query.password==null){res.status(400).send({error:"Body does not contains user login model."})}
+            user = {email:(req.query.email as string),password:(req.query.password as string)}
+            const userResponse:UserModel | {error:string} = await this.userService.getUserDataByEmail(user.email,user.password)
             if(userResponse.hasOwnProperty("error"))res.status(400).send(userResponse)
             else{
                 const tempUserResponse:UserModel = userResponse as UserModel

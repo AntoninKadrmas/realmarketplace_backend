@@ -25,8 +25,10 @@ export class UserService extends GenericService{
     async createNewUser(user:UserModel):Promise<{userId:string,lightUserId:string}|{error:string}>{
         user.password = await this.hashPassword(user.password!)
         try{
-            const userExists = await this.db.collection(this.collection[0]).findOne({cardId : user.cardId})
+            let userExists = await this.db.collection(this.collection[0]).findOne({cardId : user.cardId})
             if(userExists!=null)return {error:"User with same National ID number already exists."}
+            userExists = await this.db.collection(this.collection[0]).findOne({email : user.email})
+            if(userExists!=null)return {error:"User with same Email Address already exists."}
             const light_user = await this.createLightUser(user)
             if(light_user==""){
                 return {error:"Database dose not response."}    
@@ -70,10 +72,10 @@ export class UserService extends GenericService{
             return {error:"Database dose not response."}
         }
     }
-    async getUserDataByCardId(cardId:string,password:string):Promise<UserModel | {error:string}>{
+    async getUserDataByEmail(email:string,password:string):Promise<UserModel | {error:string}>{
         try{
-            const result:UserModel =  await this.db.collection(this.collection[0]).findOne({'cardId':cardId})
-            if(!result) return {error:"Nor user exists with this National ID number."}
+            const result:UserModel =  await this.db.collection(this.collection[0]).findOne({'email':email})
+            if(!result) return {error:"Nor user exists with this Email Address."}
             if(await this.comparePassword(password,result.password!)){
                 delete result.password
                 return result
