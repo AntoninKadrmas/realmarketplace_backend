@@ -1,9 +1,10 @@
 export class UserModel{
     _id?:string;
-    first_name!:string;
-    last_name!:string;
+    lightUserId?:string;
+    firstName!:string;
+    lastName!:string;
     cardId!:string;
-    password!:string;
+    password?:string;
     email!:string;
     phone!:string;  
     createdIn!:Date;
@@ -12,9 +13,8 @@ export class UserModel{
 }
 export class LightUserModel{
     _id?:string;
-    userId!:string;
-    first_name!:string;
-    last_name!:string;
+    firstName!:string;
+    lastName!:string;
     email!:string;
     phone!:string;  
     createdIn!:Date;

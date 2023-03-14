@@ -39,35 +39,66 @@ exports.UserController = void 0;
 const express_1 = __importDefault(require("express"));
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
+require('dotenv').config();
 class UserController {
-    constructor(userService) {
+    constructor(userService, tokenService) {
         this.userService = userService;
-        this.path = '/users';
+        this.tokenService = tokenService;
+        this.path = '/user';
         this.router = express_1.default.Router();
         this.insertUser = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            const user = {
-                first_name: "",
-                last_name: "",
-                email: "",
-                phone: "",
-                createdIn: new Date(),
-                age: new Date(),
-                validated: false,
-                idCard: "",
-                password: ""
-            };
-            this.userService.createNewUser(user).then(response => {
-                if (!!response)
-                    res.status(200).send(response);
-                res.status(400).send();
-            });
+            let user;
+            try {
+                if (req.body == null) {
+                    res.status(400).send({ error: "Body does not contains user model." });
+                }
+                user = req.body;
+                user.createdIn = new Date();
+                const createUserResponse = yield this.userService.createNewUser(user);
+                if (createUserResponse.hasOwnProperty("userId") && createUserResponse.hasOwnProperty("lightUserId")) {
+                    const userIds = createUserResponse;
+                    const token = yield this.tokenService.createToken(userIds.userId, userIds.lightUserId);
+                    if (!token.hasOwnProperty("error"))
+                        return res.status(200).send({ "token": token });
+                    else
+                        res.status(400).send(token);
+                }
+                else
+                    res.status(400).send(createUserResponse);
+            }
+            catch (e) {
+                res.status(400).send({ error: "Body does not contains correct user model." });
+            }
+        });
+        this.userLogin = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            let user;
+            try {
+                if (req.body == null) {
+                    res.status(400).send({ error: "Body does not contains user login model." });
+                }
+                user = req.body;
+                const userResponse = yield this.userService.getUserDataByCardId(user.cardId, user.password);
+                if (userResponse.hasOwnProperty("error"))
+                    res.status(400).send(userResponse);
+                else {
+                    const tempUserResponse = userResponse;
+                    const token = yield this.tokenService.createToken(tempUserResponse._id, tempUserResponse.lightUserId);
+                    if (!token.hasOwnProperty("error"))
+                        return res.status(200).send({ "token": token });
+                    res.status(400).send(token);
+                }
+            }
+            catch (e) {
+                console.log(e);
+                res.status(400).send({ error: "Body does not contains correct user login model." });
+            }
         });
         this.getFullUserById = (req, res) => __awaiter(this, void 0, void 0, function* () {
             const collection = process.env.USER_COLLECTION;
             if (!req.params.id)
                 res.status(400).send(); //null as parameter
             const response = yield this.userService.getUserDataById(req.params.id, collection);
-            if (!!response)
+            if (!response.hasOwnProperty("error"))
                 res.status(200).send(response); //not null result
             res.status(400).send();
         });
@@ -76,14 +107,15 @@ class UserController {
             if (!req.params.id)
                 res.status(400).send(); //null as parameter
             const response = yield this.userService.getUserDataById(req.params.id, collection);
-            if (!!response)
+            if (!response.hasOwnProperty("error"))
                 res.status(200).send(response); //not null result
             res.status(400).send();
         });
         this.initRouter();
     }
     initRouter() {
-        this.router.post('/create', this.insertUser);
+        this.router.post('/register', this.insertUser);
+        this.router.get('/login', this.userLogin);
         this.router.get('/full/:id', this.getFullUserById);
         this.router.get('/light/:id', this.getLightUserById);
     }

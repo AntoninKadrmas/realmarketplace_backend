@@ -31,12 +31,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
 const mongodb_1 = require("mongodb");
 const dbConnection_1 = require("../db/dbConnection");
 const genericService_1 = require("./genericService");
 const dotenv = __importStar(require("dotenv"));
+const bcrypt_1 = __importDefault(require("bcrypt"));
 class UserService extends genericService_1.GenericService {
     constructor() {
         super();
@@ -50,45 +54,55 @@ class UserService extends genericService_1.GenericService {
             this.db = this.client.db(process.env.DB_NAME);
             this.collection.push(process.env.USER_COLLECTION);
             this.collection.push(process.env.LIGHT_USER_COLLECTION);
+            this.salt_rounds = process.env.SALT_ROUNDS != null ? parseInt(process.env.SALT_ROUNDS) : 10;
         });
     }
     createNewUser(user) {
         return __awaiter(this, void 0, void 0, function* () {
-            let new_user;
+            user.password = yield this.hashPassword(user.password);
             try {
-                new_user = yield this.db.collection(this.collection[0]).insertOne(user);
-                if (!new_user.acknowledged)
-                    return null;
-                yield this.createLightUser(user, new_user);
-                return new_user;
+                const userExists = yield this.db.collection(this.collection[0]).findOne({ cardId: user.cardId });
+                if (userExists != null)
+                    return { error: "User with same National ID number already exists." };
+                const light_user = yield this.createLightUser(user);
+                if (light_user == "") {
+                    return { error: "Database dose not response." };
+                }
+                user.lightUserId = light_user;
+                const new_user = yield this.db.collection(this.collection[0]).insertOne(user);
+                if (!new_user.acknowledged) {
+                    yield this.db.collection(this.collection[1]).deleteOne({ _id: new mongodb_1.ObjectId(light_user) });
+                    return { error: "Database dose not response." };
+                }
+                return { userId: new_user.upsertedId, lightUserId: light_user };
             }
             catch (_a) {
-                return null;
+                return { error: "Database dose not response." };
             }
         });
     }
-    createLightUser(createdUser, new_user_id) {
+    createLightUser(createdUser) {
         return __awaiter(this, void 0, void 0, function* () {
             let new_user;
             try {
                 const lightUser = {
-                    userId: new_user_id.insertedId,
-                    first_name: createdUser.first_name,
-                    last_name: createdUser.last_name,
+                    firstName: createdUser.firstName,
+                    lastName: createdUser.lastName,
                     email: createdUser.email,
                     phone: createdUser.phone,
                     createdIn: createdUser.createdIn
                 };
                 new_user = yield this.db.collection(this.collection[1]).insertOne(lightUser);
                 if (!new_user.acknowledged)
-                    throw new URIError();
+                    return "";
+                else
+                    return new_user.insertedId;
             }
             catch (_a) {
-                throw new Error();
+                return "";
             }
         });
     }
-    //prepsat
     getUserDataById(userId, collection) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
@@ -97,8 +111,36 @@ class UserService extends genericService_1.GenericService {
                 return result;
             }
             catch (e) {
-                return null;
+                return { error: "Database dose not response." };
             }
+        });
+    }
+    getUserDataByCardId(cardId, password) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const result = yield this.db.collection(this.collection[0]).findOne({ 'cardId': cardId });
+                if (!result)
+                    return { error: "Nor user exists with this National ID number." };
+                if (yield this.comparePassword(password, result.password)) {
+                    delete result.password;
+                    return result;
+                }
+                return { error: "Incorrect password." };
+            }
+            catch (e) {
+                return { error: "Database dose not response." };
+            }
+        });
+    }
+    hashPassword(password) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const salt = yield bcrypt_1.default.genSalt(this.salt_rounds);
+            return yield bcrypt_1.default.hash(password, salt);
+        });
+    }
+    comparePassword(password, hash) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield bcrypt_1.default.compare(password, hash);
         });
     }
 }

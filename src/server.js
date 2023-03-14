@@ -42,7 +42,8 @@ const userController_1 = require("./controller/userController");
 const userService_1 = require("./service/userService");
 const enumController_1 = require("./controller/enumController");
 const dotenv = __importStar(require("dotenv"));
-const imageController_1 = require("./controller/imageController");
+const tokenService_1 = require("./service/tokenService");
+// import { ImageController } from './controller/imageController';
 dotenv.config();
 class Server {
     constructor() {
@@ -51,12 +52,12 @@ class Server {
         this.app.use((0, cors_1.default)());
     }
     setControllers() {
-        const userController = new userController_1.UserController(new userService_1.UserService());
+        const userController = new userController_1.UserController(new userService_1.UserService(), new tokenService_1.TokenService());
         const enumControl = new enumController_1.EnumController();
-        const imageController = new imageController_1.ImageController();
+        // const imageController = new ImageController()
         this.app.use(userController.path, userController.router);
         this.app.use(enumControl.path, enumControl.router);
-        this.app.use(imageController.path, imageController.router);
+        // this.app.use(imageController.path,imageController.router)
     }
     start() {
         return __awaiter(this, void 0, void 0, function* () {

@@ -4,7 +4,8 @@ import {UserController} from "./controller/userController";
 import { UserService } from './service/userService';
 import { EnumController } from './controller/enumController';
 import * as dotenv from 'dotenv';
-import { ImageController } from './controller/imageController';
+import { TokenService } from './service/tokenService';
+// import { ImageController } from './controller/imageController';
 dotenv.config();
 
 export class Server{
@@ -15,12 +16,12 @@ export class Server{
         this.app.use(cors())
     }
     private setControllers(){
-        const userController = new UserController(new UserService())
+        const userController = new UserController(new UserService(),new TokenService())
         const enumControl = new EnumController()
-        const imageController = new ImageController()
+        // const imageController = new ImageController()
         this.app.use(userController.path,userController.router);
         this.app.use(enumControl.path,enumControl.router)
-        this.app.use(imageController.path,imageController.router)
+        // this.app.use(imageController.path,imageController.router)
     }
     async start(){
         this.setControllers()

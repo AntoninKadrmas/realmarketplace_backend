@@ -1,4 +1,4 @@
-import { Db, MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import { DBConnection } from "../db/dbConnection";
 import { TokenModel } from "../model/tokenModel";
 import * as dotenv from 'dotenv';
@@ -7,6 +7,7 @@ import { GenericService } from "./genericService";
 export class TokenService extends GenericService{
     constructor(){
         super()
+        this.connect().then()
     }
     override async connect(){
         dotenv.config();
@@ -23,16 +24,27 @@ export class TokenService extends GenericService{
         }
         return TokenService.instance;
     }
-    async createToken(userId:string):Promise<any>{
+    async createToken(userId:string,lightUserId:string):Promise<any>{
         try{
             const token:TokenModel = {
                 userId: userId,
+                lightUserId:lightUserId,
                 expirationTime: this.getActualValidTime()
             }
-            return await this.db.collection(this.collection[0]).insertOne(token)
+            const newTokenOrFind = await this.db.collection(this.collection[0]).findOneAndUpdate(
+                { "userId":userId , "lightUserId":lightUserId},
+                {$setOnInsert: token},
+                {returnOriginal: false,upsert: true,})
+            console.log("created new",newTokenOrFind);
+            if(newTokenOrFind.value!=null){
+                if(await this.tokenIsValid(newTokenOrFind.value))return newTokenOrFind.value._id
+                else return this.createToken(userId,lightUserId)
+            }
+            else return newTokenOrFind.lastErrorObject.upserted
         }
         catch(e){
-            return ""
+            console.log(e)
+            return {error:"Database dose not response. Can't create auth token."}
         }
     }
     async updateTokenByTokenId(tokenId:string):Promise<boolean>{
@@ -59,16 +71,18 @@ export class TokenService extends GenericService{
             return false
         }
     }
-    private async tokenIsValid(token:TokenModel):Promise<boolean>{        
-        const valid = token.expirationTime<=this.getActualValidTime()
+    private async tokenIsValid(token:TokenModel):Promise<boolean>{ 
+        const valid = token.expirationTime>=(new Date().getTime()+1800000)
         try{
             if(!valid) await this.db.collection(this.collection[0]).deleteOne({_id:new ObjectId(token._id)})
         }
         catch(e){}
+        console.log(token.expirationTime,(new Date().getTime()),valid);
+        
         return valid
     }
     private getActualValidTime():number{
-        const expirationTime:number = process.env.TOKEN_EXPIRATION_TIME!=null?parseInt(process.env.TOKEN_EXPIRATION_TIME):1800000
+        const expirationTime:number = !!process.env.TOKEN_EXPIRATION_TIME?parseInt(process.env.TOKEN_EXPIRATION_TIME):1800000
         return new Date().getTime()+expirationTime
     }
 }

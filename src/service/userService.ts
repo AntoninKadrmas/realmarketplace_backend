@@ -3,8 +3,12 @@ import { DBConnection } from "../db/dbConnection";
 import { LightUserModel, UserModel } from "../model/userModel";
 import { GenericService } from "./genericService";
 import * as dotenv from 'dotenv';
+import bcrypt from 'bcrypt';
+import { TokenService } from "./tokenService";
+
 
 export class UserService extends GenericService{
+    salt_rounds!:number
     constructor(){
         super()
         this.connect().then()
@@ -16,43 +20,45 @@ export class UserService extends GenericService{
         this.db = this.client.db(process.env.DB_NAME)
         this.collection.push(process.env.USER_COLLECTION)
         this.collection.push(process.env.LIGHT_USER_COLLECTION)
+        this.salt_rounds = process.env.SALT_ROUNDS!=null?parseInt(process.env.SALT_ROUNDS):10
     }
-    async createNewUser(user:UserModel):Promise<{_id:string}|{error:string}>{
-        let new_user;
+    async createNewUser(user:UserModel):Promise<{userId:string,lightUserId:string}|{error:string}>{
+        user.password = await this.hashPassword(user.password!)
         try{
-            new_user = await this.db.collection(process.env.USER_COLLECTION).update(
-                {
-                  cardId : user.cardId
-                },
-                 {
-                  $setOnInsert: user
-                 },
-                 {upsert: true}
-            )
-            if(!new_user.upsertedId)return {error:"User with same National ID number already exists."}
-            await this.createLightUser(user,new_user.upsertedId)
-            return {"_id":new_user.upsertedId}
+            const userExists = await this.db.collection(this.collection[0]).findOne({cardId : user.cardId})
+            if(userExists!=null)return {error:"User with same National ID number already exists."}
+            const light_user = await this.createLightUser(user)
+            if(light_user==""){
+                return {error:"Database dose not response."}    
+            }
+            user.lightUserId=light_user
+            const new_user = await this.db.collection(this.collection[0]).insertOne(user)
+            if(!new_user.acknowledged) {
+                await this.db.collection(this.collection[1]).deleteOne({_id:new ObjectId(light_user)})
+                return {error:"Database dose not response."}
+            }
+            return {userId:new_user.upsertedId,lightUserId:light_user}
         }
         catch{
             return {error:"Database dose not response."}
         }
     }
-    private async createLightUser(createdUser:UserModel,new_user_id:string):Promise<void>{
+    private async createLightUser(createdUser:UserModel):Promise<string>{
         let new_user;
         try{
             const lightUser:LightUserModel={
-                userId:new_user_id,
-                first_name: createdUser.first_name,
-                last_name: createdUser.last_name,
+                firstName: createdUser.firstName,   
+                lastName: createdUser.lastName,
                 email: createdUser.email,
                 phone: createdUser.phone,
                 createdIn: createdUser.createdIn
             }
             new_user = await this.db.collection(this.collection[1]).insertOne(lightUser)
-            if(!new_user.acknowledged)throw new URIError()
+            if(!new_user.acknowledged)return ""
+            else return new_user.insertedId
         }
         catch{
-            throw new Error()
+            return ""
         }
     }
     async getUserDataById(userId?:string,collection?:string):Promise<UserModel | {error:string}>{
@@ -64,13 +70,24 @@ export class UserService extends GenericService{
             return {error:"Database dose not response."}
         }
     }
-    async getUserDataByCardId(cardId?:string,collection?:string):Promise<UserModel | {error:string}>{
+    async getUserDataByCardId(cardId:string,password:string):Promise<UserModel | {error:string}>{
         try{
-            const result =  await this.db.collection(collection).findOne({'cardId':cardId})
-            console.log(result);
-            return result
+            const result:UserModel =  await this.db.collection(this.collection[0]).findOne({'cardId':cardId})
+            if(!result) return {error:"Nor user exists with this National ID number."}
+            if(await this.comparePassword(password,result.password!)){
+                delete result.password
+                return result
+            }
+            return {error:"Incorrect password."}
         }catch(e){
             return {error:"Database dose not response."}
         }
+    }
+    private async hashPassword(password:string):Promise<string>{
+        const salt = await bcrypt.genSalt(this.salt_rounds)
+        return await bcrypt.hash(password, salt)
+    }
+    private async comparePassword(password:string,hash:string):Promise<boolean>{
+        return await bcrypt.compare(password, hash)
     }
 }

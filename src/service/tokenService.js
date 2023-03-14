@@ -40,6 +40,7 @@ const genericService_1 = require("./genericService");
 class TokenService extends genericService_1.GenericService {
     constructor() {
         super();
+        this.connect().then();
     }
     connect() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -59,17 +60,28 @@ class TokenService extends genericService_1.GenericService {
             return TokenService.instance;
         });
     }
-    createToken(userId) {
+    createToken(userId, lightUserId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const token = {
                     userId: userId,
+                    lightUserId: lightUserId,
                     expirationTime: this.getActualValidTime()
                 };
-                return yield this.db.collection(this.collection[0]).insertOne(token);
+                const newTokenOrFind = yield this.db.collection(this.collection[0]).findOneAndUpdate({ "userId": userId, "lightUserId": lightUserId }, { $setOnInsert: token }, { returnOriginal: false, upsert: true, });
+                console.log("created new", newTokenOrFind);
+                if (newTokenOrFind.value != null) {
+                    if (yield this.tokenIsValid(newTokenOrFind.value))
+                        return newTokenOrFind.value._id;
+                    else
+                        return this.createToken(userId, lightUserId);
+                }
+                else
+                    return newTokenOrFind.lastErrorObject.upserted;
             }
             catch (e) {
-                return "";
+                console.log(e);
+                return { error: "Database dose not response. Can't create auth token." };
             }
         });
     }
@@ -99,17 +111,18 @@ class TokenService extends genericService_1.GenericService {
     }
     tokenIsValid(token) {
         return __awaiter(this, void 0, void 0, function* () {
-            const valid = token.expirationTime <= this.getActualValidTime();
+            const valid = token.expirationTime >= (new Date().getTime() + 1800000);
             try {
                 if (!valid)
                     yield this.db.collection(this.collection[0]).deleteOne({ _id: new mongodb_1.ObjectId(token._id) });
             }
             catch (e) { }
+            console.log(token.expirationTime, (new Date().getTime()), valid);
             return valid;
         });
     }
     getActualValidTime() {
-        const expirationTime = process.env.TOKEN_EXPIRATION_TIME != null ? parseInt(process.env.TOKEN_EXPIRATION_TIME) : 1800000;
+        const expirationTime = !!process.env.TOKEN_EXPIRATION_TIME ? parseInt(process.env.TOKEN_EXPIRATION_TIME) : 1800000;
         return new Date().getTime() + expirationTime;
     }
 }
