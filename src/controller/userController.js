@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserController = void 0;
 const express_1 = __importDefault(require("express"));
 const userModel_1 = require("../model/userModel");
+const bcrypt_1 = __importDefault(require("bcrypt"));
 require('dotenv').config();
 class UserController {
     constructor(userService) {
@@ -33,6 +34,7 @@ class UserController {
                 res.status(400).send({ error: "Body does not contains correct user model." });
             }
             user.createdIn = new Date();
+            user.password = yield this.hashPassword(user.password);
             this.userService.createNewUser(user).then((response) => {
                 if (response.hasOwnProperty("_id"))
                     res.status(200).send(response);
@@ -64,6 +66,18 @@ class UserController {
         this.router.post('/create', this.insertUser);
         this.router.get('/full/:id', this.getFullUserById);
         this.router.get('/light/:id', this.getLightUserById);
+    }
+    hashPassword(password) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const saltRounds = 10;
+            const salt = yield bcrypt_1.default.genSalt(saltRounds);
+            return yield bcrypt_1.default.hash(password, salt);
+        });
+    }
+    comparePassword(passowrd, hash) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield bcrypt_1.default.compare(passowrd, hash);
+        });
     }
 }
 exports.UserController = UserController;

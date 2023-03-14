@@ -52,13 +52,22 @@ export class UserService{
             throw new Error()
         }
     }
-    async getUserDataById(userId?:string,collection?:string):Promise<UserModel | null>{
+    async getUserDataById(userId?:string,collection?:string):Promise<UserModel | {error:string}>{
         try{    
             const _id = new ObjectId(userId)    
             const result =  await this.db.collection(collection).findOne({'_id':_id})
             return result
         }catch(e){     
-            return null
+            return {error:"Database dose not response."} 
+        }
+    }
+    async getUserDataByCardId(cardId?:string,collection?:string):Promise<UserModel | {error:string}>{
+        try{    
+            const result =  await this.db.collection(collection).findOne({'cardId':cardId})
+            console.log(result);
+            return result
+        }catch(e){     
+            return {error:"Database dose not response."} 
         }
     }
 }
