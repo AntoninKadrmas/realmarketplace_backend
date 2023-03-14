@@ -29,7 +29,7 @@ export class UserController implements GenericController{
             if(createUserResponse.hasOwnProperty("userId")&&createUserResponse.hasOwnProperty("lightUserId")){
                 const userIds:{userId:string,lightUserId:string} = createUserResponse as {userId:string,lightUserId:string}
                 const token = await this.tokenService.createToken(userIds.userId,userIds.lightUserId)
-                if(!token.hasOwnProperty("error"))return res.status(200).send({"token":token})
+                if(!token.hasOwnProperty("error"))return res.status(200).send(token)
                 else res.status(400).send(token)
             }
             else res.status(400).send(createUserResponse)
@@ -48,7 +48,7 @@ export class UserController implements GenericController{
             else{
                 const tempUserResponse:UserModel = userResponse as UserModel
                 const token = await this.tokenService.createToken(tempUserResponse._id!,tempUserResponse.lightUserId!)
-                if(!token.hasOwnProperty("error"))return res.status(200).send({"token":token})
+                if(!token.hasOwnProperty("error"))return res.status(200).send(token)
                 res.status(400).send(token)
             }
         }
