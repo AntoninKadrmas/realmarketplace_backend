@@ -72,12 +72,12 @@ class TokenService extends genericService_1.GenericService {
                 console.log("created new", newTokenOrFind);
                 if (newTokenOrFind.value != null) {
                     if (yield this.tokenIsValid(newTokenOrFind.value))
-                        return newTokenOrFind.value._id;
+                        return { token: newTokenOrFind.value._id, expirationTime: token.expirationTime };
                     else
                         return this.createToken(userId, lightUserId);
                 }
                 else
-                    return newTokenOrFind.lastErrorObject.upserted;
+                    return { token: newTokenOrFind.lastErrorObject.upserted, expirationTime: token.expirationTime };
             }
             catch (e) {
                 console.log(e);

@@ -37,10 +37,10 @@ export class TokenService extends GenericService{
                 {returnOriginal: false,upsert: true,})
             console.log("created new",newTokenOrFind);
             if(newTokenOrFind.value!=null){
-                if(await this.tokenIsValid(newTokenOrFind.value))return newTokenOrFind.value._id
+                if(await this.tokenIsValid(newTokenOrFind.value))return {token:newTokenOrFind.value._id,expirationTime:token.expirationTime}
                 else return this.createToken(userId,lightUserId)
             }
-            else return newTokenOrFind.lastErrorObject.upserted
+            else return {token:newTokenOrFind.lastErrorObject.upserted,expirationTime:token.expirationTime}
         }
         catch(e){
             console.log(e)
