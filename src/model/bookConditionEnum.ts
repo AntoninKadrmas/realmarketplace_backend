@@ -4,11 +4,3 @@ export enum BookConditionEnum {
     USED = 'Used',
     DAMAGED = 'Damaged'
 }
-export class BookCondition{
-  public static data = [
-    'New',
-    "Like New",
-    'Used',
-    'Damaged'
-  ]
-}

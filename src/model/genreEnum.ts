@@ -56,4 +56,11 @@ export enum GenreFictionEnum{
     SPORT_AND_LEISURE='Sports and leisure',
     TRAVEL='Travel',
   }
-  
+  export class GenreItem{
+    name!:string;
+    type!:GenreType;
+  }
+  export enum GenreType{
+    NON_FICTION="Non Fiction",
+    FICTION="Fiction"
+  }

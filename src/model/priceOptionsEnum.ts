@@ -7,13 +7,3 @@ export enum PriceOptionsEnum{
     FOR_RIDE = "For Ride",
     OFFER = "Offer",
 }   
-export class PriceOption{
-    public static data = [
-        "Exact Price",
-        "Free",
-        "In Text",
-        "On Argument",
-        "For Ride",
-        "Offer",
-    ]
-}

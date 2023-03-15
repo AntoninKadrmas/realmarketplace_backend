@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BookCondition = exports.BookConditionEnum = void 0;
+exports.BookConditionEnum = void 0;
 var BookConditionEnum;
 (function (BookConditionEnum) {
     BookConditionEnum["NEW"] = "New";
@@ -8,12 +8,3 @@ var BookConditionEnum;
     BookConditionEnum["USED"] = "Used";
     BookConditionEnum["DAMAGED"] = "Damaged";
 })(BookConditionEnum = exports.BookConditionEnum || (exports.BookConditionEnum = {}));
-class BookCondition {
-}
-exports.BookCondition = BookCondition;
-BookCondition.data = [
-    'New',
-    "Like New",
-    'Used',
-    'Damaged'
-];

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GenreNonFictionEnum = exports.GenreFictionEnum = void 0;
+exports.GenreType = exports.GenreItem = exports.GenreNonFictionEnum = exports.GenreFictionEnum = void 0;
 var GenreFictionEnum;
 (function (GenreFictionEnum) {
     GenreFictionEnum["ACTION_AND_ADVETURE"] = "Action and adventure";
@@ -61,3 +61,11 @@ var GenreNonFictionEnum;
     GenreNonFictionEnum["SPORT_AND_LEISURE"] = "Sports and leisure";
     GenreNonFictionEnum["TRAVEL"] = "Travel";
 })(GenreNonFictionEnum = exports.GenreNonFictionEnum || (exports.GenreNonFictionEnum = {}));
+class GenreItem {
+}
+exports.GenreItem = GenreItem;
+var GenreType;
+(function (GenreType) {
+    GenreType["NON_FICTION"] = "Non Fiction";
+    GenreType["FICTION"] = "Fiction";
+})(GenreType = exports.GenreType || (exports.GenreType = {}));

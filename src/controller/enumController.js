@@ -21,24 +21,47 @@ class EnumController {
     constructor() {
         this.path = "/enum";
         this.router = express_1.default.Router();
+        this.enumPriceOptionList = [];
+        this.enumConditionOptionList = [];
+        this.enumGenreOptionList = [];
         this.getBookCondition = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            res.status(200).send(bookConditionEnum_1.BookCondition.data);
+            res.status(200).send(this.enumPriceOptionList);
         });
-        this.getFiction = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            res.status(200).send(genreEnum_1.GenreFictionEnum);
-        });
-        this.getNonFiction = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            res.status(200).send(genreEnum_1.GenreNonFictionEnum);
+        this.getGenre = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            res.status(200).send(this.enumGenreOptionList);
         });
         this.getPriceOption = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            res.status(200).send(priceOptionsEnum_1.PriceOption.data);
+            res.status(200).send(this.enumConditionOptionList);
         });
         this.initRouter();
+        const genreFictionEnum = Object.entries(genreEnum_1.GenreFictionEnum).map(([key, value]) => ({ key, value }));
+        const genreNonFictionEnum = Object.entries(genreEnum_1.GenreNonFictionEnum).map(([key, value]) => ({ key, value }));
+        const priceOptionEnum = Object.entries(priceOptionsEnum_1.PriceOptionsEnum).map(([key, value]) => ({ key, value }));
+        const conditionEnum = Object.entries(bookConditionEnum_1.BookConditionEnum).map(([key, value]) => ({ key, value }));
+        genreFictionEnum.forEach((element) => {
+            const genreItem = {
+                name: element.value,
+                type: genreEnum_1.GenreType.FICTION
+            };
+            this.enumGenreOptionList.push(genreItem);
+        });
+        genreNonFictionEnum.forEach((element) => {
+            const genreItem = {
+                name: element.value,
+                type: genreEnum_1.GenreType.NON_FICTION
+            };
+            this.enumGenreOptionList.push(genreItem);
+        });
+        priceOptionEnum.forEach((element) => {
+            this.enumPriceOptionList.push(element.value);
+        });
+        conditionEnum.forEach((element) => {
+            this.enumConditionOptionList.push(element.value);
+        });
     }
     initRouter() {
         this.router.get('/book-condition', this.getBookCondition);
-        // this.router.get('/genre/fiction',this.getFiction)
-        // this.router.get('/genre/non-fiction',this.getNonFiction)
+        this.router.get('/genre-type', this.getGenre);
         this.router.get('/price-option', this.getPriceOption);
     }
 }
