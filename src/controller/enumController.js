@@ -25,13 +25,13 @@ class EnumController {
         this.enumConditionOptionList = [];
         this.enumGenreOptionList = [];
         this.getBookCondition = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            res.status(200).send(this.enumPriceOptionList);
+            res.status(200).send(this.enumConditionOptionList);
         });
         this.getGenre = (req, res) => __awaiter(this, void 0, void 0, function* () {
             res.status(200).send(this.enumGenreOptionList);
         });
         this.getPriceOption = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            res.status(200).send(this.enumConditionOptionList);
+            res.status(200).send(this.enumPriceOptionList);
         });
         this.initRouter();
         const genreFictionEnum = Object.entries(genreEnum_1.GenreFictionEnum).map(([key, value]) => ({ key, value }));

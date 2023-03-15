@@ -44,12 +44,12 @@ export class EnumController implements GenericController{
         this.router.get('/price-option',this.getPriceOption)
     }
     getBookCondition: RequestHandler = async (req, res) => {
-        res.status(200).send(this.enumPriceOptionList)
+        res.status(200).send(this.enumConditionOptionList)
     }
     getGenre: RequestHandler = async (req, res) => {
         res.status(200).send(this.enumGenreOptionList)
     }
     getPriceOption: RequestHandler = async (req, res) => {
-        res.status(200).send(this.enumConditionOptionList)
+        res.status(200).send(this.enumPriceOptionList)
     }
 }
