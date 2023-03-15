@@ -1,9 +1,7 @@
 export enum PriceOptionsEnum{
     EXACT_PRICE = "Exact Price",
-    APPROXIMATE_PRICE="Approximate Price",
     FREE = "Free",
     IN_TEXT = "In Text",
-    ON_ARGUMENT = "On Argument",
+    BY_AGREEMENT = "By Agreement",
     FOR_RIDE = "For Ride",
-    OFFER = "Offer",
 }   
