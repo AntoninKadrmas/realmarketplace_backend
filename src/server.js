@@ -38,6 +38,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Server = void 0;
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
+const fs_1 = __importDefault(require("fs"));
+const util_1 = __importDefault(require("util"));
 const userController_1 = require("./controller/userController");
 const userService_1 = require("./service/userService");
 const enumController_1 = require("./controller/enumController");
@@ -46,12 +48,16 @@ const tokenService_1 = require("./service/tokenService");
 const advertService_1 = require("./service/advertService");
 const advertController_1 = require("./controller/advertController");
 // import { ImageController } from './controller/imageController';
-dotenv.config();
 class Server {
     constructor() {
+        dotenv.config();
         this.app = (0, express_1.default)();
         this.app.use(require('body-parser').json());
         this.app.use((0, cors_1.default)());
+        var log_file = fs_1.default.createWriteStream(__dirname + '/debug.log', { flags: 'a' });
+        console.log = function (d) {
+            log_file.write(util_1.default.format(d) + '\n');
+        };
     }
     setControllers() {
         const userController = new userController_1.UserController(new userService_1.UserService(), new tokenService_1.TokenService());

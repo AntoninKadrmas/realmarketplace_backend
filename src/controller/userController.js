@@ -67,6 +67,7 @@ class UserController {
                     res.status(400).send(createUserResponse);
             }
             catch (e) {
+                console.log(e);
                 res.status(400).send({ error: "Body does not contains correct user model." });
             }
         });

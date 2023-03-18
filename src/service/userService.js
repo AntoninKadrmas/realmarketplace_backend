@@ -114,6 +114,7 @@ class UserService extends genericService_1.GenericService {
                 return result;
             }
             catch (e) {
+                console.log(e);
                 return { error: "Database dose not response." };
             }
         });
@@ -131,6 +132,7 @@ class UserService extends genericService_1.GenericService {
                 return { error: "Incorrect password." };
             }
             catch (e) {
+                console.log(e);
                 return { error: "Database dose not response." };
             }
         });

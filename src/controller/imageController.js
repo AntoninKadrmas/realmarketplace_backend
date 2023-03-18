@@ -63,7 +63,8 @@ class ImageController {
                         }
                     }
                 }
-                catch (_a) {
+                catch (e) {
+                    console.log(e);
                     res.status(401).send();
                 }
             }
@@ -72,8 +73,8 @@ class ImageController {
             res.status(200).send();
         });
         this.uploadImagePrivate = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            var _b;
-            const imageUrl = `${this.path}/${(_b = req.file) === null || _b === void 0 ? void 0 : _b.filename}`;
+            var _a;
+            const imageUrl = `${this.path}/${(_a = req.file) === null || _a === void 0 ? void 0 : _a.filename}`;
             console.log(imageUrl);
         });
         this.initRouter();

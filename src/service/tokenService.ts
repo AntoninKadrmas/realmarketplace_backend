@@ -62,6 +62,7 @@ export class TokenService extends GenericService{
             return await this.tokenIsValid(token)
         }
         catch(e){
+            console.log(e)
             return false
         }
     }
@@ -70,7 +71,9 @@ export class TokenService extends GenericService{
         try{
             if(!valid) await this.db.collection(this.collection[0]).deleteOne({_id:new ObjectId(token._id)})
         }
-        catch(e){}
+        catch(e){            
+            console.log(e)
+        }
         console.log(token.expirationTime,(new Date().getTime()),valid);
         
         return valid

@@ -101,6 +101,7 @@ class TokenService extends genericService_1.GenericService {
                 return yield this.tokenIsValid(token);
             }
             catch (e) {
+                console.log(e);
                 return false;
             }
         });
@@ -112,7 +113,9 @@ class TokenService extends genericService_1.GenericService {
                 if (!valid)
                     yield this.db.collection(this.collection[0]).deleteOne({ _id: new mongodb_1.ObjectId(token._id) });
             }
-            catch (e) { }
+            catch (e) {
+                console.log(e);
+            }
             console.log(token.expirationTime, (new Date().getTime()), valid);
             return valid;
         });

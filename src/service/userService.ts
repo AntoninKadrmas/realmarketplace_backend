@@ -67,7 +67,8 @@ export class UserService extends GenericService{
             const _id = new ObjectId(userId)    
             const result =  await this.db.collection(collection).findOne({'_id':_id})
             return result
-        }catch(e){     
+        }catch(e){   
+            console.log(e)  
             return {error:"Database dose not response."}
         }
     }
@@ -81,6 +82,7 @@ export class UserService extends GenericService{
             }
             return {error:"Incorrect password."}
         }catch(e){
+            console.log(e)
             return {error:"Database dose not response."}
         }
     }

@@ -24,6 +24,7 @@ export class AdvertController implements GenericController{
                 else res.status(200).send(response)
             }
         }catch(e){
+            console.log(e)
             res.status(400).send({error:"Body does not contains correct advert information's."})
         }
 
