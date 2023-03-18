@@ -31,47 +31,38 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Server = void 0;
-const express_1 = __importDefault(require("express"));
-const cors_1 = __importDefault(require("cors"));
-const userController_1 = require("./controller/userController");
-const userService_1 = require("./service/userService");
-const enumController_1 = require("./controller/enumController");
+exports.AdvertService = void 0;
+const genericService_1 = require("./genericService");
 const dotenv = __importStar(require("dotenv"));
-const tokenService_1 = require("./service/tokenService");
-const advertService_1 = require("./service/advertService");
-const advertController_1 = require("./controller/advertController");
-// import { ImageController } from './controller/imageController';
-dotenv.config();
-class Server {
+const dbConnection_1 = require("../db/dbConnection");
+class AdvertService extends genericService_1.GenericService {
     constructor() {
-        this.app = (0, express_1.default)();
-        this.app.use(require('body-parser').json());
-        this.app.use((0, cors_1.default)());
+        super();
+        this.connect().then();
     }
-    setControllers() {
-        const userController = new userController_1.UserController(new userService_1.UserService(), new tokenService_1.TokenService());
-        const enumControl = new enumController_1.EnumController();
-        const advertController = new advertController_1.AdvertController(new advertService_1.AdvertService());
-        // const imageController = new ImageController()
-        this.app.use(userController.path, userController.router);
-        this.app.use(enumControl.path, enumControl.router);
-        this.app.use(advertController.path, advertController.router);
-        // this.app.use(imageController.path,imageController.router)
-    }
-    start() {
+    connect() {
         return __awaiter(this, void 0, void 0, function* () {
-            this.setControllers();
-            this.app.listen(process.env.PORT, () => {
-                console.log('The application is listening '
-                    + 'on port http://localhost:' + process.env.PORT);
-            });
+            dotenv.config();
+            const instance = dbConnection_1.DBConnection.getInstance();
+            this.client = yield instance.getDbClient();
+            this.collection.push(process.env.ADVERT_COLLECTION);
+            this.db = this.client.db(process.env.DB_NAME);
+        });
+    }
+    createAdvert(advert) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const result = yield this.db.collection(this.collection[0]).insertOne(advert);
+                if (!result.acknowledged)
+                    return { error: "Cant create advert." };
+                else
+                    return { _id: result.insertedId };
+            }
+            catch (e) {
+                return { error: "Database dose not response." };
+            }
         });
     }
 }
-exports.Server = Server;
-new Server().start();
+exports.AdvertService = AdvertService;

@@ -1,16 +1,17 @@
 import { BookConditionEnum } from "./bookConditionEnum";
-import { GenreFictionEnum, GenreNonFictionEnum } from "./genreEnum";
+import { GenreFictionEnum, GenreNonFictionEnum, GenreType } from "./genreEnum";
 import { PriceOptionsEnum } from "./priceOptionsEnum";
 
 export class AdvertModel{
-    userId!:string;
+    lightUserId?:string;
     title!:string;
     description!:string;
     createdIn!:Date;
     condition!:BookConditionEnum;
     price!:string;
     priceOption!:PriceOptionsEnum;
-    genre!:GenreFictionEnum|GenreNonFictionEnum;
+    genreName!:GenreFictionEnum|GenreNonFictionEnum;
+    genreType!:GenreType;
     place?:string;
     mainImage?:string;
     imagesUrls?:[string];

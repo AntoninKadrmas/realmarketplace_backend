@@ -1,10 +1,9 @@
-import { Db, MongoClient, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import { DBConnection } from "../db/dbConnection";
 import { LightUserModel, UserModel } from "../model/userModel";
 import { GenericService } from "./genericService";
 import * as dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
-import { TokenService } from "./tokenService";
 
 
 export class UserService extends GenericService{
