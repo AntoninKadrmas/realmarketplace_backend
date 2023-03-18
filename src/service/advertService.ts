@@ -21,6 +21,7 @@ export class AdvertService extends GenericService{
             if(!result.acknowledged)return {error:"Cant create advert."}
             else return {_id:result.insertedId}
         }catch(e){
+            console.log(e)
             return {error:"Database dose not response."}
         }
     }

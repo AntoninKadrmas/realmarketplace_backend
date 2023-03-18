@@ -60,6 +60,7 @@ class AdvertService extends genericService_1.GenericService {
                     return { _id: result.insertedId };
             }
             catch (e) {
+                console.log(e);
                 return { error: "Database dose not response." };
             }
         });
