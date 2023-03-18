@@ -14,29 +14,30 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdvertController = void 0;
 const express_1 = __importDefault(require("express"));
-const advertModel_1 = require("../model/advertModel");
 class AdvertController {
     constructor(advertService) {
         this.advertService = advertService;
         this.path = "/advert";
         this.router = express_1.default.Router();
         this.createAdvert = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            if (req.body == null)
-                res.status(400).send({ error: "Body does not contains advert information's" });
             let advertModel;
             try {
-                advertModel = req.body;
+                if (req.body == null)
+                    res.status(400).send({ error: "Body does not contains advert information's" });
+                else {
+                    advertModel = req.body;
+                    const response = yield this.advertService.createAdvert(advertModel);
+                    if (response.hasOwnProperty("error"))
+                        res.status(400).send(response);
+                    else
+                        res.status(200).send(response);
+                }
             }
             catch (e) {
-                advertModel = new advertModel_1.AdvertModel();
                 res.status(400).send({ error: "Body does not contains correct advert information's." });
             }
-            const response = yield this.advertService.createAdvert(advertModel);
-            if (!response.hasOwnProperty("error"))
-                res.status(400).send(response);
-            else
-                res.status(200).send(response);
         });
+        this.initRouter();
     }
     initRouter() {
         this.router.post("/create", this.createAdvert);
