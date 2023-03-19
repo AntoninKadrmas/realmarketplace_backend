@@ -60,6 +60,7 @@ class ImageController {
                         }
                         else {
                             const imageUrl = `${this.path}/${file.filename}`;
+                            console.log(imageUrl);
                         }
                     }
                 }
@@ -82,8 +83,8 @@ class ImageController {
     initRouter() {
         const upload_public = new imageMiddleware_1.ImageMiddleWare().getStorage(true);
         const upload_private = new imageMiddleware_1.ImageMiddleWare().getStorage(false);
-        this.router.post('/public', upload_public.array('uploaded_file', 10), this.uploadImagePublic);
-        this.router.post('/private', upload_private.array('uploaded_file', 10), this.uploadImagePrivate);
+        this.router.post('/public', upload_public.array('uploaded_file', 5), this.uploadImagePublic);
+        this.router.post('/private', upload_private.array('uploaded_file', 5), this.uploadImagePrivate);
         this.router.use(express_1.default.static(path.join(__dirname.split('src')[0], process.env.IMAGE_PUBLIC)));
     }
 }
