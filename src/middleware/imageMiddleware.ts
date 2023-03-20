@@ -12,6 +12,7 @@ export class ImageMiddleWare{
     public getStorage(publicFolder:boolean) {
         return multer({
             fileFilter(req,file,callback){
+                console.log(file.originalname,file.originalname.match(/\.(png|jpg|jpeg)$/))
                 if(!file.originalname.match(/\.(png|jpg|jpeg)$/)){
                     return  callback(new Error('Image is in bad format.'))
                 }
@@ -28,6 +29,7 @@ export class ImageMiddleWare{
                     callback(null,useFolder)
                 },
                 filename:(req,file,callback)=>{
+                    console.log(file)
                     const extension = this.type[file.mimetype.toString()]
                     callback(null,`${uuidv4()}_${new Date().getTime()}.${extension}`)
                 }
