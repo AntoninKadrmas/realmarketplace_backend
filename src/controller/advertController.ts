@@ -20,7 +20,6 @@ export class AdvertController implements GenericController{
     createAdvert: RequestHandler = async (req, res) => {
         let advertModel:AdvertModel;
         let error =false
-        console.log(req.body)
         if(req.files==undefined)res.status(401).send()
         else{
             try{
