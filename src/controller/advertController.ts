@@ -20,6 +20,7 @@ export class AdvertController implements GenericController{
     createAdvert: RequestHandler = async (req, res) => {
         let advertModel:AdvertModel;
         let error =false
+        console.log(req.body)
         if(req.files==undefined)res.status(401).send()
         else{
             try{
@@ -36,7 +37,7 @@ export class AdvertController implements GenericController{
                 }
                 if(req.body==null)res.status(400).send({error:"Body does not contains advert information's"})
                 else{
-                    advertModel = req.body
+                    advertModel = req.body  
                     const response = await this.advertService.createAdvert(advertModel)
                     if(response.hasOwnProperty("error"))res.status(400).send(response)
                     else res.status(200).send(response)
