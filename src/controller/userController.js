@@ -74,27 +74,22 @@ class UserController {
         });
         this.userLogin = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
-                if (req.query.email == null || req.query.password == null) {
-                    res.status(400).send({ error: "Body does not contains user login model." });
+                let password = req.headers.authorization;
+                if (password == null) {
+                    res.status(400).send("Incorrect request.");
                 }
                 else {
-                    let password = req.headers.authorization;
-                    if (password == null) {
-                        res.status(400).send("Incorrect request.");
-                    }
+                    console.log(new Buffer(password.split(" ")[1], 'base64').toString());
+                    const userResponse = yield this.userService.getUserDataByEmail("", "");
+                    if (userResponse.hasOwnProperty("error"))
+                        res.status(400).send(userResponse);
                     else {
-                        console.log(new Buffer(password.split(" ")[1], 'base64').toString());
-                        const userResponse = yield this.userService.getUserDataByEmail("", "");
-                        if (userResponse.hasOwnProperty("error"))
-                            res.status(400).send(userResponse);
-                        else {
-                            const tempUserResponse = userResponse;
-                            const token = yield this.tokenService.createToken(tempUserResponse._id);
-                            if (!token.hasOwnProperty("error"))
-                                return res.status(200).send({ "token": token });
-                            else
-                                res.status(400).send(token);
-                        }
+                        const tempUserResponse = userResponse;
+                        const token = yield this.tokenService.createToken(tempUserResponse._id);
+                        if (!token.hasOwnProperty("error"))
+                            return res.status(200).send({ "token": token });
+                        else
+                            res.status(400).send(token);
                     }
                 }
             }

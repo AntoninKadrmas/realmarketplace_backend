@@ -41,20 +41,17 @@ export class UserController implements GenericController{
     }
     userLogin: RequestHandler = async (req, res) => {
         try{
-            if(req.query.email==null||req.query.password==null){res.status(400).send({error:"Body does not contains user login model."})}
+            let password = req.headers.authorization
+            if(password==null){res.status(400).send("Incorrect request.")}
             else{
-                let password = req.headers.authorization
-                if(password==null){res.status(400).send("Incorrect request.")}
+                console.log(new Buffer(password.split(" ")[1], 'base64').toString())
+                const userResponse:UserModel | {error:string} = await this.userService.getUserDataByEmail("","")
+                if(userResponse.hasOwnProperty("error"))res.status(400).send(userResponse)
                 else{
-                    console.log(new Buffer(password.split(" ")[1], 'base64').toString())
-                    const userResponse:UserModel | {error:string} = await this.userService.getUserDataByEmail("","")
-                    if(userResponse.hasOwnProperty("error"))res.status(400).send(userResponse)
-                    else{
-                        const tempUserResponse:UserModel = userResponse as UserModel
-                        const token = await this.tokenService.createToken(tempUserResponse._id!)
-                        if(!token.hasOwnProperty("error"))return res.status(200).send({"token":token})
-                        else res.status(400).send(token)
-                    }
+                    const tempUserResponse:UserModel = userResponse as UserModel
+                    const token = await this.tokenService.createToken(tempUserResponse._id!)
+                    if(!token.hasOwnProperty("error"))return res.status(200).send({"token":token})
+                    else res.status(400).send(token)
                 }
             }
         }
