@@ -22,39 +22,39 @@ class AdvertController {
         this.path = "/advert";
         this.router = express_1.default.Router();
         this.createAdvert = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            let advertModel;
-            let error = false;
-            console.log(req.body.ahoj);
-            if (req.files == undefined)
-                res.status(401).send();
-            else {
-                try {
+            var _a;
+            try {
+                if (req.body == null)
+                    res.status(400).send({ error: "Body does not contains advert information's" });
+                else {
+                    console.log(req.body);
+                    const advert = req.body;
+                    advert.createdIn = new Date();
+                    let counter = 0;
                     //@ts-ignore 
                     for (let file of req.files) {
                         const dirUrl = __dirname.split('src')[0] + "public/" + file.filename;
-                        if (!fs_1.default.existsSync(dirUrl)) {
-                            error = true;
-                        }
+                        if (!fs_1.default.existsSync(dirUrl)) { }
                         else {
                             const imageUrl = `${this.path}/${file.filename}`;
-                            console.log(imageUrl);
+                            if (counter == 0)
+                                advert.mainImage = imageUrl;
+                            else
+                                (_a = advert.imagesUrls) === null || _a === void 0 ? void 0 : _a.push(imageUrl);
+                            counter++;
                         }
                     }
-                    if (req.body == null)
-                        res.status(400).send({ error: "Body does not contains advert information's" });
-                    else {
-                        advertModel = req.body;
-                        const response = yield this.advertService.createAdvert(advertModel);
-                        if (response.hasOwnProperty("error"))
-                            res.status(400).send(response);
-                        else
-                            res.status(200).send(response);
-                    }
+                    console.log(advert);
+                    const response = yield this.advertService.createAdvert(advert);
+                    if (response.hasOwnProperty("error"))
+                        res.status(400).send(response);
+                    else
+                        res.status(200).send(response);
                 }
-                catch (e) {
-                    console.log(e);
-                    res.status(400).send();
-                }
+            }
+            catch (e) {
+                console.log(e);
+                res.status(400).send();
             }
         });
         this.initRouter();

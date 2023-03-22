@@ -21,6 +21,7 @@ export class AdvertController implements GenericController{
         try{
             if(req.body==null)res.status(400).send({error:"Body does not contains advert information's"})
             else{
+                console.log(req.body)
                 const advert:AdvertModel = req.body as AdvertModel
                 advert.createdIn = new Date()
                 let counter = 0;
@@ -35,6 +36,7 @@ export class AdvertController implements GenericController{
                         counter++
                     }
                 }
+                console.log(advert)
                 const response = await this.advertService.createAdvert(advert)
                 if(response.hasOwnProperty("error"))res.status(400).send(response)
                 else res.status(200).send(response)
