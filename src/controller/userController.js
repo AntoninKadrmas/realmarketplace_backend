@@ -74,12 +74,15 @@ class UserController {
         });
         this.userLogin = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
-                let password = req.headers.authorization;
-                if (password == null) {
+                let loadCredential = req.headers.authorization;
+                if (loadCredential == null) {
                     res.status(400).send("Incorrect request.");
                 }
                 else {
-                    console.log(new Buffer(password.split(" ")[1], 'base64').toString());
+                    const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString();
+                    const phone = credentials.substring(0, credentials.indexOf(':'));
+                    const password = credentials.substring(credentials.indexOf(':') + 1, credentials.length);
+                    console.log(phone, password);
                     const userResponse = yield this.userService.getUserDataByEmail("", "");
                     if (userResponse.hasOwnProperty("error"))
                         res.status(400).send(userResponse);

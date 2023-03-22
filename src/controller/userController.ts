@@ -41,10 +41,13 @@ export class UserController implements GenericController{
     }
     userLogin: RequestHandler = async (req, res) => {
         try{
-            let password = req.headers.authorization
-            if(password==null){res.status(400).send("Incorrect request.")}
+            let loadCredential = req.headers.authorization
+            if(loadCredential==null){res.status(400).send("Incorrect request.")}
             else{
-                console.log(new Buffer(password.split(" ")[1], 'base64').toString())
+                const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString()
+                const phone = credentials.substring(0,credentials.indexOf(':'))
+                const password = credentials.substring(credentials.indexOf(':')+1,credentials.length)
+                console.log(phone,password);
                 const userResponse:UserModel | {error:string} = await this.userService.getUserDataByEmail("","")
                 if(userResponse.hasOwnProperty("error"))res.status(400).send(userResponse)
                 else{
