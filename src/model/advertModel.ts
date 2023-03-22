@@ -5,6 +5,7 @@ import { PriceOptionsEnum } from "./priceOptionsEnum";
 export class AdvertModel{
     userId?:string;
     title!:string;
+    author!:string;
     description!:string;
     condition!:BookConditionEnum;
     price!:string;

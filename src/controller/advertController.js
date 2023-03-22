@@ -83,11 +83,22 @@ class AdvertController {
                 res.status(400).send();
             }
         });
+        this.getAdvert = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const adverts = yield this.advertService.getAdvert();
+                res.status(200).send(adverts);
+            }
+            catch (e) {
+                console.log(e);
+                res.status(400).send();
+            }
+        });
         this.initRouter();
     }
     initRouter() {
         const upload_public = new imageMiddleware_1.ImageMiddleWare().getStorage();
         this.router.post("/create", upload_public.array('uploaded_file', 5), this.createAdvert);
+        this.router.get("/all", this.getAdvert);
         this.router.use(express_1.default.static(path_1.default.join(__dirname.split('src')[0], process.env.IMAGE_PUBLIC)));
     }
 }

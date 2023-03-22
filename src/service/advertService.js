@@ -65,5 +65,17 @@ class AdvertService extends genericService_1.GenericService {
             }
         });
     }
+    getAdvert() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const result = yield this.db.collection(this.collection[0]).find({}).toArray();
+                return result;
+            }
+            catch (e) {
+                console.log(e);
+                return { error: "Database dose not response." };
+            }
+        });
+    }
 }
 exports.AdvertService = AdvertService;

@@ -55,7 +55,7 @@ class Server {
         this.app.use((0, cors_1.default)());
         var log_file = fs_1.default.createWriteStream(__dirname + '/debug.log', { flags: 'a' });
         console.log = function (d) {
-            log_file.write(util_1.default.format(d) + '\n');
+            log_file.write(`[${new Date()}] ${util_1.default.format(d) + '\n'}`);
         };
     }
     setControllers() {

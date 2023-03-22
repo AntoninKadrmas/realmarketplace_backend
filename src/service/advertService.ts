@@ -26,4 +26,13 @@ export class AdvertService extends GenericService{
             return {error:"Database dose not response."}
         }
     }
+    async getAdvert():Promise<AdvertModel[]|{error:string}>{
+        try{
+            const result = await this.db.collection(this.collection[0]).find({}).toArray();
+            return result
+        }catch(e){
+            console.log(e)
+            return {error:"Database dose not response."}
+        }
+    }
 }

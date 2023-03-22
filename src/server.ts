@@ -18,7 +18,7 @@ export class Server{
         this.app.use(cors())
         var log_file = fs.createWriteStream(__dirname + '/debug.log', {flags : 'a'});
         console.log = function(d) {
-            log_file.write(util.format(d) + '\n');
+            log_file.write(`[${new Date()}] ${util.format(d) + '\n'}`);
         };
     }
     private setControllers(){
