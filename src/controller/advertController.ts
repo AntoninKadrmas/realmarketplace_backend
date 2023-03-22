@@ -24,6 +24,7 @@ export class AdvertController implements GenericController{
                 console.log(req.body)
                 const advert:AdvertModel = req.body as AdvertModel
                 advert.createdIn = new Date()
+                advert.imagesUrls = []
                 let counter = 0;
                 //@ts-ignore 
                 for(let file of req.files){
@@ -32,7 +33,7 @@ export class AdvertController implements GenericController{
                     else{
                         const imageUrl = `${this.path}/${file.filename}`
                         if(counter==0) advert.mainImage = imageUrl
-                        else advert.imagesUrls?.push(imageUrl)
+                        advert.imagesUrls?.push(imageUrl)
                         counter++
                     }
                 }

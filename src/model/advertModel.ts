@@ -14,5 +14,5 @@ export class AdvertModel{
     place?:string;
     createdIn!:Date;
     mainImage?:string;
-    imagesUrls?:[string];
+    imagesUrls?:string[];
 }

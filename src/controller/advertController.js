@@ -30,6 +30,7 @@ class AdvertController {
                     console.log(req.body);
                     const advert = req.body;
                     advert.createdIn = new Date();
+                    advert.imagesUrls = [];
                     let counter = 0;
                     //@ts-ignore 
                     for (let file of req.files) {
@@ -39,8 +40,7 @@ class AdvertController {
                             const imageUrl = `${this.path}/${file.filename}`;
                             if (counter == 0)
                                 advert.mainImage = imageUrl;
-                            else
-                                (_a = advert.imagesUrls) === null || _a === void 0 ? void 0 : _a.push(imageUrl);
+                            (_a = advert.imagesUrls) === null || _a === void 0 ? void 0 : _a.push(imageUrl);
                             counter++;
                         }
                     }
