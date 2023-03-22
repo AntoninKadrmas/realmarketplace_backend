@@ -15,11 +15,12 @@ export class AdvertService extends GenericService{
         this.collection.push(process.env.ADVERT_COLLECTION)        
         this.db = this.client.db(process.env.DB_NAME)
     }
-    async createAdvert(advert:AdvertModel):Promise<{_id:string}|{error:string}>{
+    async createAdvert(advert:AdvertModel):Promise<{success:string}|{error:string}>{
         try{
             const result = await this.db.collection(this.collection[0]).insertOne(advert)
+            
             if(!result.acknowledged)return {error:"Cant create advert."}
-            else return {_id:result.insertedId}
+            else return {success:"Advert created successfully."}
         }catch(e){
             console.log(e)
             return {error:"Database dose not response."}
