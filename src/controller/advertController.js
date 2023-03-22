@@ -24,7 +24,7 @@ class AdvertController {
         this.createAdvert = (req, res) => __awaiter(this, void 0, void 0, function* () {
             let advertModel;
             let error = false;
-            console.log(req.body);
+            console.log(req.body.ahoj);
             if (req.files == undefined)
                 res.status(401).send();
             else {
