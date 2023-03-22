@@ -80,10 +80,9 @@ class UserController {
                 }
                 else {
                     const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString();
-                    const phone = credentials.substring(0, credentials.indexOf(':'));
+                    const name = credentials.substring(0, credentials.indexOf(':'));
                     const password = credentials.substring(credentials.indexOf(':') + 1, credentials.length);
-                    console.log(phone, password);
-                    const userResponse = yield this.userService.getUserDataByEmail("", "");
+                    const userResponse = yield this.userService.getUserDataByEmail(name, password);
                     if (userResponse.hasOwnProperty("error"))
                         res.status(400).send(userResponse);
                     else {

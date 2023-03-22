@@ -45,10 +45,9 @@ export class UserController implements GenericController{
             if(loadCredential==null){res.status(400).send("Incorrect request.")}
             else{
                 const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString()
-                const phone = credentials.substring(0,credentials.indexOf(':'))
+                const name = credentials.substring(0,credentials.indexOf(':'))
                 const password = credentials.substring(credentials.indexOf(':')+1,credentials.length)
-                console.log(phone,password);
-                const userResponse:UserModel | {error:string} = await this.userService.getUserDataByEmail("","")
+                const userResponse:UserModel | {error:string} = await this.userService.getUserDataByEmail(name,password)
                 if(userResponse.hasOwnProperty("error"))res.status(400).send(userResponse)
                 else{
                     const tempUserResponse:UserModel = userResponse as UserModel
