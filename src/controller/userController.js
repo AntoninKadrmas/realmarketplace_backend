@@ -51,19 +51,21 @@ class UserController {
                 if (req.body == null) {
                     res.status(400).send({ error: "Body does not contains user model." });
                 }
-                user = req.body;
-                user.createdIn = new Date();
-                const createUserResponse = yield this.userService.createNewUser(user);
-                if (createUserResponse.hasOwnProperty("userId")) {
-                    const userIds = createUserResponse;
-                    const token = yield this.tokenService.createToken(userIds.userId);
-                    if (!token.hasOwnProperty("error"))
-                        return res.status(200).send({ "token": token });
+                else {
+                    user = req.body;
+                    user.createdIn = new Date();
+                    const createUserResponse = yield this.userService.createNewUser(user);
+                    if (createUserResponse.hasOwnProperty("userId")) {
+                        const userIds = createUserResponse;
+                        const token = yield this.tokenService.createToken(userIds.userId);
+                        if (!token.hasOwnProperty("error"))
+                            return res.status(200).send({ "token": token });
+                        else
+                            res.status(400).send(token);
+                    }
                     else
-                        res.status(400).send(token);
+                        res.status(400).send(createUserResponse);
                 }
-                else
-                    res.status(400).send(createUserResponse);
             }
             catch (e) {
                 console.log(e);
@@ -72,21 +74,28 @@ class UserController {
         });
         this.userLogin = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log(req.headers);
                 if (req.query.email == null || req.query.password == null) {
                     res.status(400).send({ error: "Body does not contains user login model." });
                 }
-                let user = req.body;
-                console.log(user, req.body);
-                const userResponse = yield this.userService.getUserDataByEmail(user.email, user.password);
-                if (userResponse.hasOwnProperty("error"))
-                    res.status(400).send(userResponse);
                 else {
-                    const tempUserResponse = userResponse;
-                    const token = yield this.tokenService.createToken(tempUserResponse._id);
-                    if (!token.hasOwnProperty("error"))
-                        return res.status(200).send({ "token": token });
-                    res.status(400).send(token);
+                    let password = req.headers.authorization;
+                    if (password == null) {
+                        res.status(400).send("Incorrect request.");
+                    }
+                    else {
+                        console.log(new Buffer(password.split(" ")[1], 'base64').toString());
+                        const userResponse = yield this.userService.getUserDataByEmail("", "");
+                        if (userResponse.hasOwnProperty("error"))
+                            res.status(400).send(userResponse);
+                        else {
+                            const tempUserResponse = userResponse;
+                            const token = yield this.tokenService.createToken(tempUserResponse._id);
+                            if (!token.hasOwnProperty("error"))
+                                return res.status(200).send({ "token": token });
+                            else
+                                res.status(400).send(token);
+                        }
+                    }
                 }
             }
             catch (e) {
@@ -97,10 +106,13 @@ class UserController {
         this.getFullUserById = (req, res) => __awaiter(this, void 0, void 0, function* () {
             if (!req.params.id)
                 res.status(400).send(); //null as parameter
-            const response = yield this.userService.getUserDataById(req.params.id);
-            if (!response.hasOwnProperty("error"))
-                res.status(200).send(response); //not null result
-            res.status(400).send();
+            else {
+                const response = yield this.userService.getUserDataById(req.params.id);
+                if (!response.hasOwnProperty("error"))
+                    res.status(200).send(response); //not null result
+                else
+                    res.status(400).send();
+            }
         });
         this.initRouter();
     }
