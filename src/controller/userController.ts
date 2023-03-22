@@ -14,7 +14,7 @@ export class UserController implements GenericController{
     }
     initRouter(){
         this.router.post('/register',this.insertUser)
-        this.router.get('/login',this.userLogin)
+        this.router.post('/login',this.userLogin)
         this.router.get('/full/:id',this.getFullUserById)
     }
     insertUser: RequestHandler = async (req, res) => {
@@ -42,6 +42,7 @@ export class UserController implements GenericController{
             if(req.query.email==null||req.query.password==null){res.status(400).send({error:"Body does not contains user login model."})}
             let user:UserModelLogin = req.body as UserModelLogin
             console.log(user,req.body)
+            console.log(req.headers,req.headers)
             const userResponse:UserModel | {error:string} = await this.userService.getUserDataByEmail(user.email,user.password)
             if(userResponse.hasOwnProperty("error"))res.status(400).send(userResponse)
             else{

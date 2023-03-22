@@ -39,7 +39,6 @@ exports.UserController = void 0;
 const express_1 = __importDefault(require("express"));
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
-require('dotenv').config();
 class UserController {
     constructor(userService, tokenService) {
         this.userService = userService;
@@ -73,10 +72,12 @@ class UserController {
         });
         this.userLogin = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
+                console.log(req.headers);
                 if (req.query.email == null || req.query.password == null) {
                     res.status(400).send({ error: "Body does not contains user login model." });
                 }
                 let user = req.body;
+                console.log(user, req.body);
                 const userResponse = yield this.userService.getUserDataByEmail(user.email, user.password);
                 if (userResponse.hasOwnProperty("error"))
                     res.status(400).send(userResponse);
@@ -105,7 +106,7 @@ class UserController {
     }
     initRouter() {
         this.router.post('/register', this.insertUser);
-        this.router.get('/login', this.userLogin);
+        this.router.post('/login', this.userLogin);
         this.router.get('/full/:id', this.getFullUserById);
     }
 }

@@ -40,7 +40,7 @@ class ImageMiddleWare {
             "image/jpg": "jpg"
         };
     }
-    getStorage(publicFolder) {
+    getStorage() {
         return (0, multer_1.default)({
             fileFilter(req, file, callback) {
                 if (!file.originalname.match(/\.(png|jpg|jpeg)$/)) {

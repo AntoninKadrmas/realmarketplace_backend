@@ -57,7 +57,7 @@ class AdvertService extends genericService_1.GenericService {
                 if (!result.acknowledged)
                     return { error: "Cant create advert." };
                 else
-                    return { _id: result.insertedId };
+                    return { success: "Advert created successfully." };
             }
             catch (e) {
                 console.log(e);
