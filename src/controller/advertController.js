@@ -37,7 +37,7 @@ class AdvertController {
                         const dirUrl = __dirname.split('src')[0] + "public/" + file.filename;
                         if (!fs_1.default.existsSync(dirUrl)) { }
                         else {
-                            const imageUrl = `${this.path}/${file.filename}`;
+                            const imageUrl = `/${file.filename}`;
                             if (counter == 0)
                                 advert.mainImage = imageUrl;
                             (_a = advert.imagesUrls) === null || _a === void 0 ? void 0 : _a.push(imageUrl);

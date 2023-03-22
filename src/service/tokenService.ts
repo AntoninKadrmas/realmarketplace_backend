@@ -24,16 +24,15 @@ export class TokenService extends GenericService{
         }
         return TokenService.instance;
     }
-    async createToken(userId:string,lightUserId:string):Promise<any>{
+    async createToken(userId:string):Promise<any>{
         try{
             const token:TokenModel = {
                 userId: userId,
-                lightUserId:lightUserId,
                 expirationTime: this.getActualValidTime()
             }
-            await this.db.collection(this.collection[0]).deleteMany({userId: userId,lightUserId:lightUserId})
+            await this.db.collection(this.collection[0]).deleteMany({userId: userId})
             const newTokenOrFind = await this.db.collection(this.collection[0]).insertOne(token)
-            if(!newTokenOrFind.acknowledged)return "Database dose not response. Can't create auth token."
+            if(!newTokenOrFind.acknowledged)return "Can't create auth token."
             else return newTokenOrFind.insertedId
         }
         catch(e){

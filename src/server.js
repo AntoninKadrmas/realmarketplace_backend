@@ -47,7 +47,6 @@ const dotenv = __importStar(require("dotenv"));
 const tokenService_1 = require("./service/tokenService");
 const advertService_1 = require("./service/advertService");
 const advertController_1 = require("./controller/advertController");
-const imageController_1 = require("./controller/imageController");
 class Server {
     constructor() {
         dotenv.config();
@@ -63,11 +62,9 @@ class Server {
         const userController = new userController_1.UserController(new userService_1.UserService(), new tokenService_1.TokenService());
         const enumControl = new enumController_1.EnumController();
         const advertController = new advertController_1.AdvertController(new advertService_1.AdvertService());
-        const imageController = new imageController_1.ImageController();
         this.app.use(userController.path, userController.router);
         this.app.use(enumControl.path, enumControl.router);
         this.app.use(advertController.path, advertController.router);
-        this.app.use(imageController.path, imageController.router);
     }
     start() {
         return __awaiter(this, void 0, void 0, function* () {

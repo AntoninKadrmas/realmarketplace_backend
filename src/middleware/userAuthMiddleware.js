@@ -15,17 +15,15 @@ function userAuthMiddleware(request, response, next) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const token = (_a = request.query.token) === null || _a === void 0 ? void 0 : _a.toString();
+            const token = (_a = request.headers["AuthToken"]) === null || _a === void 0 ? void 0 : _a.toString();
             if (token == null)
                 throw Error("Token does not exists in query params");
             const tokenService = yield tokenService_1.TokenService.getInstance();
             const tokenExists = yield tokenService.tokenExists(token);
             if (!tokenExists)
                 throw Error("Token does not exists in database");
-            else {
-                const value = yield tokenService.updateTokenByTokenId(token);
-                console.log(value);
-            }
+            else
+                yield tokenService.updateTokenByTokenId(token);
             next();
         }
         catch (e) {

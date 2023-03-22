@@ -1,11 +1,10 @@
 import express, { RequestHandler} from "express";
 import { UserService } from "../service/userService";
-import { UserModel, UserValid } from "../model/userModel";
+import { UserModel, UserModelLogin, UserValid } from "../model/userModel";
 import { GenericController } from "./genericController";
-import * as dotenv from 'dotenv';
 import { TokenService } from "../service/tokenService";
+import * as dotenv from 'dotenv';
 dotenv.config();
-require('dotenv').config();
 
 export class UserController implements GenericController{
     path:string ='/user'
@@ -17,7 +16,6 @@ export class UserController implements GenericController{
         this.router.post('/register',this.insertUser)
         this.router.get('/login',this.userLogin)
         this.router.get('/full/:id',this.getFullUserById)
-        this.router.get('/light/:id',this.getLightUserById)
     }
     insertUser: RequestHandler = async (req, res) => {
         let user:UserModel
@@ -25,10 +23,10 @@ export class UserController implements GenericController{
             if(req.body==null){res.status(400).send({error:"Body does not contains user model."})}
             user = req.body
             user.createdIn = new Date()
-            const createUserResponse:{userId:string,lightUserId:string}|{error:string} = await this.userService.createNewUser(user)
-            if(createUserResponse.hasOwnProperty("userId")&&createUserResponse.hasOwnProperty("lightUserId")){
-                const userIds:{userId:string,lightUserId:string} = createUserResponse as {userId:string,lightUserId:string}
-                const token = await this.tokenService.createToken(userIds.userId,userIds.lightUserId)
+            const createUserResponse:{userId:string}|{error:string} = await this.userService.createNewUser(user)
+            if(createUserResponse.hasOwnProperty("userId")){
+                const userIds:{userId:string} = createUserResponse as {userId:string}
+                const token = await this.tokenService.createToken(userIds.userId)
                 if(!token.hasOwnProperty("error"))return res.status(200).send({"token":token})
                 else res.status(400).send(token)
             }
@@ -40,15 +38,14 @@ export class UserController implements GenericController{
         }
     }
     userLogin: RequestHandler = async (req, res) => {
-        let user:{email:string,password:string}
         try{
             if(req.query.email==null||req.query.password==null){res.status(400).send({error:"Body does not contains user login model."})}
-            user = {email:(req.query.email as string),password:(req.query.password as string)}
+            let user:UserModelLogin = req.body as UserModelLogin
             const userResponse:UserModel | {error:string} = await this.userService.getUserDataByEmail(user.email,user.password)
             if(userResponse.hasOwnProperty("error"))res.status(400).send(userResponse)
             else{
                 const tempUserResponse:UserModel = userResponse as UserModel
-                const token = await this.tokenService.createToken(tempUserResponse._id!,tempUserResponse.lightUserId!)
+                const token = await this.tokenService.createToken(tempUserResponse._id!)
                 if(!token.hasOwnProperty("error"))return res.status(200).send({"token":token})
                 res.status(400).send(token)
             }
@@ -59,16 +56,8 @@ export class UserController implements GenericController{
         }
     }
     getFullUserById:RequestHandler = async (req,res)=>{
-        const collection= process.env.USER_COLLECTION
         if(!req.params.id)res.status(400).send()//null as parameter
-        const response = await this.userService.getUserDataById(req.params.id,collection)
-        if(!response.hasOwnProperty("error"))res.status(200).send(response)//not null result
-        res.status(400).send()
-    }
-    getLightUserById:RequestHandler = async (req,res)=>{
-        const collection = process.env.LIGHT_USER_COLLECTION
-        if(!req.params.id)res.status(400).send()//null as parameter
-        const response = await this.userService.getUserDataById(req.params.id,collection)
+        const response = await this.userService.getUserDataById(req.params.id)
         if(!response.hasOwnProperty("error"))res.status(200).send(response)//not null result
         res.status(400).send()
     }

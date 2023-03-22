@@ -9,7 +9,7 @@ export class ImageMiddleWare{
         "image/png":"png",
         "image/jpg":"jpg"
     }
-    public getStorage(publicFolder:boolean) {
+    public getStorage() {
         return multer({
             fileFilter(req,file,callback){
                 if(!file.originalname.match(/\.(png|jpg|jpeg)$/)){

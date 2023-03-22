@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 import { DBConnection } from "../db/dbConnection";
-import { LightUserModel, UserModel } from "../model/userModel";
+import { UserModel } from "../model/userModel";
 import { GenericService } from "./genericService";
 import * as dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
@@ -18,54 +18,29 @@ export class UserService extends GenericService{
         this.client = await instance.getDbClient()        
         this.db = this.client.db(process.env.DB_NAME)
         this.collection.push(process.env.USER_COLLECTION)
-        this.collection.push(process.env.LIGHT_USER_COLLECTION)
         this.salt_rounds = process.env.SALT_ROUNDS!=null?parseInt(process.env.SALT_ROUNDS):10
     }
-    async createNewUser(user:UserModel):Promise<{userId:string,lightUserId:string}|{error:string}>{
+    async createNewUser(user:UserModel):Promise<{userId:string}|{error:string}>{
         user.password = await this.hashPassword(user.password!)
         try{
-            let userExists = await this.db.collection(this.collection[0]).findOne({cardId : user.cardId})
-            if(userExists!=null)return {error:"User with same National ID number already exists."}
+            let userExists = await this.db.collection(this.collection[0]).findOne({phone : user.phone})
+            if(userExists!=null)return {error:"User with same Phone number already exists."}
             userExists = await this.db.collection(this.collection[0]).findOne({email : user.email})
             if(userExists!=null)return {error:"User with same Email Address already exists."}
-            const light_user = await this.createLightUser(user)
-            if(light_user==""){
-                return {error:"Database dose not response."}    
-            }
-            user.lightUserId=light_user
             const new_user = await this.db.collection(this.collection[0]).insertOne(user)
             if(!new_user.acknowledged) {
-                await this.db.collection(this.collection[1]).deleteOne({_id:new ObjectId(light_user)})
                 return {error:"Database dose not response."}
             }
-            return {userId:new_user.upsertedId,lightUserId:light_user}
+            return {userId:new_user.upsertedId}
         }
         catch{
             return {error:"Database dose not response."}
         }
     }
-    private async createLightUser(createdUser:UserModel):Promise<string>{
-        let new_user;
-        try{
-            const lightUser:LightUserModel={
-                firstName: createdUser.firstName,   
-                lastName: createdUser.lastName,
-                email: createdUser.email,
-                phone: createdUser.phone,
-                createdIn: createdUser.createdIn
-            }
-            new_user = await this.db.collection(this.collection[1]).insertOne(lightUser)
-            if(!new_user.acknowledged)return ""
-            else return new_user.insertedId
-        }
-        catch{
-            return ""
-        }
-    }
-    async getUserDataById(userId?:string,collection?:string):Promise<UserModel | {error:string}>{
+    async getUserDataById(userId?:string):Promise<UserModel | {error:string}>{
         try{    
             const _id = new ObjectId(userId)    
-            const result =  await this.db.collection(collection).findOne({'_id':_id})
+            const result =  await this.db.collection(this.collection[0]).findOne({'_id':_id})
             return result
         }catch(e){   
             console.log(e)  

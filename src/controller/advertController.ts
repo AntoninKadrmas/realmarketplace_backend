@@ -5,7 +5,9 @@ import { AdvertService } from "../service/advertService";
 import { AdvertModel } from "../model/advertModel";
 import { ImageMiddleWare } from "../middleware/imageMiddleware";
 import fs from 'fs';
-
+import path from 'path';
+import * as dotenv from 'dotenv';
+dotenv.config();
 
 export class AdvertController implements GenericController{
     path: string="/advert";
@@ -14,8 +16,9 @@ export class AdvertController implements GenericController{
         this.initRouter()
     }
     initRouter(): void {
-        const upload_public = new ImageMiddleWare().getStorage(true)
+        const upload_public = new ImageMiddleWare().getStorage()
         this.router.post("/create",upload_public.array('uploaded_file',5),this.createAdvert)
+        this.router.use(express.static(path.join(__dirname.split('src')[0],process.env.IMAGE_PUBLIC!!)))
     }
     createAdvert: RequestHandler = async (req, res) => {
         try{
@@ -31,7 +34,7 @@ export class AdvertController implements GenericController{
                     const dirUrl = __dirname.split('src')[0]+"public/"+file.filename
                     if(!fs.existsSync(dirUrl)){}
                     else{
-                        const imageUrl = `${this.path}/${file.filename}`
+                        const imageUrl = `/${file.filename}`
                         if(counter==0) advert.mainImage = imageUrl
                         advert.imagesUrls?.push(imageUrl)
                         counter++

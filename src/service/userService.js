@@ -53,7 +53,6 @@ class UserService extends genericService_1.GenericService {
             this.client = yield instance.getDbClient();
             this.db = this.client.db(process.env.DB_NAME);
             this.collection.push(process.env.USER_COLLECTION);
-            this.collection.push(process.env.LIGHT_USER_COLLECTION);
             this.salt_rounds = process.env.SALT_ROUNDS != null ? parseInt(process.env.SALT_ROUNDS) : 10;
         });
     }
@@ -61,56 +60,28 @@ class UserService extends genericService_1.GenericService {
         return __awaiter(this, void 0, void 0, function* () {
             user.password = yield this.hashPassword(user.password);
             try {
-                let userExists = yield this.db.collection(this.collection[0]).findOne({ cardId: user.cardId });
+                let userExists = yield this.db.collection(this.collection[0]).findOne({ phone: user.phone });
                 if (userExists != null)
-                    return { error: "User with same National ID number already exists." };
+                    return { error: "User with same Phone number already exists." };
                 userExists = yield this.db.collection(this.collection[0]).findOne({ email: user.email });
                 if (userExists != null)
                     return { error: "User with same Email Address already exists." };
-                const light_user = yield this.createLightUser(user);
-                if (light_user == "") {
-                    return { error: "Database dose not response." };
-                }
-                user.lightUserId = light_user;
                 const new_user = yield this.db.collection(this.collection[0]).insertOne(user);
                 if (!new_user.acknowledged) {
-                    yield this.db.collection(this.collection[1]).deleteOne({ _id: new mongodb_1.ObjectId(light_user) });
                     return { error: "Database dose not response." };
                 }
-                return { userId: new_user.upsertedId, lightUserId: light_user };
+                return { userId: new_user.upsertedId };
             }
             catch (_a) {
                 return { error: "Database dose not response." };
             }
         });
     }
-    createLightUser(createdUser) {
-        return __awaiter(this, void 0, void 0, function* () {
-            let new_user;
-            try {
-                const lightUser = {
-                    firstName: createdUser.firstName,
-                    lastName: createdUser.lastName,
-                    email: createdUser.email,
-                    phone: createdUser.phone,
-                    createdIn: createdUser.createdIn
-                };
-                new_user = yield this.db.collection(this.collection[1]).insertOne(lightUser);
-                if (!new_user.acknowledged)
-                    return "";
-                else
-                    return new_user.insertedId;
-            }
-            catch (_a) {
-                return "";
-            }
-        });
-    }
-    getUserDataById(userId, collection) {
+    getUserDataById(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const _id = new mongodb_1.ObjectId(userId);
-                const result = yield this.db.collection(collection).findOne({ '_id': _id });
+                const result = yield this.db.collection(this.collection[0]).findOne({ '_id': _id });
                 return result;
             }
             catch (e) {

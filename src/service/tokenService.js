@@ -60,18 +60,17 @@ class TokenService extends genericService_1.GenericService {
             return TokenService.instance;
         });
     }
-    createToken(userId, lightUserId) {
+    createToken(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const token = {
                     userId: userId,
-                    lightUserId: lightUserId,
                     expirationTime: this.getActualValidTime()
                 };
-                yield this.db.collection(this.collection[0]).deleteMany({ userId: userId, lightUserId: lightUserId });
+                yield this.db.collection(this.collection[0]).deleteMany({ userId: userId });
                 const newTokenOrFind = yield this.db.collection(this.collection[0]).insertOne(token);
                 if (!newTokenOrFind.acknowledged)
-                    return "Database dose not response. Can't create auth token.";
+                    return "Can't create auth token.";
                 else
                     return newTokenOrFind.insertedId;
             }
