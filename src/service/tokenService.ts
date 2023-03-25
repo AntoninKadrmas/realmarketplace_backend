@@ -57,6 +57,7 @@ export class TokenService extends GenericService{
     }
     async tokenExists(tokenId:string):Promise<TokenExistsModel>{
         try{
+            console.log(tokenId)
             const token:TokenModel =  await this.db.collection(this.collection[0]).findOne({_id:new ObjectId(tokenId)}) 
             console.log(token)           
             const valid = await this.tokenIsValid(token) 
@@ -76,6 +77,7 @@ export class TokenService extends GenericService{
         }
     }
     private async tokenIsValid(token:TokenModel):Promise<boolean>{ 
+        console.log(token)
         const valid = token.expirationTime>=(new Date().getTime())
         console.log(token.expirationTime,(new Date().getTime()),valid);
         try{

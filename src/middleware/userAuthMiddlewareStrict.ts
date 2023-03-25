@@ -4,8 +4,8 @@ import { TokenService } from '../service/tokenService';
 
 export async function userAuthMiddlewareStrict(request: express.Request, response: express.Response, next: NextFunction) {
     try{
-
         const token = request.get("Authorization")
+        console.log(token)
         if(token==null)throw Error("Application error.")//token does not exists in header
         const tokenService:TokenService = await TokenService.getInstance()
         const tokenExists:TokenExistsModel = await tokenService.tokenExists(token);
