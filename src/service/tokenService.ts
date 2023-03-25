@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 import { DBConnection } from "../db/dbConnection";
-import { TokenModel } from "../model/tokenModel";
+import { TokenExistsModel, TokenModel } from "../model/tokenModel";
 import * as dotenv from 'dotenv';
 import { GenericService } from "./genericService";
 
@@ -55,26 +55,36 @@ export class TokenService extends GenericService{
         )                
         return await this.tokenIsValid(token.value)
     }
-    async tokenExists(tokenId:string):Promise<boolean>{
+    async tokenExists(tokenId:string):Promise<TokenExistsModel>{
         try{
-            const token:TokenModel =  await this.db.collection(this.collection[0]).findOne({_id:new ObjectId(tokenId)})            
-            return await this.tokenIsValid(token)
+            const token:TokenModel =  await this.db.collection(this.collection[0]).findOne({_id:new ObjectId(tokenId)}) 
+            console.log(token)           
+            const valid = await this.tokenIsValid(token) 
+            if(valid)return {
+                valid: valid,
+                token:token
+            }
+            else return {
+                valid: valid,
+            }
         }
         catch(e){
             console.log(e)
-            return false
+            return {
+                valid: false,
+            }
         }
     }
     private async tokenIsValid(token:TokenModel):Promise<boolean>{ 
-        const valid = token.expirationTime>=(new Date().getTime()+1800000)
+        const valid = token.expirationTime>=(new Date().getTime())
+        console.log(token.expirationTime,(new Date().getTime()),valid);
         try{
             if(!valid) await this.db.collection(this.collection[0]).deleteOne({_id:new ObjectId(token._id)})
         }
         catch(e){            
             console.log(e)
+            return false
         }
-        console.log(token.expirationTime,(new Date().getTime()),valid);
-        
         return valid
     }
     private getActualValidTime():number{

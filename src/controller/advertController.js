@@ -41,6 +41,7 @@ const imageMiddleware_1 = require("../middleware/imageMiddleware");
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const dotenv = __importStar(require("dotenv"));
+const userAuthMiddlewareStrict_1 = require("../middleware/userAuthMiddlewareStrict");
 dotenv.config();
 class AdvertController {
     constructor(advertService) {
@@ -53,24 +54,25 @@ class AdvertController {
                 if (req.body == null)
                     res.status(400).send({ error: "Body does not contains advert information's" });
                 else {
-                    console.log(req.body);
                     const advert = req.body;
+                    advert.userId = req.get("Authorization");
                     advert.createdIn = new Date();
                     advert.imagesUrls = [];
                     let counter = 0;
-                    //@ts-ignore 
-                    for (let file of req.files) {
-                        const dirUrl = __dirname.split('src')[0] + "public/" + file.filename;
-                        if (!fs_1.default.existsSync(dirUrl)) { }
-                        else {
-                            const imageUrl = `/${file.filename}`;
-                            if (counter == 0)
-                                advert.mainImage = imageUrl;
-                            (_a = advert.imagesUrls) === null || _a === void 0 ? void 0 : _a.push(imageUrl);
-                            counter++;
+                    if (req.files != null) {
+                        //@ts-ignore
+                        for (let file of req.files) {
+                            const dirUrl = __dirname.split('src')[0] + "public/" + file.filename;
+                            if (!fs_1.default.existsSync(dirUrl)) { }
+                            else {
+                                const imageUrl = `/${file.filename}`;
+                                if (counter == 0)
+                                    advert.mainImage = imageUrl;
+                                (_a = advert.imagesUrls) === null || _a === void 0 ? void 0 : _a.push(imageUrl);
+                                counter++;
+                            }
                         }
                     }
-                    console.log(advert);
                     const response = yield this.advertService.createAdvert(advert);
                     if (response.hasOwnProperty("error"))
                         res.status(400).send(response);
@@ -97,7 +99,7 @@ class AdvertController {
     }
     initRouter() {
         const upload_public = new imageMiddleware_1.ImageMiddleWare().getStorage();
-        this.router.post("/create", upload_public.array('uploaded_file', 5), this.createAdvert);
+        this.router.post("/create", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, upload_public.array('uploaded_file', 5), this.createAdvert);
         this.router.get("/all", this.getAdvert);
         this.router.use(express_1.default.static(path_1.default.join(__dirname.split('src')[0], process.env.IMAGE_PUBLIC)));
     }

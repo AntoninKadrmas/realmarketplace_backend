@@ -97,25 +97,38 @@ class TokenService extends genericService_1.GenericService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const token = yield this.db.collection(this.collection[0]).findOne({ _id: new mongodb_1.ObjectId(tokenId) });
-                return yield this.tokenIsValid(token);
+                console.log(token);
+                const valid = yield this.tokenIsValid(token);
+                if (valid)
+                    return {
+                        valid: valid,
+                        token: token
+                    };
+                else
+                    return {
+                        valid: valid,
+                    };
             }
             catch (e) {
                 console.log(e);
-                return false;
+                return {
+                    valid: false,
+                };
             }
         });
     }
     tokenIsValid(token) {
         return __awaiter(this, void 0, void 0, function* () {
-            const valid = token.expirationTime >= (new Date().getTime() + 1800000);
+            const valid = token.expirationTime >= (new Date().getTime());
+            console.log(token.expirationTime, (new Date().getTime()), valid);
             try {
                 if (!valid)
                     yield this.db.collection(this.collection[0]).deleteOne({ _id: new mongodb_1.ObjectId(token._id) });
             }
             catch (e) {
                 console.log(e);
+                return false;
             }
-            console.log(token.expirationTime, (new Date().getTime()), valid);
             return valid;
         });
     }

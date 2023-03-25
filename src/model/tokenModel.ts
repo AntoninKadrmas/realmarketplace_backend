@@ -3,3 +3,7 @@ export class TokenModel{
     userId!:string
     expirationTime!:number
 }
+export class TokenExistsModel{
+    valid!:boolean
+    token?:TokenModel
+}

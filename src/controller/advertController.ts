@@ -7,6 +7,7 @@ import { ImageMiddleWare } from "../middleware/imageMiddleware";
 import fs from 'fs';
 import path from 'path';
 import * as dotenv from 'dotenv';
+import { userAuthMiddlewareStrict } from "../middleware/userAuthMiddlewareStrict";
 dotenv.config();
 
 export class AdvertController implements GenericController{
@@ -17,7 +18,7 @@ export class AdvertController implements GenericController{
     }
     initRouter(): void {
         const upload_public = new ImageMiddleWare().getStorage()
-        this.router.post("/create",upload_public.array('uploaded_file',5),this.createAdvert)
+        this.router.post("/create",userAuthMiddlewareStrict,upload_public.array('uploaded_file',5),this.createAdvert)
         this.router.get("/all",this.getAdvert)
         this.router.use(express.static(path.join(__dirname.split('src')[0],process.env.IMAGE_PUBLIC!!)))
     }
@@ -25,23 +26,24 @@ export class AdvertController implements GenericController{
         try{
             if(req.body==null)res.status(400).send({error:"Body does not contains advert information's"})
             else{
-                console.log(req.body)
                 const advert:AdvertModel = req.body as AdvertModel
+                advert.userId=req.get("Authorization")
                 advert.createdIn = new Date()
                 advert.imagesUrls = []
                 let counter = 0;
-                //@ts-ignore 
-                for(let file of req.files){
-                    const dirUrl = __dirname.split('src')[0]+"public/"+file.filename
-                    if(!fs.existsSync(dirUrl)){}
-                    else{
-                        const imageUrl = `/${file.filename}`
-                        if(counter==0) advert.mainImage = imageUrl
-                        advert.imagesUrls?.push(imageUrl)
-                        counter++
+                if(req.files!=null){
+                    //@ts-ignore
+                    for(let file of req.files){
+                        const dirUrl = __dirname.split('src')[0]+"public/"+file.filename
+                        if(!fs.existsSync(dirUrl)){}
+                        else{
+                            const imageUrl = `/${file.filename}`
+                            if(counter==0) advert.mainImage = imageUrl
+                            advert.imagesUrls?.push(imageUrl)
+                            counter++
+                        }
                     }
                 }
-                console.log(advert)
                 const response = await this.advertService.createAdvert(advert)
                 if(response.hasOwnProperty("error"))res.status(400).send(response)
                 else res.status(200).send(response)
