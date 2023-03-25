@@ -58,7 +58,7 @@ class AdvertService extends genericService_1.GenericService {
                 if (!result.acknowledged)
                     return { error: "Cant create advert." };
                 else
-                    return { success: "Advert created successfully." };
+                    return { success: "Advert created successfully.", _id: result.insertedId };
             }
             catch (e) {
                 console.log(e);
@@ -83,7 +83,10 @@ class AdvertService extends genericService_1.GenericService {
             try {
                 const result = yield this.db.collection(this.collection[1]).updateOne({ 'userId': userId }, { $addToSet: { 'advertId': advertId } }, { upsert: true });
                 console.log(result);
-                return result;
+                if (result.acknowledged)
+                    return { success: "Advert successfully added to favorite collection" };
+                else
+                    return { error: "There is some problem with favorite advert." };
             }
             catch (e) {
                 console.log(e);

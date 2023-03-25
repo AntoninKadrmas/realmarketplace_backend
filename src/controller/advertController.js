@@ -99,12 +99,12 @@ class AdvertController {
             try {
                 const advertId = req.query.advertId;
                 const userId = req.get("Authorization");
-                yield this.advertService.saveAdvertId(userId, advertId);
-                res.status(200).send();
+                const response = yield this.advertService.saveAdvertId(userId, advertId);
+                res.status(200).send(response);
             }
             catch (e) {
                 console.log(e);
-                res.status(400).send();
+                res.status(400).send({ error: "Missing advert id." });
             }
         });
         this.initRouter();
@@ -113,7 +113,7 @@ class AdvertController {
         const upload_public = new imageMiddleware_1.ImageMiddleWare().getStorage();
         this.router.post("/create", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, upload_public.array('uploaded_file', 5), this.createAdvert);
         this.router.get("/all", this.getAdvert);
-        this.router.post("/favorite/add", this.favoriteAdvert);
+        this.router.post("/favorite/add", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.favoriteAdvert);
         this.router.use(express_1.default.static(path_1.default.join(__dirname.split('src')[0], process.env.IMAGE_PUBLIC)));
     }
 }
