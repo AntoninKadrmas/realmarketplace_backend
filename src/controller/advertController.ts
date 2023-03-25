@@ -20,6 +20,7 @@ export class AdvertController implements GenericController{
         const upload_public = new ImageMiddleWare().getStorage()
         this.router.post("/create",userAuthMiddlewareStrict,upload_public.array('uploaded_file',5),this.createAdvert)
         this.router.get("/all",this.getAdvert)
+        this.router.post("/favorite/add",userAuthMiddlewareStrict,this.favoriteAdvert)
         this.router.use(express.static(path.join(__dirname.split('src')[0],process.env.IMAGE_PUBLIC!!)))
     }
     createAdvert: RequestHandler = async (req, res) => {
@@ -61,6 +62,17 @@ export class AdvertController implements GenericController{
         }catch(e){
             console.log(e)
             res.status(400).send()
+        }
+    }
+    favoriteAdvert: RequestHandler = async (req, res) => {
+        try{
+            const advertId = req.query.advertId
+            const userId=req.get("Authorization")
+            const response = await this.advertService.saveAdvertId(userId as string,advertId as string)
+            res.status(200).send(response)
+        }catch(e){
+            console.log(e)
+            res.status(400).send({error:"Missing advert id."})
         }
     }
 }

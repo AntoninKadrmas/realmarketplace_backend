@@ -96,6 +96,7 @@ class TokenService extends genericService_1.GenericService {
     tokenExists(tokenId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
+                console.log(tokenId);
                 const token = yield this.db.collection(this.collection[0]).findOne({ _id: new mongodb_1.ObjectId(tokenId) });
                 console.log(token);
                 const valid = yield this.tokenIsValid(token);
@@ -119,6 +120,7 @@ class TokenService extends genericService_1.GenericService {
     }
     tokenIsValid(token) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log(token);
             const valid = token.expirationTime >= (new Date().getTime());
             console.log(token.expirationTime, (new Date().getTime()), valid);
             try {

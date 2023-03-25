@@ -30,7 +30,7 @@ function userAuthMiddlewareLenient(request, response, next) {
         }
         catch (e) {
             console.log(e);
-            response.status(401).send(e);
+            response.status(401).send({ error: e.message });
         }
     });
 }

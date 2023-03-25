@@ -47,6 +47,7 @@ class AdvertService extends genericService_1.GenericService {
             const instance = dbConnection_1.DBConnection.getInstance();
             this.client = yield instance.getDbClient();
             this.collection.push(process.env.ADVERT_COLLECTION);
+            this.collection.push(process.env.FAVORITE_COLLECTION);
             this.db = this.client.db(process.env.DB_NAME);
         });
     }
@@ -69,6 +70,19 @@ class AdvertService extends genericService_1.GenericService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const result = yield this.db.collection(this.collection[0]).find({}).toArray();
+                return result;
+            }
+            catch (e) {
+                console.log(e);
+                return { error: "Database dose not response." };
+            }
+        });
+    }
+    saveAdvertId(userId, advertId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const result = yield this.db.collection(this.collection[1]).updateOne({ 'userId': userId }, { $addToSet: { 'advertId': advertId } }, { upsert: true });
+                console.log(result);
                 return result;
             }
             catch (e) {
