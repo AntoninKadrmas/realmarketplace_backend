@@ -3,6 +3,7 @@ import { GenreFictionEnum, GenreNonFictionEnum, GenreType } from "./genreEnum";
 import { PriceOptionsEnum } from "./priceOptionsEnum";
 
 export class AdvertModel{
+    _id?:string;
     userId?:string;
     title!:string;
     author!:string;

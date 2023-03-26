@@ -48,9 +48,13 @@ export class AdvertController implements GenericController{
                         }
                     }
                 }
-                const response = await this.advertService.createAdvert(advert)
+                const response:{success:string,_id:string}|{error:string} = await this.advertService.createAdvert(advert)
                 if(response.hasOwnProperty("error"))res.status(400).send(response)
-                else res.status(200).send(response)
+                else {
+                    const responseObject = (response as {success:string,_id:string})
+                    advert._id=responseObject._id
+                    res.status(200).send({success:responseObject.success,advert:advert})
+                }
             }
         }
         catch(e){
