@@ -68,7 +68,6 @@ export class AdvertController implements GenericController{
         try{
             if(req.body==null)res.status(400).send({error:"Body does not contains advert information's"})
             else{
-                console.log(req.body)
                 const deleteUrl=req.body.deletedUrls.split(";").filter((x:string)=>x!="")
                 const advertId = req.body._id.toString()
                 this.deleteFiles(deleteUrl)
@@ -92,8 +91,9 @@ export class AdvertController implements GenericController{
                         }
                     }
                 }
-                const result = await this.advertService.updateAdvert(advertId,userId!,advert)
-                res.status(200).send(result)
+                const response = await this.advertService.updateAdvert(advertId,userId!,advert)
+                if(response.hasOwnProperty("error"))res.status(400).send(response)
+                else res.status(200).send({success:response.success,imageUrls:advert.imagesUrls})
             }
         }
         catch(e){
@@ -102,7 +102,6 @@ export class AdvertController implements GenericController{
         }
     }
     private deleteFiles(imagesUrls:string[]){
-        console.log(imagesUrls)
         for(var image of imagesUrls){
             fs.unlinkSync(__dirname.split('src')[0]+"public"+image)
         }
