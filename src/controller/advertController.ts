@@ -69,13 +69,13 @@ export class AdvertController implements GenericController{
             if(req.body==null)res.status(400).send({error:"Body does not contains advert information's"})
             else{
                 console.log(req.body)
-                const deleteUrl=req.body.deletedUrls.split(";")
+                const deleteUrl=req.body.deletedUrls.split(";").filter((x:string)=>x!="")
                 const advertId = req.body._id.toString()
                 this.deleteFiles(deleteUrl)
                 delete req.body.deletedUrls
                 delete req.body._id
                 const advert:AdvertModel = req.body as AdvertModel
-                if(req.body.imageUrls!="")advert.imagesUrls=req.body.imageUrls.split(";")
+                if(req.body.imageUrls!="")advert.imagesUrls=req.body.imageUrls.split(";").filter((x:string)=>x!="")
                 else advert.imagesUrls=[]
                 const userId=req.query.token?.toString()
                 let counter = 0;
