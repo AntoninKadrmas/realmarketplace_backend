@@ -19,10 +19,13 @@ export class AdvertController implements GenericController{
     initRouter(): void {
         const upload_public = new ImageMiddleWare().getStorage()
 
-        this.router.post("/create",userAuthMiddlewareStrict,upload_public.array('uploaded_file',5),this.createAdvert)
+        this.router.post("",userAuthMiddlewareStrict,upload_public.array('uploaded_file',5),this.createAdvert)
+        this.router.put("",userAuthMiddlewareStrict,upload_public.array('uploaded_file',5),this.updateAdvert)//not implemented
+        this.router.delete("",userAuthMiddlewareStrict,this.deleteAdvert)//not implemented
+        this.router.get("",userAuthMiddlewareStrict,this.getUserAdverts)
         this.router.get("/all",this.getAdvert)
-        this.router.get("/my",userAuthMiddlewareStrict,this.getUserAdverts)
-        this.router.post("/favorite/add",userAuthMiddlewareStrict,this.favoriteAdvert)
+        this.router.get("/favorite",userAuthMiddlewareStrict,this.getFavoriteAdvert)//not implemented
+        this.router.post("/favorite",userAuthMiddlewareStrict,this.addFavoriteAdvert)
 
         this.router.use(express.static(path.join(__dirname.split('src')[0],process.env.IMAGE_PUBLIC!!)))
     }
@@ -56,6 +59,23 @@ export class AdvertController implements GenericController{
                     res.status(200).send({success:responseObject.success,advert:advert})
                 }
             }
+        }catch(e){
+            console.log(e)
+            res.status(400).send()
+        }
+    }
+    updateAdvert: RequestHandler = async (req, res) => {
+        try{
+            //not implemented
+        }
+        catch(e){
+            console.log(e)
+            res.status(400).send()
+        }
+    }
+    deleteAdvert: RequestHandler = async (req, res) => {
+        try{
+            //not implemented
         }
         catch(e){
             console.log(e)
@@ -71,7 +91,15 @@ export class AdvertController implements GenericController{
             res.status(400).send()
         }
     }
-    favoriteAdvert: RequestHandler = async (req, res) => {
+    getFavoriteAdvert: RequestHandler = async (req, res) => {
+        try{
+            //not implemented
+        }catch(e){
+            console.log(e)
+            res.status(400).send({error:"Missing advert id."})
+        }
+    }
+    addFavoriteAdvert: RequestHandler = async (req, res) => {
         try{
             const advertId = req.query.advertId
             const userId=req.get("Authorization")
