@@ -67,13 +67,14 @@ export class AdvertService extends GenericService{
             return {error:"Database dose not response."}
         } 
     }
-    async updateAdvert(advertId:string,userId:string,advert:AdvertModel):Promise<any>{
+    async updateAdvert(advertId:string,userId:string,advert:AdvertModel):Promise<{success:string}|{error:string}>{
         try{
             const result = await this.db.collection(this.collection[0]).updateOne({"_id":new ObjectId(advertId),"userId":userId},{
                 $set:advert
             })
-            console.log(result)
-            return result
+            if(result.acknowledged&&result.modifiedCount==1)return {success:"Advert successfully updated."}
+            else if(result.acknowledged&&result.modifiedCount==0)return {error:"Can't update foreign advert."}
+            else return {error:"There is some problem with database."}
         }catch(e){
             console.log(e)
             return {error:"Database dose not response."}
