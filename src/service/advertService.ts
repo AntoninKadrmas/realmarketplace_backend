@@ -56,9 +56,22 @@ export class AdvertService extends GenericService{
             return {error:"Database dose not response."}
         }
     }
-    async deleteAdvert(advertId:string,user_id:string):Promise<any>{
+    async deleteAdvert(advertId:string,userId:string):Promise<{success:string}|{error:string}>{
         try{
-            const result = await this.db.collection(this.collection[0]).deleteOne({"_id":new ObjectId(advertId),"userId":user_id})
+            const result = await this.db.collection(this.collection[0]).deleteOne({"_id":new ObjectId(advertId),"userId":userId})
+            if(result.acknowledged&&result.deletedCount==1)return {success:"Advert successfully deleted."}
+            else if(result.acknowledged&&result.deletedCount==0)return {error:"Can't delete foreign advert."}
+            else return {error:"There is some problem with database."}
+        }catch(e){
+            console.log(e)
+            return {error:"Database dose not response."}
+        } 
+    }
+    async updateAdvert(advertId:string,userId:string,advert:AdvertModel):Promise<any>{
+        try{
+            const result = await this.db.collection(this.collection[0]).updateOne({"_id":new ObjectId(advertId),"userId":userId},{
+                $set:advert
+            })
             console.log(result)
             return result
         }catch(e){

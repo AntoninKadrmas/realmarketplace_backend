@@ -66,20 +66,42 @@ export class AdvertController implements GenericController{
     }
     updateAdvert: RequestHandler = async (req, res) => {
         try{
-            console.log(req.body)
             if(req.body==null)res.status(400).send({error:"Body does not contains advert information's"})
             else{
-                const deleteUrl=req.body.deletedUrls
+                const deleteUrl=req.body.deletedUrls.split(";")
+                const advertId = req.body._id.toString()
+                this.deleteFiles(deleteUrl)
                 delete req.body.deletedUrls
+                delete req.body._id
                 const advert:AdvertModel = req.body as AdvertModel
-                console.log(advert)
+                if(req.body.imageUrls!="")advert.imagesUrls=req.body.imageUrls.split(";")
+                else advert.imagesUrls=[]
                 const userId=req.query.token?.toString()
-                
+                let counter = 0;
+                if(req.files!=null){
+                    //@ts-ignore
+                    for(let file of req.files){
+                        const dirUrl = __dirname.split('src')[0]+"public/"+file.filename
+                        if(!fs.existsSync(dirUrl)){}
+                        else{
+                            const imageUrl = `/${file.filename}`
+                            if(counter==0 && advert.mainImage=="") advert.mainImage = imageUrl
+                            advert.imagesUrls?.push(imageUrl)
+                            counter++
+                        }
+                    }
+                }
+                const result = await this.advertService.updateAdvert(advertId,userId!,advert)
             }
         }
         catch(e){
             console.log(e)
             res.status(400).send()
+        }
+    }
+    private deleteFiles(imagesUrls:string[]){
+        for(var image in imagesUrls){
+            fs.unlinkSync(__dirname.split('src')[0]+"/public"+image)
         }
     }
     deleteAdvert: RequestHandler = async (req, res) => {
