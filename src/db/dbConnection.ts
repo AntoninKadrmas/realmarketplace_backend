@@ -1,9 +1,13 @@
 import { MongoClient } from 'mongodb'
+import * as dotenv from 'dotenv';
+
 export class DBConnection{
     static instance:DBConnection
     private mongoClient:Promise<MongoClient>
-    private uri = "mongodb+srv://new_user:paKJQXHd99YNsvjy@realmarket.4lhdcrr.mongodb.net/?retryWrites=true&w=majority";
+    private uri:any="";
     constructor(){
+        dotenv.config();
+        this.uri = process.env.DB_CONNECTION
         this.mongoClient = MongoClient.connect(this.uri)
     }
     public async getDbClient():Promise<MongoClient>{

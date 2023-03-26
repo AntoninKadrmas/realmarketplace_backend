@@ -10,7 +10,7 @@ export async function userAuthMiddlewareStrict(request: express.Request, respons
         const tokenExists:TokenExistsModel = await tokenService.tokenExists(token);
         if(!tokenExists.valid)throw Error("Token expired.")
         else {
-            response.set("Authorization",tokenExists.token?.userId)
+            request.query.token =tokenExists.token?.userId
             await tokenService.updateTokenByTokenId(token)
         }
         next()

@@ -47,7 +47,7 @@ export class AdvertService extends GenericService{
             return {error:"Database dose not response."}
         }
     }
-    async getAdvertByUserIf(userId:string):Promise<AdvertModel[]|{error:string}>{
+    async getAdvertByUserId(userId:string):Promise<AdvertModel[]|{error:string}>{
         try{
             const result = await this.db.collection(this.collection[0]).find({"userId":userId}).toArray();
             return result

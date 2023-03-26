@@ -80,8 +80,7 @@ class UserService extends genericService_1.GenericService {
     getUserDataById(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const _id = new mongodb_1.ObjectId(userId);
-                const result = yield this.db.collection(this.collection[0]).findOne({ '_id': _id });
+                const result = yield this.db.collection(this.collection[0]).findOne({ '_id': new mongodb_1.ObjectId(userId) });
                 return result;
             }
             catch (e) {

@@ -36,6 +36,7 @@ exports.AdvertService = void 0;
 const genericService_1 = require("./genericService");
 const dotenv = __importStar(require("dotenv"));
 const dbConnection_1 = require("../db/dbConnection");
+const mongodb_1 = require("mongodb");
 class AdvertService extends genericService_1.GenericService {
     constructor() {
         super();
@@ -87,6 +88,31 @@ class AdvertService extends genericService_1.GenericService {
                     return { success: "Advert successfully added to favorite collection" };
                 else
                     return { error: "There is some problem with favorite advert." };
+            }
+            catch (e) {
+                console.log(e);
+                return { error: "Database dose not response." };
+            }
+        });
+    }
+    getAdvertByUserId(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const result = yield this.db.collection(this.collection[0]).find({ "userId": userId }).toArray();
+                return result;
+            }
+            catch (e) {
+                console.log(e);
+                return { error: "Database dose not response." };
+            }
+        });
+    }
+    deleteAdvert(advertId, user_id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const result = yield this.db.collection(this.collection[0]).deleteOne({ "_id": new mongodb_1.ObjectId(advertId), "userId": user_id });
+                console.log(result);
+                return result;
             }
             catch (e) {
                 console.log(e);

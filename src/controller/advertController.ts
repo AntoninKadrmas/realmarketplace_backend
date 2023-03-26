@@ -33,8 +33,9 @@ export class AdvertController implements GenericController{
         try{
             if(req.body==null)res.status(400).send({error:"Body does not contains advert information's"})
             else{
+            
                 const advert:AdvertModel = req.body as AdvertModel
-                advert.userId=req.get("Authorization")
+                advert.userId=req.query.token?.toString()
                 advert.createdIn = new Date()
                 advert.imagesUrls = []
                 let counter = 0;
@@ -75,11 +76,11 @@ export class AdvertController implements GenericController{
     }
     deleteAdvert: RequestHandler = async (req, res) => {
         try{
-            const userId = req.get("Authorization") as string
+            const userId = req.query.token?.toString()
             const advertId = req.query.advertId?.toString()
             if(advertId==null)res.status(400).send({error:"Missing advert id."})
             else{
-                const result = await this.advertService.deleteAdvert(advertId,userId)
+                const result = await this.advertService.deleteAdvert(advertId,userId!)
                 res.status(200).send(result)
             }
         }
@@ -107,9 +108,9 @@ export class AdvertController implements GenericController{
     }
     addFavoriteAdvert: RequestHandler = async (req, res) => {
         try{
-            const advertId = req.query.advertId
-            const userId=req.get("Authorization")
-            const response = await this.advertService.saveAdvertId(userId as string,advertId as string)
+            const advertId = req.query.advertId?.toString()
+            const userId = req.query.token?.toString()
+            const response = await this.advertService.saveAdvertId(userId!,advertId!)
             res.status(200).send(response)
         }catch(e){
             console.log(e)

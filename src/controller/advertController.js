@@ -54,10 +54,12 @@ class AdvertController {
                 if (req.body == null)
                     res.status(400).send({ error: "Body does not contains advert information's" });
                 else {
+                    console.log(req.query.token);
                     const advert = req.body;
                     advert.userId = req.get("Authorization");
                     advert.createdIn = new Date();
                     advert.imagesUrls = [];
+                    console.log(req.get("Authorization"));
                     let counter = 0;
                     if (req.files != null) {
                         //@ts-ignore
@@ -76,8 +78,37 @@ class AdvertController {
                     const response = yield this.advertService.createAdvert(advert);
                     if (response.hasOwnProperty("error"))
                         res.status(400).send(response);
-                    else
-                        res.status(200).send(response);
+                    else {
+                        const responseObject = response;
+                        advert._id = responseObject._id;
+                        res.status(200).send({ success: responseObject.success, advert: advert });
+                    }
+                }
+            }
+            catch (e) {
+                console.log(e);
+                res.status(400).send();
+            }
+        });
+        this.updateAdvert = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                //not implemented
+            }
+            catch (e) {
+                console.log(e);
+                res.status(400).send();
+            }
+        });
+        this.deleteAdvert = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            var _b;
+            try {
+                const userId = req.get("Authorization");
+                const advertId = (_b = req.query.advertId) === null || _b === void 0 ? void 0 : _b.toString();
+                if (advertId == null)
+                    res.status(400).send({ error: "Missing advert id." });
+                else {
+                    const result = yield this.advertService.deleteAdvert(advertId, userId);
+                    res.status(200).send(result);
                 }
             }
             catch (e) {
@@ -95,7 +126,16 @@ class AdvertController {
                 res.status(400).send();
             }
         });
-        this.favoriteAdvert = (req, res) => __awaiter(this, void 0, void 0, function* () {
+        this.getFavoriteAdvert = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                //not implemented
+            }
+            catch (e) {
+                console.log(e);
+                res.status(400).send({ error: "Missing advert id." });
+            }
+        });
+        this.addFavoriteAdvert = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
                 const advertId = req.query.advertId;
                 const userId = req.get("Authorization");
@@ -107,13 +147,27 @@ class AdvertController {
                 res.status(400).send({ error: "Missing advert id." });
             }
         });
+        this.getUserAdverts = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            try {
+                const adverts = yield this.advertService.getAdvert();
+                res.status(200).send(adverts);
+            }
+            catch (e) {
+                console.log(e);
+                res.status(400).send();
+            }
+        });
         this.initRouter();
     }
     initRouter() {
         const upload_public = new imageMiddleware_1.ImageMiddleWare().getStorage();
-        this.router.post("/create", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, upload_public.array('uploaded_file', 5), this.createAdvert);
+        this.router.post("", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, upload_public.array('uploaded_file', 5), this.createAdvert);
+        this.router.put("", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, upload_public.array('uploaded_file', 5), this.updateAdvert); //not implemented
+        this.router.delete("", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.deleteAdvert); //not implemented
+        this.router.get("", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.getUserAdverts);
         this.router.get("/all", this.getAdvert);
-        this.router.post("/favorite/add", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.favoriteAdvert);
+        this.router.get("/favorite", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.getFavoriteAdvert); //not implemented
+        this.router.post("/favorite", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.addFavoriteAdvert);
         this.router.use(express_1.default.static(path_1.default.join(__dirname.split('src')[0], process.env.IMAGE_PUBLIC)));
     }
 }
