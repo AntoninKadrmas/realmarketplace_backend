@@ -67,7 +67,10 @@ export class AdvertController implements GenericController{
     }
     updateAdvert: RequestHandler = async (req, res) => {
         try{
-            //not implemented
+            console.log(req.body)
+            if(req.body==null)res.status(400).send({error:"Body does not contains advert information's"})
+            else{
+            }
         }
         catch(e){
             console.log(e)
