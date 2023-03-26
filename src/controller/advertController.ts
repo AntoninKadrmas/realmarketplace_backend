@@ -103,7 +103,7 @@ export class AdvertController implements GenericController{
     }
     private deleteFiles(imagesUrls:string[]){
         console.log(imagesUrls)
-        for(var image in imagesUrls){
+        for(var image of imagesUrls){
             fs.unlinkSync(__dirname.split('src')[0]+"public"+image)
         }
     }
