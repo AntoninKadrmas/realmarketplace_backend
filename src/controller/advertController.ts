@@ -75,7 +75,13 @@ export class AdvertController implements GenericController{
     }
     deleteAdvert: RequestHandler = async (req, res) => {
         try{
-            //not implemented
+            const userId = req.get("Authorization") as string
+            const advertId = req.query.advertId?.toString()
+            if(advertId==null)res.status(400).send({error:"Missing advert id."})
+            else{
+                const result = await this.advertService.deleteAdvert(advertId,userId)
+                res.status(200).send(result)
+            }
         }
         catch(e){
             console.log(e)

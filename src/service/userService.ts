@@ -39,8 +39,7 @@ export class UserService extends GenericService{
     }
     async getUserDataById(userId?:string):Promise<UserModel | {error:string}>{
         try{    
-            const _id = new ObjectId(userId)    
-            const result =  await this.db.collection(this.collection[0]).findOne({'_id':_id})
+            const result =  await this.db.collection(this.collection[0]).findOne({'_id':new ObjectId(userId) })
             return result
         }catch(e){   
             console.log(e)  

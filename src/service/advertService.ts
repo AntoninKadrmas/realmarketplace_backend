@@ -2,6 +2,7 @@ import { GenericService } from "./genericService";
 import * as dotenv from 'dotenv';
 import { DBConnection } from "../db/dbConnection";
 import { AdvertModel } from "../model/advertModel";
+import { ObjectId } from "mongodb";
 
 export class AdvertService extends GenericService{
     constructor(){
@@ -54,5 +55,15 @@ export class AdvertService extends GenericService{
             console.log(e)
             return {error:"Database dose not response."}
         }
+    }
+    async deleteAdvert(advertId:string,user_id:string):Promise<any>{
+        try{
+            const result = await this.db.collection(this.collection[0]).deleteOne({"_id":new ObjectId(advertId),"userId":user_id})
+            console.log(result)
+            return result
+        }catch(e){
+            console.log(e)
+            return {error:"Database dose not response."}
+        } 
     }
 }
