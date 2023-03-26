@@ -35,12 +35,21 @@ export class AdvertService extends GenericService{
             return {error:"Database dose not response."}
         }
     }
-    async saveAdvertId(userId:string,advertId:string):Promise<any>{
+    async saveAdvertId(userId:string,advertId:string):Promise<{success:string}|{error:string}>{
         try{
             const result = await this.db.collection(this.collection[1]).updateOne({'userId':userId}, { $addToSet: { 'advertId': advertId }}, { upsert: true })
             console.log(result)
             if(result.acknowledged)return {success:"Advert successfully added to favorite collection"}
             else return {error:"There is some problem with favorite advert."}
+        }catch(e){
+            console.log(e)
+            return {error:"Database dose not response."}
+        }
+    }
+    async getAdvertByUserIf(userId:string):Promise<AdvertModel[]|{error:string}>{
+        try{
+            const result = await this.db.collection(this.collection[0]).find({"userId":userId}).toArray();
+            return result
         }catch(e){
             console.log(e)
             return {error:"Database dose not response."}

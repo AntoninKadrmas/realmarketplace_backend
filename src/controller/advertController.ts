@@ -18,9 +18,12 @@ export class AdvertController implements GenericController{
     }
     initRouter(): void {
         const upload_public = new ImageMiddleWare().getStorage()
+
         this.router.post("/create",userAuthMiddlewareStrict,upload_public.array('uploaded_file',5),this.createAdvert)
         this.router.get("/all",this.getAdvert)
+        this.router.get("/my",userAuthMiddlewareStrict,this.getUserAdverts)
         this.router.post("/favorite/add",userAuthMiddlewareStrict,this.favoriteAdvert)
+
         this.router.use(express.static(path.join(__dirname.split('src')[0],process.env.IMAGE_PUBLIC!!)))
     }
     createAdvert: RequestHandler = async (req, res) => {
@@ -73,6 +76,15 @@ export class AdvertController implements GenericController{
         }catch(e){
             console.log(e)
             res.status(400).send({error:"Missing advert id."})
+        }
+    }
+    getUserAdverts: RequestHandler = async (req, res) => {
+        try{
+            const adverts = await this.advertService.getAdvert()
+            res.status(200).send(adverts)
+        }catch(e){
+            console.log(e)
+            res.status(400).send()
         }
     }
 }
