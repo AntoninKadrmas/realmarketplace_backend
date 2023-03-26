@@ -93,7 +93,7 @@ export class AdvertController implements GenericController{
                 }
                 const response = await this.advertService.updateAdvert(advertId,userId!,advert)
                 if(response.hasOwnProperty("error"))res.status(400).send(response)
-                else res.status(200).send({success:response.success,imageUrls:advert.imagesUrls})
+                else res.status(200).send({"success":response.success,"imageUrls":advert.imagesUrls})
             }
         }
         catch(e){
