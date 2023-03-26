@@ -33,7 +33,6 @@ export class AdvertController implements GenericController{
         try{
             if(req.body==null)res.status(400).send({error:"Body does not contains advert information's"})
             else{
-            
                 const advert:AdvertModel = req.body as AdvertModel
                 advert.userId=req.query.token?.toString()
                 advert.createdIn = new Date()
@@ -70,6 +69,12 @@ export class AdvertController implements GenericController{
             console.log(req.body)
             if(req.body==null)res.status(400).send({error:"Body does not contains advert information's"})
             else{
+                const deleteUrl=req.body.deletedUrls
+                delete req.body.deletedUrls
+                const advert:AdvertModel = req.body as AdvertModel
+                console.log(advert)
+                const userId=req.query.token?.toString()
+                
             }
         }
         catch(e){
