@@ -8,6 +8,7 @@ import fs from 'fs';
 import path from 'path';
 import * as dotenv from 'dotenv';
 import { userAuthMiddlewareStrict } from "../middleware/userAuthMiddlewareStrict";
+import { userAuthMiddlewareLenient } from "../middleware/userAuthMiddlewareLenient";
 dotenv.config();
 
 export class AdvertController implements GenericController{
@@ -23,7 +24,7 @@ export class AdvertController implements GenericController{
         this.router.put("",userAuthMiddlewareStrict,upload_public.array('uploaded_file',5),this.updateAdvert)//not implemented
         this.router.delete("",userAuthMiddlewareStrict,this.deleteAdvert)//not implemented
         this.router.get("",userAuthMiddlewareStrict,this.getUserAdverts)
-        this.router.get("/all",this.getAdvert)
+        this.router.get("/all",userAuthMiddlewareLenient,this.getAdvert)
         this.router.get("/favorite",userAuthMiddlewareStrict,this.getFavoriteAdvert)//not implemented
         this.router.post("/favorite",userAuthMiddlewareStrict,this.addFavoriteAdvert)
 
@@ -74,7 +75,7 @@ export class AdvertController implements GenericController{
                 delete req.body.deletedUrls
                 delete req.body._id
                 const advert:AdvertModel = req.body as AdvertModel
-                if(req.body.imageUrls!="")advert.imagesUrls=req.body.imageUrls.split(";").filter((x:string)=>x!="")
+                if(req.body.imagesUrls!="")advert.imagesUrls=req.body.imagesUrls.split(";").filter((x:string)=>x!="")
                 else advert.imagesUrls=[]
                 const userId=req.query.token?.toString()
                 let counter = 0;
@@ -123,8 +124,15 @@ export class AdvertController implements GenericController{
     }
     getAdvert: RequestHandler = async (req, res) => {
         try{
-            const adverts = await this.advertService.getAdvert()
-            res.status(200).send(adverts)
+            // const adverts = await this.advertService.getAdvert()
+            const userId = req.query.token?.toString()
+            if(userId==""){
+
+            }
+            else{
+
+            }
+            // res.status(200).send(adverts)
         }catch(e){
             console.log(e)
             res.status(400).send()
@@ -151,7 +159,7 @@ export class AdvertController implements GenericController{
     }
     getUserAdverts: RequestHandler = async (req, res) => {
         try{
-            const adverts = await this.advertService.getAdvert()
+            const adverts = await this.advertService.getAdvertByUserId(req.query.token!.toString())
             res.status(200).send(adverts)
         }catch(e){
             console.log(e)
