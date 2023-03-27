@@ -1,0 +1,48 @@
+[{
+  "_id": {
+    "$oid": "6410ed18e197d87e55c70bf9"
+  },
+  "cardId": "0407082951",
+  "createdIn": {
+    "$date": {
+      "$numberLong": "1678830872457"
+    }
+  },
+  "email": "kadrmas.antonin@gmail.com",
+  "first_name": "kadrmas.antonin@gmail.com",
+  "last_name": "Kadrmas",
+  "password": "$2b$10$KJg6T9.h7pOuBD7fRkbKnesyEn6CGXDQfVUNNqtuLpAfwAmgVeFkW",
+  "phone": "kadrmas.antonin@gmail.com",
+  "validated": {
+    "validIdAndFace": false,
+    "validIdBack": false,
+    "validIdFront": false,
+    "validSecondIdBack": false,
+    "validSecondIdFront": false
+  },
+  "lightUserId": {
+    "$oid": "6410ed18e197d87e55c70bf8"
+  }
+},{
+  "_id": {
+    "$oid": "641ad7801260c3c98923ea18"
+  },
+  "createdIn": {
+    "$date": {
+      "$numberLong": "1679480703276"
+    }
+  },
+  "email": "step@spsejecna.cz",
+  "first_name": "step@spsejecna.cz",
+  "last_name": "Step",
+  "password": "$2b$10$HpIBTKmZ7lR3U4JKOSSMUeM.bwgrJfqTnnt8VwI1PRY8oCimf2Ehq",
+  "phone": "156000000",
+  "validated": {
+    "validEmail": false,
+    "validID": false,
+    "validSMS": false
+  },
+  "lightUserId": {
+    "$oid": "641ad7801260c3c98923ea17"
+  }
+}]
