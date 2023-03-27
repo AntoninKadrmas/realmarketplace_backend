@@ -26,6 +26,7 @@ export class AdvertController implements GenericController{
         this.router.get("/all",this.getAdvert)
         this.router.get("/favorite",userAuthMiddlewareStrict,this.getFavoriteAdvert)//not implemented
         this.router.post("/favorite",userAuthMiddlewareStrict,this.addFavoriteAdvert)
+        this.router.delete("/favorite",userAuthMiddlewareStrict,this.deleteFavoriteAdvert)
 
         this.router.use(express.static(path.join(__dirname.split('src')[0],process.env.IMAGE_PUBLIC!!)))
     }
@@ -143,6 +144,17 @@ export class AdvertController implements GenericController{
             const advertId = req.query.advertId?.toString()
             const userId = req.query.token?.toString()
             const response = await this.advertService.saveAdvertId(userId!,advertId!)
+            res.status(200).send(response)
+        }catch(e){
+            console.log(e)
+            res.status(400).send({error:"Missing advert id."})
+        }
+    }
+    deleteFavoriteAdvert: RequestHandler = async (req, res) => {
+        try{
+            const advertId = req.query.advertId?.toString()
+            const userId = req.query.token?.toString()
+            const response = await this.advertService.deleteAdvertId(userId!,advertId!)
             res.status(200).send(response)
         }catch(e){
             console.log(e)

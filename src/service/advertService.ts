@@ -39,8 +39,17 @@ export class AdvertService extends GenericService{
     async saveAdvertId(userId:string,advertId:string):Promise<{success:string}|{error:string}>{
         try{
             const result = await this.db.collection(this.collection[1]).updateOne({'userId':userId}, { $addToSet: { 'advertId': advertId }}, { upsert: true })
-            console.log(result)
             if(result.acknowledged)return {success:"Advert successfully added to favorite collection"}
+            else return {error:"There is some problem with favorite advert."}
+        }catch(e){
+            console.log(e)
+            return {error:"Database dose not response."}
+        }
+    }
+    async deleteAdvertId(userId:string,advertId:string):Promise<{success:string}|{error:string}>{
+        try{
+            const result = await this.db.collection(this.collection[1]).updateOne({'userId':userId}, { $pull: { 'advertId': advertId }}, { upsert: true })
+            if(result.acknowledged)return {success:"Advert successfully removed from favorite collection"}
             else return {error:"There is some problem with favorite advert."}
         }catch(e){
             console.log(e)
