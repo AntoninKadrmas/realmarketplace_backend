@@ -49,10 +49,7 @@ export class EnumController implements GenericController{
     }
     getGenre: RequestHandler = async (req, res) => {
         res.set("Cache-Control","max-age=1000")
-        await new Promise((req,resolve)=>{
-            setTimeout((error:string)=>{
-                res.status(200).send(this.enumGenreOptionList)
-        },3000)})
+        res.status(200).send(this.enumGenreOptionList)
     }
     getPriceOption: RequestHandler = async (req, res) => {
         res.set("Cache-Control","max-age=3600")
