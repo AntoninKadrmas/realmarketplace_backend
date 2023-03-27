@@ -83,9 +83,23 @@ class AdvertService extends genericService_1.GenericService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const result = yield this.db.collection(this.collection[1]).updateOne({ 'userId': userId }, { $addToSet: { 'advertId': advertId } }, { upsert: true });
-                console.log(result);
                 if (result.acknowledged)
                     return { success: "Advert successfully added to favorite collection" };
+                else
+                    return { error: "There is some problem with favorite advert." };
+            }
+            catch (e) {
+                console.log(e);
+                return { error: "Database dose not response." };
+            }
+        });
+    }
+    deleteAdvertId(userId, advertId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const result = yield this.db.collection(this.collection[1]).updateOne({ 'userId': userId }, { $pull: { 'advertId': advertId } }, { upsert: true });
+                if (result.acknowledged)
+                    return { success: "Advert successfully removed from favorite collection" };
                 else
                     return { error: "There is some problem with favorite advert." };
             }
@@ -107,12 +121,35 @@ class AdvertService extends genericService_1.GenericService {
             }
         });
     }
-    deleteAdvert(advertId, user_id) {
+    deleteAdvert(advertId, userId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const result = yield this.db.collection(this.collection[0]).deleteOne({ "_id": new mongodb_1.ObjectId(advertId), "userId": user_id });
-                console.log(result);
-                return result;
+                const result = yield this.db.collection(this.collection[0]).deleteOne({ "_id": new mongodb_1.ObjectId(advertId), "userId": userId });
+                if (result.acknowledged && result.deletedCount == 1)
+                    return { success: "Advert successfully deleted." };
+                else if (result.acknowledged && result.deletedCount == 0)
+                    return { error: "Can't delete foreign advert." };
+                else
+                    return { error: "There is some problem with database." };
+            }
+            catch (e) {
+                console.log(e);
+                return { error: "Database dose not response." };
+            }
+        });
+    }
+    updateAdvert(advertId, userId, advert) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const result = yield this.db.collection(this.collection[0]).updateOne({ "_id": new mongodb_1.ObjectId(advertId), "userId": userId }, {
+                    $set: advert
+                });
+                if (result.acknowledged && result.modifiedCount == 1)
+                    return { success: "Advert successfully updated." };
+                else if (result.acknowledged && result.modifiedCount == 0)
+                    return { error: "Can't update foreign advert." };
+                else
+                    return { error: "There is some problem with database." };
             }
             catch (e) {
                 console.log(e);

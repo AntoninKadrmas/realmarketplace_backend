@@ -25,12 +25,19 @@ class EnumController {
         this.enumConditionOptionList = [];
         this.enumGenreOptionList = [];
         this.getBookCondition = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            res.set("Cache-Control", "max-age=3600");
             res.status(200).send(this.enumConditionOptionList);
         });
         this.getGenre = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            res.status(200).send(this.enumGenreOptionList);
+            res.set("Cache-Control", "max-age=1000");
+            yield new Promise((req, resolve) => {
+                setTimeout((error) => {
+                    res.status(200).send(this.enumGenreOptionList);
+                }, 3000);
+            });
         });
         this.getPriceOption = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            res.set("Cache-Control", "max-age=3600");
             res.status(200).send(this.enumPriceOptionList);
         });
         this.initRouter();

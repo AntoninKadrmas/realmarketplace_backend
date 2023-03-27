@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.userAuthMiddlewareStrict = void 0;
 const tokenService_1 = require("../service/tokenService");
 function userAuthMiddlewareStrict(request, response, next) {
-    var _a, _b, _c;
+    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const token = request.get("Authorization");
@@ -24,8 +24,6 @@ function userAuthMiddlewareStrict(request, response, next) {
                 throw Error("Token expired.");
             else {
                 request.query.token = (_a = tokenExists.token) === null || _a === void 0 ? void 0 : _a.userId;
-                response.set("Authorization", (_b = tokenExists.token) === null || _b === void 0 ? void 0 : _b.userId);
-                response.setHeader("Authorization", (_c = tokenExists.token) === null || _c === void 0 ? void 0 : _c.userId);
                 yield tokenService.updateTokenByTokenId(token);
             }
             next();

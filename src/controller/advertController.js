@@ -49,17 +49,15 @@ class AdvertController {
         this.path = "/advert";
         this.router = express_1.default.Router();
         this.createAdvert = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            var _a;
+            var _a, _b;
             try {
                 if (req.body == null)
                     res.status(400).send({ error: "Body does not contains advert information's" });
                 else {
-                    console.log(req.query.token);
                     const advert = req.body;
-                    advert.userId = req.get("Authorization");
+                    advert.userId = (_a = req.query.token) === null || _a === void 0 ? void 0 : _a.toString();
                     advert.createdIn = new Date();
                     advert.imagesUrls = [];
-                    console.log(req.get("Authorization"));
                     let counter = 0;
                     if (req.files != null) {
                         //@ts-ignore
@@ -70,7 +68,7 @@ class AdvertController {
                                 const imageUrl = `/${file.filename}`;
                                 if (counter == 0)
                                     advert.mainImage = imageUrl;
-                                (_a = advert.imagesUrls) === null || _a === void 0 ? void 0 : _a.push(imageUrl);
+                                (_b = advert.imagesUrls) === null || _b === void 0 ? void 0 : _b.push(imageUrl);
                                 counter++;
                             }
                         }
@@ -91,8 +89,43 @@ class AdvertController {
             }
         });
         this.updateAdvert = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            var _c, _d;
             try {
-                //not implemented
+                if (req.body == null)
+                    res.status(400).send({ error: "Body does not contains advert information's" });
+                else {
+                    const deleteUrl = req.body.deletedUrls.split(";").filter((x) => x != "");
+                    const advertId = req.body._id.toString();
+                    this.deleteFiles(deleteUrl);
+                    delete req.body.deletedUrls;
+                    delete req.body._id;
+                    const advert = req.body;
+                    if (req.body.imageUrls != "")
+                        advert.imagesUrls = req.body.imageUrls.split(";").filter((x) => x != "");
+                    else
+                        advert.imagesUrls = [];
+                    const userId = (_c = req.query.token) === null || _c === void 0 ? void 0 : _c.toString();
+                    let counter = 0;
+                    if (req.files != null) {
+                        //@ts-ignore
+                        for (let file of req.files) {
+                            const dirUrl = __dirname.split('src')[0] + "public/" + file.filename;
+                            if (!fs_1.default.existsSync(dirUrl)) { }
+                            else {
+                                const imageUrl = `/${file.filename}`;
+                                if (counter == 0 && advert.mainImage == "")
+                                    advert.mainImage = imageUrl;
+                                (_d = advert.imagesUrls) === null || _d === void 0 ? void 0 : _d.push(imageUrl);
+                                counter++;
+                            }
+                        }
+                    }
+                    const response = yield this.advertService.updateAdvert(advertId, userId, advert);
+                    if (response.hasOwnProperty("error"))
+                        res.status(400).send(response);
+                    else
+                        res.status(200).send({ "success": response.success, "imageUrls": advert.imagesUrls });
+                }
             }
             catch (e) {
                 console.log(e);
@@ -100,10 +133,10 @@ class AdvertController {
             }
         });
         this.deleteAdvert = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            var _b;
+            var _e, _f;
             try {
-                const userId = req.get("Authorization");
-                const advertId = (_b = req.query.advertId) === null || _b === void 0 ? void 0 : _b.toString();
+                const userId = (_e = req.query.token) === null || _e === void 0 ? void 0 : _e.toString();
+                const advertId = (_f = req.query.advertId) === null || _f === void 0 ? void 0 : _f.toString();
                 if (advertId == null)
                     res.status(400).send({ error: "Missing advert id." });
                 else {
@@ -136,10 +169,24 @@ class AdvertController {
             }
         });
         this.addFavoriteAdvert = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            var _g, _h;
             try {
-                const advertId = req.query.advertId;
-                const userId = req.get("Authorization");
+                const advertId = (_g = req.query.advertId) === null || _g === void 0 ? void 0 : _g.toString();
+                const userId = (_h = req.query.token) === null || _h === void 0 ? void 0 : _h.toString();
                 const response = yield this.advertService.saveAdvertId(userId, advertId);
+                res.status(200).send(response);
+            }
+            catch (e) {
+                console.log(e);
+                res.status(400).send({ error: "Missing advert id." });
+            }
+        });
+        this.deleteFavoriteAdvert = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            var _j, _k;
+            try {
+                const advertId = (_j = req.query.advertId) === null || _j === void 0 ? void 0 : _j.toString();
+                const userId = (_k = req.query.token) === null || _k === void 0 ? void 0 : _k.toString();
+                const response = yield this.advertService.deleteAdvertId(userId, advertId);
                 res.status(200).send(response);
             }
             catch (e) {
@@ -168,7 +215,13 @@ class AdvertController {
         this.router.get("/all", this.getAdvert);
         this.router.get("/favorite", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.getFavoriteAdvert); //not implemented
         this.router.post("/favorite", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.addFavoriteAdvert);
+        this.router.delete("/favorite", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.deleteFavoriteAdvert);
         this.router.use(express_1.default.static(path_1.default.join(__dirname.split('src')[0], process.env.IMAGE_PUBLIC)));
+    }
+    deleteFiles(imagesUrls) {
+        for (var image of imagesUrls) {
+            fs_1.default.unlinkSync(__dirname.split('src')[0] + "public" + image);
+        }
     }
 }
 exports.AdvertController = AdvertController;
