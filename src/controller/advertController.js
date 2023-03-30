@@ -36,13 +36,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdvertController = void 0;
-const express_1 = __importDefault(require("express"));
-const imageMiddleware_1 = require("../middleware/imageMiddleware");
-const fs_1 = __importDefault(require("fs"));
-const path_1 = __importDefault(require("path"));
-const dotenv = __importStar(require("dotenv"));
 const userAuthMiddlewareStrict_1 = require("../middleware/userAuthMiddlewareStrict");
+const imageMiddleware_1 = require("../middleware/imageMiddleware");
+const express_1 = __importDefault(require("express"));
 const mongodb_1 = require("mongodb");
+const dotenv = __importStar(require("dotenv"));
+const path_1 = __importDefault(require("path"));
+const fs_1 = __importDefault(require("fs"));
 dotenv.config();
 class AdvertController {
     constructor(advertService) {
@@ -154,7 +154,7 @@ class AdvertController {
             var _g;
             try {
                 const userId = (_g = req.query.token) === null || _g === void 0 ? void 0 : _g.toString();
-                if (userId == "") {
+                if (userId == "" || userId == null) {
                     const response = yield this.advertService.getAdvertWithOutUser();
                     if (response.hasOwnProperty("error"))
                         res.status(400).send(response);
@@ -179,7 +179,10 @@ class AdvertController {
             try {
                 const userId = new mongodb_1.ObjectId((_h = req.query.token) === null || _h === void 0 ? void 0 : _h.toString());
                 const response = yield this.advertService.getFavoriteAdvertByUserId(userId);
-                res.status(200).send(response);
+                if (response.hasOwnProperty("error"))
+                    res.status(400).send(response);
+                else
+                    res.status(200).send(response);
             }
             catch (e) {
                 console.log(e);

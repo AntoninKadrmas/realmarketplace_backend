@@ -88,6 +88,9 @@ class AdvertService extends genericService_1.GenericService {
                             foreignField: "_id",
                             as: "user"
                         } },
+                    { $addFields: {
+                            "user": { $arrayElemAt: ["$user", 0] }
+                        } },
                     { $project: {
                             _id: 1,
                             title: 1,
@@ -113,7 +116,6 @@ class AdvertService extends genericService_1.GenericService {
                         }
                     }
                 ]).toArray();
-                console.log(result);
                 return result;
             }
             catch (e) {
@@ -145,9 +147,6 @@ class AdvertService extends genericService_1.GenericService {
                         }
                     },
                     { $project: {
-                            _id: 1,
-                            userId: 1,
-                            advertId: 1,
                             advert: {
                                 _id: 1,
                                 title: 1,
@@ -174,7 +173,6 @@ class AdvertService extends genericService_1.GenericService {
                         }
                     }
                 ]).toArray();
-                console.log(result);
                 return result;
             }
             catch (e) {

@@ -44,6 +44,9 @@ export class AdvertService extends GenericService{
                 localField:"userId",
                 foreignField:"_id",
                 as:"user"}},
+               { $addFields: {
+                    "user": { $arrayElemAt: [ "$user", 0 ] }
+                }},
                 { $project: {
                     _id: 1,
                     title: 1,
