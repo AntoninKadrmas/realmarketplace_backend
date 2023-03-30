@@ -9,6 +9,7 @@ import path from 'path';
 import * as dotenv from 'dotenv';
 import { userAuthMiddlewareStrict } from "../middleware/userAuthMiddlewareStrict";
 import { userAuthMiddlewareLenient } from "../middleware/userAuthMiddlewareLenient";
+import { ObjectId } from "mongodb";
 dotenv.config();
 
 export class AdvertController implements GenericController{
@@ -36,7 +37,7 @@ export class AdvertController implements GenericController{
             if(req.body==null)res.status(400).send({error:"Body does not contains advert information's"})
             else{
                 const advert:AdvertModel = req.body as AdvertModel
-                advert.userId=req.query.token?.toString()
+                advert.userId=new ObjectId(req.query.token?.toString())
                 advert.createdIn = new Date()
                 advert.imagesUrls = []
                 let counter = 0;
@@ -71,14 +72,14 @@ export class AdvertController implements GenericController{
             if(req.body==null)res.status(400).send({error:"Body does not contains advert information's"})
             else{
                 const deleteUrl=req.body.deletedUrls.split(";").filter((x:string)=>x!="")
-                const advertId = req.body._id.toString()
+                const advertId = new ObjectId(req.body._id.toString())
+                const userId=new ObjectId(req.query.token?.toString())
                 this.deleteFiles(deleteUrl)
                 delete req.body.deletedUrls
                 delete req.body._id
                 const advert:AdvertModel = req.body as AdvertModel
                 if(req.body.imagesUrls!="")advert.imagesUrls=req.body.imagesUrls.split(";").filter((x:string)=>x!="")
                 else advert.imagesUrls=[]
-                const userId=req.query.token?.toString()
                 let counter = 0;
                 if(req.files!=null){
                     //@ts-ignore
@@ -93,7 +94,7 @@ export class AdvertController implements GenericController{
                         }
                     }
                 }
-                const response:{success:string}|{error:string} = await this.advertService.updateAdvert(advertId,userId!,advert)
+                const response:{success:string}|{error:string} = await this.advertService.updateAdvert(advertId,userId,advert)
                 if(response.hasOwnProperty("error"))res.status(400).send(response)
                 else res.status(200).send({"success":(response as {success:string}).success,"imageUrls":advert.imagesUrls})
             }
@@ -110,11 +111,11 @@ export class AdvertController implements GenericController{
     }
     deleteAdvert: RequestHandler = async (req, res) => {
         try{
-            const userId = req.query.token?.toString()
-            const advertId = req.query.advertId?.toString()
+            const userId = new ObjectId(req.query.token?.toString())
+            const advertId = new ObjectId(req.query.advertId?.toString())
             if(advertId==null)res.status(400).send({error:"Missing advert id."})
             else{
-                const result = await this.advertService.deleteAdvert(advertId,userId!)
+                const result = await this.advertService.deleteAdvert(advertId,userId)
                 res.status(200).send(result)
             }
         }
@@ -149,9 +150,9 @@ export class AdvertController implements GenericController{
     }
     addFavoriteAdvert: RequestHandler = async (req, res) => {
         try{
-            const advertId = req.query.advertId?.toString()
-            const userId = req.query.token?.toString()
-            const response = await this.advertService.saveAdvertId(userId!,advertId!)
+            const advertId = new ObjectId(req.query.advertId?.toString())
+            const userId = new ObjectId(req.query.token?.toString())
+            const response = await this.advertService.saveAdvertId(userId,advertId)
             res.status(200).send(response)
         }catch(e){
             console.log(e)
@@ -160,9 +161,9 @@ export class AdvertController implements GenericController{
     }
     deleteFavoriteAdvert: RequestHandler = async (req, res) => {
         try{
-            const advertId = req.query.advertId?.toString()
-            const userId = req.query.token?.toString()
-            const response = await this.advertService.deleteAdvertId(userId!,advertId!)
+            const advertId = new ObjectId(req.query.advertId?.toString())
+            const userId = new ObjectId(req.query.token?.toString())
+            const response = await this.advertService.deleteAdvertId(userId,advertId)
             res.status(200).send(response)
         }catch(e){
             console.log(e)
@@ -171,7 +172,8 @@ export class AdvertController implements GenericController{
     }
     getUserAdverts: RequestHandler = async (req, res) => {
         try{
-            const adverts = await this.advertService.getAdvertByUserId(req.query.token!.toString())
+            const userId = new ObjectId(req.query.token!.toString())
+            const adverts = await this.advertService.getAdvertByUserId(userId)
             res.status(200).send(adverts)
         }catch(e){
             console.log(e)
