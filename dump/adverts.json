@@ -1,0 +1,25 @@
+[{
+  "_id": {
+    "$oid": "6420532fd8a553c48393b438"
+  },
+  "title": "Čítanka 3 pro střední školy",
+  "author": "Ing Marketing ",
+  "description": "Fakt fajn všichni neskáčou na ten maturák a pak už jen na frontendu udržuje tu datovou schránku. Ahoj Martine jen jsme se chtěl zeptat jestli někdo doma ještě jednou děkuji za odpověď. ",
+  "genreName": "Anthology",
+  "genreType": "Fiction",
+  "price": "By Agreement",
+  "priceOption": "By Agreement",
+  "condition": "Damaged",
+  "userId": "6410ed18e197d87e55c70bf9",
+  "createdIn": {
+    "$date": {
+      "$numberLong": "1679840047623"
+    }
+  },
+  "imagesUrls": [
+    "/416d19c1-489a-4ca5-89ce-9a99b42001d1_1679840047608.jpg",
+    "/5108bfd3-64a7-4f15-ae71-331289feb564_1679840047612.jpg"
+  ],
+  "mainImage": "/416d19c1-489a-4ca5-89ce-9a99b42001d1_1679840047608.jpg",
+  "imageUrls": "/416d19c1-489a-4ca5-89ce-9a99b42001d1_1679840047608.jpg;/5108bfd3-64a7-4f15-ae71-331289feb564_1679840047612.jpg"
+}]

@@ -8,9 +8,9 @@ export async function userAuthMiddlewareLenient(request: express.Request, respon
         if(token==null)throw Error("Token does not exists in query params")
         const tokenService:TokenService = await TokenService.getInstance()
         const tokenExists:TokenExistsModel = await tokenService.tokenExists(token);
-        if(!tokenExists.valid)response.set("Authorization","")
+        if(!tokenExists.valid) request.query.token=""
         else {
-            response.set("Authorization",tokenExists.token?.userId)
+            request.query.token =tokenExists.token?.userId
             await tokenService.updateTokenByTokenId(token)
         }
         next()

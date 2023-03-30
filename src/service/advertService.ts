@@ -27,9 +27,31 @@ export class AdvertService extends GenericService{
             return {error:"Database dose not response."}
         }
     }
-    async getAdvert():Promise<AdvertModel[]|{error:string}>{
+    async getAdvertWithOutUser():Promise<AdvertModel[]|{error:string}>{
         try{
             const result = await this.db.collection(this.collection[0]).find({}).toArray();
+            return result
+        }catch(e){
+            console.log(e)
+            return {error:"Database dose not response."}
+        }
+    }
+    async getAdvertWithUser(advertId:string,userId:string):Promise<AdvertModel[]|{error:string}>{
+        try{
+            const result = await this.db.collection(this.collection[0]).find({_id:new ObjectId(advertId),userId:userId}).aggregate([
+                {
+                    $addFields: {
+                        convertedId: { $toObjectId: "$userId" }
+                    }
+                },
+                { "$lookup": {
+                    from: "users",
+                    localField: "convertedId",
+                    foreignField: "_id",
+                    as: "user",
+                  }}
+                ])
+            console.log(result)
             return result
         }catch(e){
             console.log(e)
