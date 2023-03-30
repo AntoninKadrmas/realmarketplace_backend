@@ -16,7 +16,7 @@ export async function userAuthMiddlewareLenient(request: express.Request, respon
         }
         next()
     }catch(e:any){
-        console.log(e);
-        response.status(401).send({error:e.message})
+        request.query.token=""
+        next()
     }
 }
