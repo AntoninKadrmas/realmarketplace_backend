@@ -47,5 +47,5 @@ export class FavoriteAdvertUser{
     _id!: string;
     userId!: string;
     advertId!: string;
-    advert!:AdvertModelWithUser
+    advert!:AdvertModelWithUser[]
 }

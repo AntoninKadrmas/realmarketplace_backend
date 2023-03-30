@@ -1,6 +1,6 @@
 import { userAuthMiddlewareStrict } from "../middleware/userAuthMiddlewareStrict";
 import { userAuthMiddlewareLenient } from "../middleware/userAuthMiddlewareLenient";
-import { AdvertModel, AdvertModelWithUser } from "../model/advertModel";
+import { AdvertModel, AdvertModelWithUser, FavoriteAdvertUser } from "../model/advertModel";
 import { ImageMiddleWare } from "../middleware/imageMiddleware";
 import { GenericController } from "./genericController";
 import { AdvertService } from "../service/advertService";
@@ -146,7 +146,8 @@ export class AdvertController implements GenericController{
         try{
             const userId = new ObjectId(req.query.token?.toString())
             const response = await this.advertService.getFavoriteAdvertByUserId(userId)
-            res.status(200).send(response)
+            if(response.hasOwnProperty("error"))res.status(400).send(response)
+            else res.status(200).send(response)
         }catch(e){
             console.log(e)
             res.status(400).send({error:"Missing advert id."})

@@ -1,7 +1,7 @@
 import { GenericService } from "./genericService";
 import * as dotenv from 'dotenv';
 import { DBConnection } from "../db/dbConnection";
-import { AdvertModel, AdvertModelWithUser } from "../model/advertModel";
+import { AdvertModel, AdvertModelWithUser, FavoriteAdvertUser } from "../model/advertModel";
 import { ObjectId } from "mongodb";
 
 export class AdvertService extends GenericService{
@@ -75,7 +75,7 @@ export class AdvertService extends GenericService{
             return {error:"Database dose not response."}
         }
     }
-    async getFavoriteAdvertByUserId(userId:ObjectId):Promise<any>{
+    async getFavoriteAdvertByUserId(userId:ObjectId):Promise<FavoriteAdvertUser[]|{error:string}>{
         try{
             const result = await this.db.collection(this.collection[1]).aggregate([
             {$match: {userId:userId}}, 
