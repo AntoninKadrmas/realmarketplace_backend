@@ -38,6 +38,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserController = void 0;
 const express_1 = __importDefault(require("express"));
 const dotenv = __importStar(require("dotenv"));
+const mongodb_1 = require("mongodb");
 dotenv.config();
 class UserController {
     constructor(userService, tokenService) {
@@ -45,7 +46,7 @@ class UserController {
         this.tokenService = tokenService;
         this.path = '/user';
         this.router = express_1.default.Router();
-        this.insertUser = (req, res) => __awaiter(this, void 0, void 0, function* () {
+        this.registerUser = (req, res) => __awaiter(this, void 0, void 0, function* () {
             let user;
             try {
                 if (req.body == null) {
@@ -57,9 +58,9 @@ class UserController {
                     const createUserResponse = yield this.userService.createNewUser(user);
                     if (createUserResponse.hasOwnProperty("userId")) {
                         const userIds = createUserResponse;
-                        const token = yield this.tokenService.createToken(userIds.userId);
+                        const token = yield this.tokenService.createToken(new mongodb_1.ObjectId(userIds.userId));
                         if (!token.hasOwnProperty("error"))
-                            return res.status(200).send({ "token": token });
+                            return res.status(200).send({ "token": token.toString() });
                         else
                             res.status(400).send(token);
                     }
@@ -87,9 +88,9 @@ class UserController {
                         res.status(400).send(userResponse);
                     else {
                         const tempUserResponse = userResponse;
-                        const token = yield this.tokenService.createToken(tempUserResponse._id);
+                        const token = yield this.tokenService.createToken(new mongodb_1.ObjectId(tempUserResponse._id));
                         if (!token.hasOwnProperty("error"))
-                            return res.status(200).send({ "token": token });
+                            return res.status(200).send({ "token": token.toString() });
                         else
                             res.status(400).send(token);
                     }
@@ -114,7 +115,7 @@ class UserController {
         this.initRouter();
     }
     initRouter() {
-        this.router.post('/register', this.insertUser);
+        this.router.post('/register', this.registerUser);
         this.router.post('/login', this.userLogin);
         this.router.get('/full/:id', this.getFullUserById);
     }

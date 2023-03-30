@@ -18,3 +18,11 @@ export class UserModelLogin{
     email!:string;
     password!:string;
 }
+export class LightUser{
+    createdIn!: string;
+    email!: string;
+    first_name!: string;
+    last_name!: string;
+    phone!: string;
+    validated!:UserValid
+}

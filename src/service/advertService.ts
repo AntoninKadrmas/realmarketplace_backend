@@ -1,7 +1,7 @@
 import { GenericService } from "./genericService";
 import * as dotenv from 'dotenv';
 import { DBConnection } from "../db/dbConnection";
-import { AdvertModel } from "../model/advertModel";
+import { AdvertModel, AdvertModelWithUser } from "../model/advertModel";
 import { ObjectId } from "mongodb";
 
 export class AdvertService extends GenericService{
@@ -36,29 +36,101 @@ export class AdvertService extends GenericService{
             return {error:"Database dose not response."}
         }
     }
-    async getAdvertWithUser(advertId:string,userId:string):Promise<AdvertModel[]|{error:string}>{
+    async getAdvertWithUser():Promise<AdvertModelWithUser[]|{error:string}>{
         try{
-            const result = await this.db.collection(this.collection[0]).find({_id:new ObjectId(advertId),userId:userId}).aggregate([
-                {
-                    $addFields: {
-                        convertedId: { $toObjectId: "$userId" }
+            const result = await this.db.collection(this.collection[0]).aggregate([
+                {$lookup:{
+                from: "users",
+                localField:"userId",
+                foreignField:"_id",
+                as:"user"}},
+                { $project: {
+                    _id: 1,
+                    title: 1,
+                    author: 1,
+                    description: 1,
+                    genreName: 1,
+                    genreType: 1,
+                    price: 1,
+                    priceOption: 1,
+                    condition: 1,
+                    userId: 1,
+                    createdIn: 1,
+                    imagesUrls: 1,
+                    mainImage: 1,
+                    user: {
+                        first_name: 1,
+                        last_name: 1,
+                        email: 1,
+                        phone: 1,
+                        createdIn: 1,
+                        validated: 1
                     }
-                },
-                { "$lookup": {
-                    from: "users",
-                    localField: "convertedId",
-                    foreignField: "_id",
-                    as: "user",
-                  }}
-                ])
-            console.log(result)
+                  }
+                }
+                ]).toArray();
             return result
         }catch(e){
             console.log(e)
             return {error:"Database dose not response."}
         }
     }
-    async saveAdvertId(userId:ObjectId,advertId:ObjectId):Promise<{success:string}|{error:string}>{
+    async getFavoriteAdvertByUserId(userId:ObjectId):Promise<any>{
+        try{
+            const result = await this.db.collection(this.collection[1]).aggregate([
+            {$match: {userId:userId}}, 
+            {$unwind : "$advertId"},
+            {$lookup:{
+                from: "adverts",
+                localField:"advertId",
+                foreignField:"_id",
+                as:"advert"}},
+            {$lookup:{
+                from: "users",
+                localField:"advert.userId",
+                foreignField:"_id",
+                as:"user"}},    
+            { $addFields: {
+                "advert.user": { $arrayElemAt: [ "$user", 0 ] }
+              }
+            },
+            { $project: {
+                _id: 1,
+                userId: 1,
+                advertId: 1,
+                advert: {
+                  _id: 1,
+                  title: 1,
+                  author: 1,
+                  description: 1,
+                  genreName: 1,
+                  genreType: 1,
+                  price: 1,
+                  priceOption: 1,
+                  condition: 1,
+                  userId: 1,
+                  createdIn: 1,
+                  imagesUrls: 1,
+                  mainImage: 1,
+                  user: {
+                    first_name: 1,
+                    last_name: 1,
+                    email: 1,
+                    phone: 1,
+                    createdIn: 1,
+                    validated: 1
+                  }
+                }
+              }
+            }
+            ]).toArray();
+            return result
+        }catch(e){
+            console.log(e)
+            return {error:"Database dose not response."}
+        }
+    }
+    async saveFavoriteAdvertId(userId:ObjectId,advertId:ObjectId):Promise<{success:string}|{error:string}>{
         try{
             const result = await this.db.collection(this.collection[1]).updateOne({'userId':userId}, { $addToSet: { 'advertId': advertId }}, { upsert: true })
             if(result.acknowledged)return {success:"Advert successfully added to favorite collection"}
@@ -68,7 +140,7 @@ export class AdvertService extends GenericService{
             return {error:"Database dose not response."}
         }
     }
-    async deleteAdvertId(userId:ObjectId,advertId:ObjectId):Promise<{success:string}|{error:string}>{
+    async deleteFavoriteAdvertId(userId:ObjectId,advertId:ObjectId):Promise<{success:string}|{error:string}>{
         try{
             const result = await this.db.collection(this.collection[1]).updateOne({'userId':userId}, { $pull: { 'advertId': advertId }}, { upsert: true })
             if(result.acknowledged)return {success:"Advert successfully removed from favorite collection"}

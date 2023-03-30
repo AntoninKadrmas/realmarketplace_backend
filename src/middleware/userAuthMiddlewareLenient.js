@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.userAuthMiddlewareLenient = void 0;
 const tokenService_1 = require("../service/tokenService");
+const mongodb_1 = require("mongodb");
 function userAuthMiddlewareLenient(request, response, next) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
@@ -19,18 +20,18 @@ function userAuthMiddlewareLenient(request, response, next) {
             if (token == null)
                 throw Error("Token does not exists in query params");
             const tokenService = yield tokenService_1.TokenService.getInstance();
-            const tokenExists = yield tokenService.tokenExists(token);
+            const tokenExists = yield tokenService.tokenExists(new mongodb_1.ObjectId(token));
             if (!tokenExists.valid)
-                response.set("Authorization", "");
+                request.query.token = "";
             else {
-                response.set("Authorization", (_a = tokenExists.token) === null || _a === void 0 ? void 0 : _a.userId);
+                request.query.token = (_a = tokenExists.token) === null || _a === void 0 ? void 0 : _a.userId.toString();
                 yield tokenService.updateTokenByTokenId(token);
             }
             next();
         }
         catch (e) {
-            console.log(e);
-            response.status(401).send({ error: e.message });
+            request.query.token = "";
+            next();
         }
     });
 }

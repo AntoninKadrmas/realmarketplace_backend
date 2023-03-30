@@ -1,15 +1,15 @@
-import { Router } from "express";
-import { GenericController } from "./genericController";
-import express, { RequestHandler} from "express";
-import { AdvertService } from "../service/advertService";
-import { AdvertModel } from "../model/advertModel";
-import { ImageMiddleWare } from "../middleware/imageMiddleware";
-import fs from 'fs';
-import path from 'path';
-import * as dotenv from 'dotenv';
 import { userAuthMiddlewareStrict } from "../middleware/userAuthMiddlewareStrict";
 import { userAuthMiddlewareLenient } from "../middleware/userAuthMiddlewareLenient";
+import { AdvertModel, AdvertModelWithUser } from "../model/advertModel";
+import { ImageMiddleWare } from "../middleware/imageMiddleware";
+import { GenericController } from "./genericController";
+import { AdvertService } from "../service/advertService";
+import express, { RequestHandler} from "express";
 import { ObjectId } from "mongodb";
+import * as dotenv from 'dotenv';
+import { Router } from "express";
+import path from 'path';
+import fs from 'fs';
 dotenv.config();
 
 export class AdvertController implements GenericController{
@@ -126,15 +126,17 @@ export class AdvertController implements GenericController{
     }
     getAdvert: RequestHandler = async (req, res) => {
         try{
-            // const adverts = await this.advertService.getAdvert()
             const userId = req.query.token?.toString()
-            if(userId==""){
-
+            if(userId==""||userId==null){
+                const response:AdvertModel[]|{error:string} = await this.advertService.getAdvertWithOutUser()
+                if(response.hasOwnProperty("error"))res.status(400).send(response)
+                else res.status(200).send(response)
             }
             else{
-
+                const response:AdvertModelWithUser[]|{error:string} = await this.advertService.getAdvertWithUser()
+                if(response.hasOwnProperty("error"))res.status(400).send(response)
+                else res.status(200).send(response)
             }
-            // res.status(200).send(adverts)
         }catch(e){
             console.log(e)
             res.status(400).send()
@@ -142,7 +144,9 @@ export class AdvertController implements GenericController{
     }
     getFavoriteAdvert: RequestHandler = async (req, res) => {
         try{
-            //not implemented
+            const userId = new ObjectId(req.query.token?.toString())
+            const response = await this.advertService.getFavoriteAdvertByUserId(userId)
+            res.status(200).send(response)
         }catch(e){
             console.log(e)
             res.status(400).send({error:"Missing advert id."})
@@ -152,7 +156,8 @@ export class AdvertController implements GenericController{
         try{
             const advertId = new ObjectId(req.query.advertId?.toString())
             const userId = new ObjectId(req.query.token?.toString())
-            const response = await this.advertService.saveAdvertId(userId,advertId)
+            const response = await this.advertService.saveFavoriteAdvertId(userId,advertId)
+            if(response.hasOwnProperty("error"))res.status(400).send(response)
             res.status(200).send(response)
         }catch(e){
             console.log(e)
@@ -163,7 +168,8 @@ export class AdvertController implements GenericController{
         try{
             const advertId = new ObjectId(req.query.advertId?.toString())
             const userId = new ObjectId(req.query.token?.toString())
-            const response = await this.advertService.deleteAdvertId(userId,advertId)
+            const response = await this.advertService.deleteFavoriteAdvertId(userId,advertId)
+            if(response.hasOwnProperty("error"))res.status(400).send(response)
             res.status(200).send(response)
         }catch(e){
             console.log(e)

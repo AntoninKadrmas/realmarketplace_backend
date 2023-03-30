@@ -9,30 +9,27 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.userAuthMiddlewareStrict = void 0;
+exports.userAuthMiddleware = void 0;
 const tokenService_1 = require("../service/tokenService");
-const mongodb_1 = require("mongodb");
-function userAuthMiddlewareStrict(request, response, next) {
+function userAuthMiddleware(request, response, next) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const token = request.get("Authorization");
+            const token = (_a = request.headers["AuthToken"]) === null || _a === void 0 ? void 0 : _a.toString();
             if (token == null)
-                throw Error("Token does not exists in query params."); //token does not exists in header
+                throw Error("Token does not exists in query params");
             const tokenService = yield tokenService_1.TokenService.getInstance();
-            const tokenExists = yield tokenService.tokenExists(new mongodb_1.ObjectId(token));
-            if (!tokenExists.valid)
-                throw Error("Token expired.");
-            else {
-                request.query.token = (_a = tokenExists.token) === null || _a === void 0 ? void 0 : _a.userId.toString();
+            const tokenExists = yield tokenService.tokenExists(token);
+            if (!tokenExists)
+                throw Error("Token does not exists in database");
+            else
                 yield tokenService.updateTokenByTokenId(token);
-            }
             next();
         }
         catch (e) {
             console.log(e);
-            response.status(401).send({ error: e.message });
+            response.status(401).send(e);
         }
     });
 }
-exports.userAuthMiddlewareStrict = userAuthMiddlewareStrict;
+exports.userAuthMiddleware = userAuthMiddleware;

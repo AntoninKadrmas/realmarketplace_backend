@@ -97,7 +97,7 @@ class TokenService extends genericService_1.GenericService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 console.log(tokenId);
-                const token = yield this.db.collection(this.collection[0]).findOne({ _id: new mongodb_1.ObjectId(tokenId) });
+                const token = yield this.db.collection(this.collection[0]).findOne({ _id: tokenId });
                 console.log(token);
                 const valid = yield this.tokenIsValid(token);
                 if (valid)

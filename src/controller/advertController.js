@@ -42,6 +42,7 @@ const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const dotenv = __importStar(require("dotenv"));
 const userAuthMiddlewareStrict_1 = require("../middleware/userAuthMiddlewareStrict");
+const mongodb_1 = require("mongodb");
 dotenv.config();
 class AdvertController {
     constructor(advertService) {
@@ -55,7 +56,7 @@ class AdvertController {
                     res.status(400).send({ error: "Body does not contains advert information's" });
                 else {
                     const advert = req.body;
-                    advert.userId = (_a = req.query.token) === null || _a === void 0 ? void 0 : _a.toString();
+                    advert.userId = new mongodb_1.ObjectId((_a = req.query.token) === null || _a === void 0 ? void 0 : _a.toString());
                     advert.createdIn = new Date();
                     advert.imagesUrls = [];
                     let counter = 0;
@@ -95,16 +96,16 @@ class AdvertController {
                     res.status(400).send({ error: "Body does not contains advert information's" });
                 else {
                     const deleteUrl = req.body.deletedUrls.split(";").filter((x) => x != "");
-                    const advertId = req.body._id.toString();
+                    const advertId = new mongodb_1.ObjectId(req.body._id.toString());
+                    const userId = new mongodb_1.ObjectId((_c = req.query.token) === null || _c === void 0 ? void 0 : _c.toString());
                     this.deleteFiles(deleteUrl);
                     delete req.body.deletedUrls;
                     delete req.body._id;
                     const advert = req.body;
-                    if (req.body.imageUrls != "")
-                        advert.imagesUrls = req.body.imageUrls.split(";").filter((x) => x != "");
+                    if (req.body.imagesUrls != "")
+                        advert.imagesUrls = req.body.imagesUrls.split(";").filter((x) => x != "");
                     else
                         advert.imagesUrls = [];
-                    const userId = (_c = req.query.token) === null || _c === void 0 ? void 0 : _c.toString();
                     let counter = 0;
                     if (req.files != null) {
                         //@ts-ignore
@@ -135,8 +136,8 @@ class AdvertController {
         this.deleteAdvert = (req, res) => __awaiter(this, void 0, void 0, function* () {
             var _e, _f;
             try {
-                const userId = (_e = req.query.token) === null || _e === void 0 ? void 0 : _e.toString();
-                const advertId = (_f = req.query.advertId) === null || _f === void 0 ? void 0 : _f.toString();
+                const userId = new mongodb_1.ObjectId((_e = req.query.token) === null || _e === void 0 ? void 0 : _e.toString());
+                const advertId = new mongodb_1.ObjectId((_f = req.query.advertId) === null || _f === void 0 ? void 0 : _f.toString());
                 if (advertId == null)
                     res.status(400).send({ error: "Missing advert id." });
                 else {
@@ -150,9 +151,23 @@ class AdvertController {
             }
         });
         this.getAdvert = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            var _g;
             try {
-                const adverts = yield this.advertService.getAdvert();
-                res.status(200).send(adverts);
+                const userId = (_g = req.query.token) === null || _g === void 0 ? void 0 : _g.toString();
+                if (userId == "") {
+                    const response = yield this.advertService.getAdvertWithOutUser();
+                    if (response.hasOwnProperty("error"))
+                        res.status(400).send(response);
+                    else
+                        res.status(200).send(response);
+                }
+                else {
+                    const response = yield this.advertService.getAdvertWithUser();
+                    if (response.hasOwnProperty("error"))
+                        res.status(400).send(response);
+                    else
+                        res.status(200).send(response);
+                }
             }
             catch (e) {
                 console.log(e);
@@ -160,8 +175,11 @@ class AdvertController {
             }
         });
         this.getFavoriteAdvert = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            var _h;
             try {
-                //not implemented
+                const userId = new mongodb_1.ObjectId((_h = req.query.token) === null || _h === void 0 ? void 0 : _h.toString());
+                const response = yield this.advertService.getFavoriteAdvertByUserId(userId);
+                res.status(200).send(response);
             }
             catch (e) {
                 console.log(e);
@@ -169,11 +187,13 @@ class AdvertController {
             }
         });
         this.addFavoriteAdvert = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            var _g, _h;
+            var _j, _k;
             try {
-                const advertId = (_g = req.query.advertId) === null || _g === void 0 ? void 0 : _g.toString();
-                const userId = (_h = req.query.token) === null || _h === void 0 ? void 0 : _h.toString();
-                const response = yield this.advertService.saveAdvertId(userId, advertId);
+                const advertId = new mongodb_1.ObjectId((_j = req.query.advertId) === null || _j === void 0 ? void 0 : _j.toString());
+                const userId = new mongodb_1.ObjectId((_k = req.query.token) === null || _k === void 0 ? void 0 : _k.toString());
+                const response = yield this.advertService.saveFavoriteAdvertId(userId, advertId);
+                if (response.hasOwnProperty("error"))
+                    res.status(400).send(response);
                 res.status(200).send(response);
             }
             catch (e) {
@@ -182,11 +202,13 @@ class AdvertController {
             }
         });
         this.deleteFavoriteAdvert = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            var _j, _k;
+            var _l, _m;
             try {
-                const advertId = (_j = req.query.advertId) === null || _j === void 0 ? void 0 : _j.toString();
-                const userId = (_k = req.query.token) === null || _k === void 0 ? void 0 : _k.toString();
-                const response = yield this.advertService.deleteAdvertId(userId, advertId);
+                const advertId = new mongodb_1.ObjectId((_l = req.query.advertId) === null || _l === void 0 ? void 0 : _l.toString());
+                const userId = new mongodb_1.ObjectId((_m = req.query.token) === null || _m === void 0 ? void 0 : _m.toString());
+                const response = yield this.advertService.deleteFavoriteAdvertId(userId, advertId);
+                if (response.hasOwnProperty("error"))
+                    res.status(400).send(response);
                 res.status(200).send(response);
             }
             catch (e) {
@@ -196,7 +218,8 @@ class AdvertController {
         });
         this.getUserAdverts = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
-                const adverts = yield this.advertService.getAdvert();
+                const userId = new mongodb_1.ObjectId(req.query.token.toString());
+                const adverts = yield this.advertService.getAdvertByUserId(userId);
                 res.status(200).send(adverts);
             }
             catch (e) {
@@ -213,7 +236,7 @@ class AdvertController {
         this.router.delete("", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.deleteAdvert); //not implemented
         this.router.get("", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.getUserAdverts);
         this.router.get("/all", this.getAdvert);
-        this.router.get("/favorite", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.getFavoriteAdvert); //not implemented
+        this.router.get("/favorite", this.getFavoriteAdvert); //not implemented
         this.router.post("/favorite", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.addFavoriteAdvert);
         this.router.delete("/favorite", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.deleteFavoriteAdvert);
         this.router.use(express_1.default.static(path_1.default.join(__dirname.split('src')[0], process.env.IMAGE_PUBLIC)));

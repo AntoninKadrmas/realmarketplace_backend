@@ -30,11 +30,7 @@ class EnumController {
         });
         this.getGenre = (req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set("Cache-Control", "max-age=1000");
-            yield new Promise((req, resolve) => {
-                setTimeout((error) => {
-                    res.status(200).send(this.enumGenreOptionList);
-                }, 3000);
-            });
+            res.status(200).send(this.enumGenreOptionList);
         });
         this.getPriceOption = (req, res) => __awaiter(this, void 0, void 0, function* () {
             res.set("Cache-Control", "max-age=3600");

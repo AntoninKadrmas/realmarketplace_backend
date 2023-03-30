@@ -36,7 +36,6 @@ exports.AdvertService = void 0;
 const genericService_1 = require("./genericService");
 const dotenv = __importStar(require("dotenv"));
 const dbConnection_1 = require("../db/dbConnection");
-const mongodb_1 = require("mongodb");
 class AdvertService extends genericService_1.GenericService {
     constructor() {
         super();
@@ -67,7 +66,7 @@ class AdvertService extends genericService_1.GenericService {
             }
         });
     }
-    getAdvert() {
+    getAdvertWithOutUser() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const result = yield this.db.collection(this.collection[0]).find({}).toArray();
@@ -79,7 +78,112 @@ class AdvertService extends genericService_1.GenericService {
             }
         });
     }
-    saveAdvertId(userId, advertId) {
+    getAdvertWithUser() {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const result = yield this.db.collection(this.collection[0]).aggregate([
+                    { $lookup: {
+                            from: "users",
+                            localField: "userId",
+                            foreignField: "_id",
+                            as: "user"
+                        } },
+                    { $project: {
+                            _id: 1,
+                            title: 1,
+                            author: 1,
+                            description: 1,
+                            genreName: 1,
+                            genreType: 1,
+                            price: 1,
+                            priceOption: 1,
+                            condition: 1,
+                            userId: 1,
+                            createdIn: 1,
+                            imagesUrls: 1,
+                            mainImage: 1,
+                            user: {
+                                first_name: 1,
+                                last_name: 1,
+                                email: 1,
+                                phone: 1,
+                                createdIn: 1,
+                                validated: 1
+                            }
+                        }
+                    }
+                ]).toArray();
+                console.log(result);
+                return result;
+            }
+            catch (e) {
+                console.log(e);
+                return { error: "Database dose not response." };
+            }
+        });
+    }
+    getFavoriteAdvertByUserId(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const result = yield this.db.collection(this.collection[1]).aggregate([
+                    { $match: { userId: userId } },
+                    { $unwind: "$advertId" },
+                    { $lookup: {
+                            from: "adverts",
+                            localField: "advertId",
+                            foreignField: "_id",
+                            as: "advert"
+                        } },
+                    { $lookup: {
+                            from: "users",
+                            localField: "advert.userId",
+                            foreignField: "_id",
+                            as: "user"
+                        } },
+                    { $addFields: {
+                            "advert.user": { $arrayElemAt: ["$user", 0] }
+                        }
+                    },
+                    { $project: {
+                            _id: 1,
+                            userId: 1,
+                            advertId: 1,
+                            advert: {
+                                _id: 1,
+                                title: 1,
+                                author: 1,
+                                description: 1,
+                                genreName: 1,
+                                genreType: 1,
+                                price: 1,
+                                priceOption: 1,
+                                condition: 1,
+                                userId: 1,
+                                createdIn: 1,
+                                imagesUrls: 1,
+                                mainImage: 1,
+                                user: {
+                                    first_name: 1,
+                                    last_name: 1,
+                                    email: 1,
+                                    phone: 1,
+                                    createdIn: 1,
+                                    validated: 1
+                                }
+                            }
+                        }
+                    }
+                ]).toArray();
+                console.log(result);
+                return result;
+            }
+            catch (e) {
+                console.log(e);
+                return { error: "Database dose not response." };
+            }
+        });
+    }
+    saveFavoriteAdvertId(userId, advertId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const result = yield this.db.collection(this.collection[1]).updateOne({ 'userId': userId }, { $addToSet: { 'advertId': advertId } }, { upsert: true });
@@ -94,7 +198,7 @@ class AdvertService extends genericService_1.GenericService {
             }
         });
     }
-    deleteAdvertId(userId, advertId) {
+    deleteFavoriteAdvertId(userId, advertId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const result = yield this.db.collection(this.collection[1]).updateOne({ 'userId': userId }, { $pull: { 'advertId': advertId } }, { upsert: true });
@@ -124,7 +228,7 @@ class AdvertService extends genericService_1.GenericService {
     deleteAdvert(advertId, userId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const result = yield this.db.collection(this.collection[0]).deleteOne({ "_id": new mongodb_1.ObjectId(advertId), "userId": userId });
+                const result = yield this.db.collection(this.collection[0]).deleteOne({ "_id": advertId, "userId": userId });
                 if (result.acknowledged && result.deletedCount == 1)
                     return { success: "Advert successfully deleted." };
                 else if (result.acknowledged && result.deletedCount == 0)
@@ -141,7 +245,7 @@ class AdvertService extends genericService_1.GenericService {
     updateAdvert(advertId, userId, advert) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const result = yield this.db.collection(this.collection[0]).updateOne({ "_id": new mongodb_1.ObjectId(advertId), "userId": userId }, {
+                const result = yield this.db.collection(this.collection[0]).updateOne({ "_id": advertId, "userId": userId }, {
                     $set: advert
                 });
                 if (result.acknowledged && result.modifiedCount == 1)
