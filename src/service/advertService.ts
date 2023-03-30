@@ -95,9 +95,6 @@ export class AdvertService extends GenericService{
               }
             },
             { $project: {
-                _id: 1,
-                userId: 1,
-                advertId: 1,
                 advert: {
                   _id: 1,
                   title: 1,
