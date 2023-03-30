@@ -4,6 +4,7 @@ import { UserModel, UserModelLogin, UserValid } from "../model/userModel";
 import { GenericController } from "./genericController";
 import { TokenService } from "../service/tokenService";
 import * as dotenv from 'dotenv';
+import { ObjectId } from "mongodb";
 dotenv.config();
 
 export class UserController implements GenericController{
@@ -13,11 +14,11 @@ export class UserController implements GenericController{
         this.initRouter()
     }
     initRouter(){
-        this.router.post('/register',this.insertUser)
+        this.router.post('/register',this.registerUser)
         this.router.post('/login',this.userLogin)
         this.router.get('/full/:id',this.getFullUserById)
     }
-    insertUser: RequestHandler = async (req, res) => {
+    registerUser: RequestHandler = async (req, res) => {
         let user:UserModel
         try{
             if(req.body==null){res.status(400).send({error:"Body does not contains user model."})}
@@ -27,8 +28,8 @@ export class UserController implements GenericController{
                 const createUserResponse:{userId:string}|{error:string} = await this.userService.createNewUser(user)
                 if(createUserResponse.hasOwnProperty("userId")){
                     const userIds:{userId:string} = createUserResponse as {userId:string}
-                    const token = await this.tokenService.createToken(userIds.userId)
-                    if(!token.hasOwnProperty("error"))return res.status(200).send({"token":token})
+                    const token = await this.tokenService.createToken(new ObjectId(userIds.userId))
+                    if(!token.hasOwnProperty("error"))return res.status(200).send({"token":token.toString()})
                     else res.status(400).send(token)
                 }
                 else res.status(400).send(createUserResponse)
@@ -51,8 +52,8 @@ export class UserController implements GenericController{
                 if(userResponse.hasOwnProperty("error"))res.status(400).send(userResponse)
                 else{
                     const tempUserResponse:UserModel = userResponse as UserModel
-                    const token = await this.tokenService.createToken(tempUserResponse._id!)
-                    if(!token.hasOwnProperty("error"))return res.status(200).send({"token":token})
+                    const token = await this.tokenService.createToken(new ObjectId(tempUserResponse._id!))
+                    if(!token.hasOwnProperty("error"))return res.status(200).send({"token":token.toString()})
                     else res.status(400).send(token)
                 }
             }

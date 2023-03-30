@@ -24,7 +24,7 @@ export class TokenService extends GenericService{
         }
         return TokenService.instance;
     }
-    async createToken(userId:string):Promise<any>{
+    async createToken(userId:ObjectId):Promise<any>{
         try{
             const token:TokenModel = {
                 userId: userId,
@@ -48,17 +48,17 @@ export class TokenService extends GenericService{
         )
         return await this.tokenIsValid(token.value)
     }
-    async updateTokenByUserId(userId:string):Promise<boolean>{
+    async updateTokenByUserId(userId:ObjectId):Promise<boolean>{
         const token = await this.db.collection(this.collection[0]).findOneAndUpdate(
             {userId:userId},
             {$inc:{expirationTime:this.getActualValidTime()}}
         )                
         return await this.tokenIsValid(token.value)
     }
-    async tokenExists(tokenId:string):Promise<TokenExistsModel>{
+    async tokenExists(tokenId:ObjectId):Promise<TokenExistsModel>{
         try{
             console.log(tokenId)
-            const token:TokenModel =  await this.db.collection(this.collection[0]).findOne({_id:new ObjectId(tokenId)}) 
+            const token:TokenModel =  await this.db.collection(this.collection[0]).findOne({_id:tokenId}) 
             console.log(token)           
             const valid = await this.tokenIsValid(token) 
             if(valid)return {
