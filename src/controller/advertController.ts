@@ -25,7 +25,7 @@ export class AdvertController implements GenericController{
         this.router.put("",userAuthMiddlewareStrict,upload_public.array('uploaded_file',5),this.updateAdvert)//not implemented
         this.router.delete("",userAuthMiddlewareStrict,this.deleteAdvert)//not implemented
         this.router.get("",userAuthMiddlewareStrict,this.getUserAdverts)
-        this.router.get("/all",userAuthMiddlewareLenient,this.getAdvert)
+        this.router.get("/all",this.getAdvert)
         this.router.get("/favorite",userAuthMiddlewareStrict,this.getFavoriteAdvert)//not implemented
         this.router.post("/favorite",userAuthMiddlewareStrict,this.addFavoriteAdvert)
         this.router.delete("/favorite",userAuthMiddlewareStrict,this.deleteFavoriteAdvert)

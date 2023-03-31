@@ -37,7 +37,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdvertController = void 0;
 const userAuthMiddlewareStrict_1 = require("../middleware/userAuthMiddlewareStrict");
-const userAuthMiddlewareLenient_1 = require("../middleware/userAuthMiddlewareLenient");
 const imageMiddleware_1 = require("../middleware/imageMiddleware");
 const express_1 = __importDefault(require("express"));
 const mongodb_1 = require("mongodb");
@@ -239,7 +238,7 @@ class AdvertController {
         this.router.put("", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, upload_public.array('uploaded_file', 5), this.updateAdvert); //not implemented
         this.router.delete("", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.deleteAdvert); //not implemented
         this.router.get("", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.getUserAdverts);
-        this.router.get("/all", userAuthMiddlewareLenient_1.userAuthMiddlewareLenient, this.getAdvert);
+        this.router.get("/all", this.getAdvert);
         this.router.get("/favorite", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.getFavoriteAdvert); //not implemented
         this.router.post("/favorite", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.addFavoriteAdvert);
         this.router.delete("/favorite", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.deleteFavoriteAdvert);

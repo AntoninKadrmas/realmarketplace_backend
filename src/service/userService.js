@@ -70,7 +70,8 @@ class UserService extends genericService_1.GenericService {
                 if (!new_user.acknowledged) {
                     return { error: "Database dose not response." };
                 }
-                return { userId: new_user.upsertedId };
+                console.log(new_user);
+                return { userId: new_user.insertedId.toString() };
             }
             catch (_a) {
                 return { error: "Database dose not response." };

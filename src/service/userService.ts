@@ -31,7 +31,7 @@ export class UserService extends GenericService{
             if(!new_user.acknowledged) {
                 return {error:"Database dose not response."}
             }
-            return {userId:new_user.upsertedId}
+            return {userId:new_user.insertedId.toString()}
         }
         catch{
             return {error:"Database dose not response."}
