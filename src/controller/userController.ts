@@ -29,8 +29,8 @@ export class UserController implements GenericController{
                 if(createUserResponse.hasOwnProperty("userId")){
                     const userIds:{userId:string} = createUserResponse as {userId:string}
                     const token = await this.tokenService.createToken(new ObjectId(userIds.userId))
-                    if(!token.hasOwnProperty("error"))return res.status(200).send({"token":token.toString()})
-                    else res.status(400).send(token)
+                    if(token.hasOwnProperty("error"))res.status(400).send(token)
+                    else res.status(200).send({"token":token.toString()})
                 }
                 else res.status(400).send(createUserResponse)
             }
@@ -53,8 +53,9 @@ export class UserController implements GenericController{
                 else{
                     const tempUserResponse:UserModel = userResponse as UserModel
                     const token = await this.tokenService.createToken(new ObjectId(tempUserResponse._id!))
-                    if(!token.hasOwnProperty("error"))return res.status(200).send({"token":token.toString()})
-                    else res.status(400).send(token)
+                    console.log(`token: ${token}`)
+                    if(token.hasOwnProperty("error")) res.status(400).send(token)
+                    else res.status(200).send({"token":token.toString()})
                 }
             }
         }
@@ -67,8 +68,8 @@ export class UserController implements GenericController{
         if(!req.params.id)res.status(400).send()//null as parameter
         else{
             const response = await this.userService.getUserDataById(req.params.id)
-            if(!response.hasOwnProperty("error"))res.status(200).send(response)//not null result
-            else res.status(400).send()
+            if(response.hasOwnProperty("error"))res.status(400).send()
+            else res.status(200).send(response)//not null result
         }
     }
 }

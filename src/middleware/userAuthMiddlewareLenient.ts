@@ -5,8 +5,6 @@ import { ObjectId } from 'mongodb';
 
 export async function userAuthMiddlewareLenient(request: express.Request, response: express.Response, next: NextFunction) {
     try{
-        console.log(request.headers)
-        console.log(request.get("Authorization"))
         const token = request.get("Authorization")
         if(token==null)throw Error("Token does not exists in header.")
         const tokenService:TokenService = await TokenService.getInstance()
