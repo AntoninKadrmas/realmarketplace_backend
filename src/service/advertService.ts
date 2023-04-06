@@ -207,4 +207,19 @@ export class AdvertService extends GenericService{
             return {error:"Database dose not response."}
         } 
     }
+    async updateAdvertVisibility(advertId:ObjectId,userId:ObjectId,state:boolean){
+        try{
+            const result = await this.db.collection(this.collection[0]).updateOne({"_id":advertId,"userId":userId},{
+                $set:{
+                    visible:state
+                }
+            })
+            if(result.acknowledged&&result.modifiedCount==1)return {success:"Advert visibility successfully updated."}
+            else if(result.acknowledged&&result.modifiedCount==0)return {error:"Can't update foreign advert."}
+            else return {error:"There is some problem with database."}
+        }catch(e){
+            console.log(e)
+            return {error:"Database dose not response."}
+        } 
+    }
 }

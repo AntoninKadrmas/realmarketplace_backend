@@ -1,6 +1,6 @@
 import { userAuthMiddlewareStrict } from "../middleware/userAuthMiddlewareStrict";
 import { userAuthMiddlewareLenient } from "../middleware/userAuthMiddlewareLenient";
-import { AdvertModel, AdvertModelWithUser, FavoriteAdvertUser } from "../model/advertModel";
+import { AdvertModel, AdvertModelWithUser } from "../model/advertModel";
 import { ImageMiddleWare } from "../middleware/imageMiddleware";
 import { GenericController } from "./genericController";
 import { AdvertService } from "../service/advertService";
@@ -10,7 +10,6 @@ import * as dotenv from 'dotenv';
 import { Router } from "express";
 import path from 'path';
 import fs from 'fs';
-import { emit } from "process";
 dotenv.config();
 
 export class AdvertController implements GenericController{
@@ -23,13 +22,14 @@ export class AdvertController implements GenericController{
         const upload_public = new ImageMiddleWare().getStorage()
 
         this.router.post("",userAuthMiddlewareStrict,upload_public.array('uploaded_file',5),this.createAdvert)
-        this.router.put("",userAuthMiddlewareStrict,upload_public.array('uploaded_file',5),this.updateAdvert)//not implemented
-        this.router.delete("",userAuthMiddlewareStrict,this.deleteAdvert)//not implemented
+        this.router.put("",userAuthMiddlewareStrict,upload_public.array('uploaded_file',5),this.updateAdvert)
+        this.router.delete("",userAuthMiddlewareStrict,this.deleteAdvert)
         this.router.get("",userAuthMiddlewareStrict,this.getUserAdverts)
         this.router.get("/all",userAuthMiddlewareLenient,this.getAdvert)
-        this.router.get("/favorite",userAuthMiddlewareStrict,this.getFavoriteAdvert)//not implemented
+        this.router.get("/favorite",userAuthMiddlewareStrict,this.getFavoriteAdvert)
         this.router.post("/favorite",userAuthMiddlewareStrict,this.addFavoriteAdvert)
         this.router.delete("/favorite",userAuthMiddlewareStrict,this.deleteFavoriteAdvert)
+        this.router.put("/visible",userAuthMiddlewareStrict,this.updateAdvertVisibility)
 
         this.router.use(express.static(path.join(__dirname.split('src')[0],process.env.IMAGE_PUBLIC!!)))
     }
@@ -49,7 +49,7 @@ export class AdvertController implements GenericController{
                         if(!fs.existsSync(dirUrl)){}
                         else{
                             const imageUrl = `/${file.filename}`
-                            if(counter==0) advert.mainImage = imageUrl
+                            if(counter==0) advert.mainImageUrl = imageUrl
                             advert.imagesUrls?.push(imageUrl)
                             counter++
                         }
@@ -89,7 +89,7 @@ export class AdvertController implements GenericController{
                         if(!fs.existsSync(dirUrl)){}
                         else{
                             const imageUrl = `/${file.filename}`
-                            if(counter==0 && advert.mainImage=="") advert.mainImage = imageUrl
+                            if(counter==0 && advert.mainImageUrl=="") advert.mainImageUrl = imageUrl
                             advert.imagesUrls?.push(imageUrl)
                             counter++
                         }
@@ -112,12 +112,15 @@ export class AdvertController implements GenericController{
     }
     deleteAdvert: RequestHandler = async (req, res) => {
         try{
-            const userId = new ObjectId(req.query.token?.toString())
-            const advertId = new ObjectId(req.query.advertId?.toString())
-            if(advertId==null)res.status(400).send({error:"Missing advert id."})
+            if(req.query.advertId==null)res.status(400).send({error:"Missing query params."})
             else{
-                const result = await this.advertService.deleteAdvert(advertId,userId)
-                res.status(200).send(result)
+                const userId = new ObjectId(req.query.token?.toString())
+                const advertId = new ObjectId(req.query.advertId?.toString())
+                if(advertId==null)res.status(400).send({error:"Missing advert id."})
+                else{
+                    const result = await this.advertService.deleteAdvert(advertId,userId)
+                    res.status(200).send(result)
+                }
             }
         }
         catch(e){
@@ -156,11 +159,14 @@ export class AdvertController implements GenericController{
     }
     addFavoriteAdvert: RequestHandler = async (req, res) => {
         try{
-            const advertId = new ObjectId(req.query.advertId?.toString())
-            const userId = new ObjectId(req.query.token?.toString())
-            const response = await this.advertService.saveFavoriteAdvertId(userId,advertId)
-            if(response.hasOwnProperty("error"))res.status(400).send(response)
-            res.status(200).send(response)
+            if(req.query.advertId==null)res.status(400).send({error:"Missing query params."})
+            else{
+                const advertId = new ObjectId(req.query.advertId?.toString())
+                const userId = new ObjectId(req.query.token?.toString())
+                const response = await this.advertService.saveFavoriteAdvertId(userId,advertId)
+                if(response.hasOwnProperty("error"))res.status(400).send(response)
+                else res.status(200).send(response)
+            }
         }catch(e){
             console.log(e)
             res.status(400).send({error:"Missing advert id."})
@@ -168,11 +174,14 @@ export class AdvertController implements GenericController{
     }
     deleteFavoriteAdvert: RequestHandler = async (req, res) => {
         try{
-            const advertId = new ObjectId(req.query.advertId?.toString())
-            const userId = new ObjectId(req.query.token?.toString())
-            const response = await this.advertService.deleteFavoriteAdvertId(userId,advertId)
-            if(response.hasOwnProperty("error"))res.status(400).send(response)
-            res.status(200).send(response)
+            if(req.query.advertId==null)res.status(400).send({error:"Missing query params."})
+            else{
+                const advertId = new ObjectId(req.query.advertId?.toString())
+                const userId = new ObjectId(req.query.token?.toString())
+                const response = await this.advertService.deleteFavoriteAdvertId(userId,advertId)
+                if(response.hasOwnProperty("error"))res.status(400).send(response)
+                else res.status(200).send(response)
+            }
         }catch(e){
             console.log(e)
             res.status(400).send({error:"Missing advert id."})
@@ -191,6 +200,22 @@ export class AdvertController implements GenericController{
                 const adverts = await this.advertService.getAdvertByUserId(userId)
                 if(adverts.hasOwnProperty("error"))res.status(400).send(adverts)
                 else res.status(200).send(adverts)
+            }
+        }catch(e){
+            console.log(e)
+            res.status(400).send()
+        }
+    }
+    updateAdvertVisibility: RequestHandler = async (req, res) => {
+        try{
+            if(req.query.advertId==null||req.query.state==null)res.status(400).send({error:"Missing query params."})
+            else{
+                const advertId = new ObjectId(req.query.advertId?.toString())
+                const userId = new ObjectId(req.query.token?.toString())
+                const state = req.query.state.toString().toLowerCase() === 'true'
+                const response = await this.advertService.updateAdvertVisibility(userId,advertId,state)
+                if(response.hasOwnProperty("error"))res.status(400).send(response)
+                else res.status(200).send(response)
             }
         }catch(e){
             console.log(e)

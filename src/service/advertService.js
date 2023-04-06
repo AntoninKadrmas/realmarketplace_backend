@@ -244,7 +244,6 @@ class AdvertService extends genericService_1.GenericService {
                             adverts: 1
                         } }
                 ]).toArray();
-                console.log(result);
                 return result[0].adverts;
             }
             catch (e) {

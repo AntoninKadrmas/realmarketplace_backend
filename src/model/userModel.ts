@@ -7,7 +7,8 @@ export class UserModel{
     phone!:string;  
     createdIn!:Date;
     gender?:string;
-    validated!:UserValid
+    validated!:UserValid;
+    mainImageUrl:string="";
 }
 export class UserValid{
     validID=false;
@@ -25,4 +26,5 @@ export class LightUser{
     last_name!: string;
     phone!: string;
     validated!:UserValid
+    mainImage!:string;
 }

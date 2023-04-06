@@ -222,8 +222,6 @@ class AdvertController {
         });
         this.getUserAdverts = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log(req.get("userEmail"));
-                console.log(req.get("createdIn"));
                 if (req.get("userEmail") != null && req.get("createdIn") != null) {
                     const userEmail = req.get("userEmail");
                     const createdIn = req.get("createdIn");

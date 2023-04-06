@@ -17,24 +17,11 @@ export class AdvertModel{
     genreType!:GenreType;
     place?:string;
     createdIn!:Date;
-    mainImage?:string;
+    mainImageUrl?:string;
     imagesUrls?:string[];
+    visible!:boolean;
 }
-export class AdvertModelWithUser{
-    _id?:string;
-    userId?:ObjectId;
-    title!:string;
-    author!:string;
-    description!:string;
-    condition!:BookConditionEnum;
-    price!:string;
-    priceOption!:PriceOptionsEnum;
-    genreName!:GenreFictionEnum|GenreNonFictionEnum;
-    genreType!:GenreType;
-    place?:string;
-    createdIn!:Date;
-    mainImage?:string;
-    imagesUrls?:string[];
+export class AdvertModelWithUser extends AdvertModel{
     user!:LightUser
 }
 export class FavoriteAdvertWithoutUser{
