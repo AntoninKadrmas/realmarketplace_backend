@@ -288,5 +288,27 @@ class AdvertService extends genericService_1.GenericService {
             }
         });
     }
+    updateAdvertVisibility(advertId, userId, state) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const result = yield this.db.collection(this.collection[0]).updateOne({ "_id": advertId, "userId": userId }, {
+                    $set: {
+                        visible: state
+                    }
+                });
+                console.log(result);
+                if (result.acknowledged && result.modifiedCount == 1)
+                    return { success: "Advert visibility successfully updated." };
+                else if (result.acknowledged && result.modifiedCount == 0)
+                    return { error: "Can't update foreign advert." };
+                else
+                    return { error: "There is some problem with database." };
+            }
+            catch (e) {
+                console.log(e);
+                return { error: "Database dose not response." };
+            }
+        });
+    }
 }
 exports.AdvertService = AdvertService;

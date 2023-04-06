@@ -60,6 +60,7 @@ class AdvertController {
                     advert.userId = new mongodb_1.ObjectId((_a = req.query.token) === null || _a === void 0 ? void 0 : _a.toString());
                     advert.createdIn = new Date();
                     advert.imagesUrls = [];
+                    advert.visible = true;
                     let counter = 0;
                     if (req.files != null) {
                         //@ts-ignore
@@ -69,7 +70,7 @@ class AdvertController {
                             else {
                                 const imageUrl = `/${file.filename}`;
                                 if (counter == 0)
-                                    advert.mainImage = imageUrl;
+                                    advert.mainImageUrl = imageUrl;
                                 (_b = advert.imagesUrls) === null || _b === void 0 ? void 0 : _b.push(imageUrl);
                                 counter++;
                             }
@@ -115,8 +116,8 @@ class AdvertController {
                             if (!fs_1.default.existsSync(dirUrl)) { }
                             else {
                                 const imageUrl = `/${file.filename}`;
-                                if (counter == 0 && advert.mainImage == "")
-                                    advert.mainImage = imageUrl;
+                                if (counter == 0 && advert.mainImageUrl == "")
+                                    advert.mainImageUrl = imageUrl;
                                 (_d = advert.imagesUrls) === null || _d === void 0 ? void 0 : _d.push(imageUrl);
                                 counter++;
                             }
@@ -137,13 +138,17 @@ class AdvertController {
         this.deleteAdvert = (req, res) => __awaiter(this, void 0, void 0, function* () {
             var _e, _f;
             try {
-                const userId = new mongodb_1.ObjectId((_e = req.query.token) === null || _e === void 0 ? void 0 : _e.toString());
-                const advertId = new mongodb_1.ObjectId((_f = req.query.advertId) === null || _f === void 0 ? void 0 : _f.toString());
-                if (advertId == null)
-                    res.status(400).send({ error: "Missing advert id." });
+                if (req.query.advertId == null)
+                    res.status(400).send({ error: "Missing query params." });
                 else {
-                    const result = yield this.advertService.deleteAdvert(advertId, userId);
-                    res.status(200).send(result);
+                    const userId = new mongodb_1.ObjectId((_e = req.query.token) === null || _e === void 0 ? void 0 : _e.toString());
+                    const advertId = new mongodb_1.ObjectId((_f = req.query.advertId) === null || _f === void 0 ? void 0 : _f.toString());
+                    if (advertId == null)
+                        res.status(400).send({ error: "Missing advert id." });
+                    else {
+                        const result = yield this.advertService.deleteAdvert(advertId, userId);
+                        res.status(200).send(result);
+                    }
                 }
             }
             catch (e) {
@@ -193,12 +198,17 @@ class AdvertController {
         this.addFavoriteAdvert = (req, res) => __awaiter(this, void 0, void 0, function* () {
             var _j, _k;
             try {
-                const advertId = new mongodb_1.ObjectId((_j = req.query.advertId) === null || _j === void 0 ? void 0 : _j.toString());
-                const userId = new mongodb_1.ObjectId((_k = req.query.token) === null || _k === void 0 ? void 0 : _k.toString());
-                const response = yield this.advertService.saveFavoriteAdvertId(userId, advertId);
-                if (response.hasOwnProperty("error"))
-                    res.status(400).send(response);
-                res.status(200).send(response);
+                if (req.query.advertId == null)
+                    res.status(400).send({ error: "Missing query params." });
+                else {
+                    const advertId = new mongodb_1.ObjectId((_j = req.query.advertId) === null || _j === void 0 ? void 0 : _j.toString());
+                    const userId = new mongodb_1.ObjectId((_k = req.query.token) === null || _k === void 0 ? void 0 : _k.toString());
+                    const response = yield this.advertService.saveFavoriteAdvertId(userId, advertId);
+                    if (response.hasOwnProperty("error"))
+                        res.status(400).send(response);
+                    else
+                        res.status(200).send(response);
+                }
             }
             catch (e) {
                 console.log(e);
@@ -208,12 +218,17 @@ class AdvertController {
         this.deleteFavoriteAdvert = (req, res) => __awaiter(this, void 0, void 0, function* () {
             var _l, _m;
             try {
-                const advertId = new mongodb_1.ObjectId((_l = req.query.advertId) === null || _l === void 0 ? void 0 : _l.toString());
-                const userId = new mongodb_1.ObjectId((_m = req.query.token) === null || _m === void 0 ? void 0 : _m.toString());
-                const response = yield this.advertService.deleteFavoriteAdvertId(userId, advertId);
-                if (response.hasOwnProperty("error"))
-                    res.status(400).send(response);
-                res.status(200).send(response);
+                if (req.query.advertId == null)
+                    res.status(400).send({ error: "Missing query params." });
+                else {
+                    const advertId = new mongodb_1.ObjectId((_l = req.query.advertId) === null || _l === void 0 ? void 0 : _l.toString());
+                    const userId = new mongodb_1.ObjectId((_m = req.query.token) === null || _m === void 0 ? void 0 : _m.toString());
+                    const response = yield this.advertService.deleteFavoriteAdvertId(userId, advertId);
+                    if (response.hasOwnProperty("error"))
+                        res.status(400).send(response);
+                    else
+                        res.status(200).send(response);
+                }
             }
             catch (e) {
                 console.log(e);
@@ -245,18 +260,43 @@ class AdvertController {
                 res.status(400).send();
             }
         });
+        this.updateAdvertVisibility = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            var _o, _p;
+            try {
+                if (req.query.advertId == null || req.query.state == null)
+                    res.status(400).send({ error: "Missing query params." });
+                else {
+                    const advertId = new mongodb_1.ObjectId((_o = req.query.advertId) === null || _o === void 0 ? void 0 : _o.toString());
+                    const userId = new mongodb_1.ObjectId((_p = req.query.token) === null || _p === void 0 ? void 0 : _p.toString());
+                    const state = req.query.state.toString().toLowerCase() === 'true';
+                    console.log(advertId);
+                    console.log(userId);
+                    console.log(state);
+                    const response = yield this.advertService.updateAdvertVisibility(advertId, userId, state);
+                    if (response.hasOwnProperty("error"))
+                        res.status(400).send(response);
+                    else
+                        res.status(200).send(response);
+                }
+            }
+            catch (e) {
+                console.log(e);
+                res.status(400).send();
+            }
+        });
         this.initRouter();
     }
     initRouter() {
         const upload_public = new imageMiddleware_1.ImageMiddleWare().getStorage();
         this.router.post("", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, upload_public.array('uploaded_file', 5), this.createAdvert);
-        this.router.put("", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, upload_public.array('uploaded_file', 5), this.updateAdvert); //not implemented
-        this.router.delete("", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.deleteAdvert); //not implemented
+        this.router.put("", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, upload_public.array('uploaded_file', 5), this.updateAdvert);
+        this.router.delete("", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.deleteAdvert);
         this.router.get("", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.getUserAdverts);
         this.router.get("/all", userAuthMiddlewareLenient_1.userAuthMiddlewareLenient, this.getAdvert);
-        this.router.get("/favorite", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.getFavoriteAdvert); //not implemented
+        this.router.get("/favorite", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.getFavoriteAdvert);
         this.router.post("/favorite", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.addFavoriteAdvert);
         this.router.delete("/favorite", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.deleteFavoriteAdvert);
+        this.router.put("/visible", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.updateAdvertVisibility);
         this.router.use(express_1.default.static(path_1.default.join(__dirname.split('src')[0], process.env.IMAGE_PUBLIC)));
     }
     deleteFiles(imagesUrls) {

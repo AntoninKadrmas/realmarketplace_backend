@@ -214,7 +214,7 @@ export class AdvertController implements GenericController{
                 const advertId = new ObjectId(req.query.advertId?.toString())
                 const userId = new ObjectId(req.query.token?.toString())
                 const state = req.query.state.toString().toLowerCase() === 'true'
-                const response = await this.advertService.updateAdvertVisibility(userId,advertId,state)
+                const response = await this.advertService.updateAdvertVisibility(advertId,userId,state)
                 if(response.hasOwnProperty("error"))res.status(400).send(response)
                 else res.status(200).send(response)
             }

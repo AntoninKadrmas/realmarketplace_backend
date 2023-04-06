@@ -214,6 +214,7 @@ export class AdvertService extends GenericService{
                     visible:state
                 }
             })
+            console.log(result)
             if(result.acknowledged&&result.modifiedCount==1)return {success:"Advert visibility successfully updated."}
             else if(result.acknowledged&&result.modifiedCount==0)return {error:"Can't update foreign advert."}
             else return {error:"There is some problem with database."}

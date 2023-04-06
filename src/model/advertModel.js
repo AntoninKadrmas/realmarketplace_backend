@@ -4,7 +4,7 @@ exports.FavoriteAdvertUser = exports.FavoriteAdvertWithoutUser = exports.AdvertM
 class AdvertModel {
 }
 exports.AdvertModel = AdvertModel;
-class AdvertModelWithUser {
+class AdvertModelWithUser extends AdvertModel {
 }
 exports.AdvertModelWithUser = AdvertModelWithUser;
 class FavoriteAdvertWithoutUser {

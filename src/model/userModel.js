@@ -2,6 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LightUser = exports.UserModelLogin = exports.UserValid = exports.UserModel = void 0;
 class UserModel {
+    constructor() {
+        this.mainImageUrl = "";
+    }
 }
 exports.UserModel = UserModel;
 class UserValid {
