@@ -161,11 +161,11 @@ export class AdvertService extends GenericService{
     }
     async getAdvertByUserEmailTime(email:string,createdIn:string):Promise<AdvertModel[]|{error:string}>{
         try{
-            const result = await this.db.collection(this.collection[0]).aggregate(
+            const result = await this.db.collection(this.collection[0]).aggregate([
                 {
                 $match: {
-                  email:email,
-                  createdIn:new Date(createdIn)
+                  "email":email,
+                  "createdIn":new Date(createdIn)
                 }},
                  {$lookup:{
                   from: "adverts",
@@ -175,7 +175,7 @@ export class AdvertService extends GenericService{
                   {$project: {
                     advert:1
                   }}
-                ).toArray();
+                ]).toArray();
             return result.adverts
         }catch(e){
             console.log(e)
