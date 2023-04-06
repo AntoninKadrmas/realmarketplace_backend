@@ -41,6 +41,7 @@ export class AdvertController implements GenericController{
                 advert.userId=new ObjectId(req.query.token?.toString())
                 advert.createdIn = new Date()
                 advert.imagesUrls = []
+                advert.visible=true
                 let counter = 0;
                 if(req.files!=null){
                     //@ts-ignore
