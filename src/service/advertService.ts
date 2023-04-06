@@ -159,10 +159,24 @@ export class AdvertService extends GenericService{
             return {error:"Database dose not response."}
         }
     }
-    async getAdvertByUserPhoneEmail(email:string,createdIn:string):Promise<AdvertModel[]|{error:string}>{
+    async getAdvertByUserEmailTime(email:string,createdIn:string):Promise<AdvertModel[]|{error:string}>{
         try{
-            const result = await this.db.collection(this.collection[0]).find({"email":email,"createdIn":createdIn}).toArray();
-            return result
+            const result = await this.db.collection(this.collection[0]).aggregate(
+                {
+                $match: {
+                  email:email,
+                  createdIn:new Date(createdIn)
+                }},
+                 {$lookup:{
+                  from: "adverts",
+                  localField:"_id",
+                  foreignField:"userId",
+                  as:"adverts"}},
+                  {$project: {
+                    advert:1
+                  }}
+                ).toArray();
+            return result.adverts
         }catch(e){
             console.log(e)
             return {error:"Database dose not response."}

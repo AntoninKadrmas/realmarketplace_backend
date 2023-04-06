@@ -185,7 +185,7 @@ export class AdvertController implements GenericController{
             if(req.get("userEmail")!=null&&req.get("createdIn")!=null){
                 const userEmail = req.get("userEmail")!
                 const createdIn = req.get("createdIn")!
-                const adverts = await this.advertService.getAdvertByUserPhoneEmail(userEmail,createdIn)
+                const adverts = await this.advertService.getAdvertByUserEmailTime(userEmail,createdIn)
                 if(adverts.hasOwnProperty("error"))res.status(400).send(adverts)
                 else res.status(200).send(adverts)
             }else{
