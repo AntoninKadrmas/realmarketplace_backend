@@ -180,6 +180,8 @@ export class AdvertController implements GenericController{
     }
     getUserAdverts: RequestHandler = async (req, res) => {
         try{
+            console.log(req.get("userEmail"))
+            console.log(req.get("createdIn"))
             if(req.get("userEmail")!=null&&req.get("createdIn")!=null){
                 const userEmail = req.get("userEmail")!
                 const createdIn = req.get("createdIn")!
