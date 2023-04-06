@@ -22,8 +22,8 @@ export class UserModelLogin{
 export class LightUser{
     createdIn!: string;
     email!: string;
-    first_name!: string;
-    last_name!: string;
+    firstName!: string;
+    lastName!: string;
     phone!: string;
     validated!:UserValid
     mainImage!:string;
