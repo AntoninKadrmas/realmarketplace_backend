@@ -37,6 +37,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdvertController = void 0;
 const userAuthMiddlewareStrict_1 = require("../middleware/userAuthMiddlewareStrict");
+const userAuthMiddlewareLenient_1 = require("../middleware/userAuthMiddlewareLenient");
 const imageMiddleware_1 = require("../middleware/imageMiddleware");
 const express_1 = __importDefault(require("express"));
 const mongodb_1 = require("mongodb");
@@ -221,9 +222,25 @@ class AdvertController {
         });
         this.getUserAdverts = (req, res) => __awaiter(this, void 0, void 0, function* () {
             try {
-                const userId = new mongodb_1.ObjectId(req.query.token.toString());
-                const adverts = yield this.advertService.getAdvertByUserId(userId);
-                res.status(200).send(adverts);
+                console.log(req.get("userEmail"));
+                console.log(req.get("createdIn"));
+                if (req.get("userEmail") != null && req.get("createdIn") != null) {
+                    const userEmail = req.get("userEmail");
+                    const createdIn = req.get("createdIn");
+                    const adverts = yield this.advertService.getAdvertByUserEmailTime(userEmail, createdIn);
+                    if (adverts.hasOwnProperty("error"))
+                        res.status(400).send(adverts);
+                    else
+                        res.status(200).send(adverts);
+                }
+                else {
+                    const userId = new mongodb_1.ObjectId(req.query.token.toString());
+                    const adverts = yield this.advertService.getAdvertByUserId(userId);
+                    if (adverts.hasOwnProperty("error"))
+                        res.status(400).send(adverts);
+                    else
+                        res.status(200).send(adverts);
+                }
             }
             catch (e) {
                 console.log(e);
@@ -238,7 +255,7 @@ class AdvertController {
         this.router.put("", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, upload_public.array('uploaded_file', 5), this.updateAdvert); //not implemented
         this.router.delete("", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.deleteAdvert); //not implemented
         this.router.get("", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.getUserAdverts);
-        this.router.get("/all", this.getAdvert);
+        this.router.get("/all", userAuthMiddlewareLenient_1.userAuthMiddlewareLenient, this.getAdvert);
         this.router.get("/favorite", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.getFavoriteAdvert); //not implemented
         this.router.post("/favorite", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.addFavoriteAdvert);
         this.router.delete("/favorite", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.deleteFavoriteAdvert);

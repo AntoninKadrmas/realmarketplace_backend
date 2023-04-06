@@ -48,6 +48,7 @@ class AdvertService extends genericService_1.GenericService {
             this.client = yield instance.getDbClient();
             this.collection.push(process.env.ADVERT_COLLECTION);
             this.collection.push(process.env.FAVORITE_COLLECTION);
+            this.collection.push(process.env.USER_COLLECTION);
             this.db = this.client.db(process.env.DB_NAME);
         });
     }
@@ -216,6 +217,35 @@ class AdvertService extends genericService_1.GenericService {
             try {
                 const result = yield this.db.collection(this.collection[0]).find({ "userId": userId }).toArray();
                 return result;
+            }
+            catch (e) {
+                console.log(e);
+                return { error: "Database dose not response." };
+            }
+        });
+    }
+    getAdvertByUserEmailTime(email, createdIn) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const result = yield this.db.collection(this.collection[2]).aggregate([
+                    {
+                        $match: {
+                            "email": email,
+                            "createdIn": new Date(createdIn)
+                        }
+                    },
+                    { $lookup: {
+                            from: "adverts",
+                            localField: "_id",
+                            foreignField: "userId",
+                            as: "adverts"
+                        } },
+                    { $project: {
+                            adverts: 1
+                        } }
+                ]).toArray();
+                console.log(result);
+                return result[0].adverts;
             }
             catch (e) {
                 console.log(e);

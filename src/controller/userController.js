@@ -59,10 +59,10 @@ class UserController {
                     if (createUserResponse.hasOwnProperty("userId")) {
                         const userIds = createUserResponse;
                         const token = yield this.tokenService.createToken(new mongodb_1.ObjectId(userIds.userId));
-                        if (!token.hasOwnProperty("error"))
-                            return res.status(200).send({ "token": token.toString() });
-                        else
+                        if (token.hasOwnProperty("error"))
                             res.status(400).send(token);
+                        else
+                            res.status(200).send({ "token": token.toString() });
                     }
                     else
                         res.status(400).send(createUserResponse);
@@ -89,10 +89,11 @@ class UserController {
                     else {
                         const tempUserResponse = userResponse;
                         const token = yield this.tokenService.createToken(new mongodb_1.ObjectId(tempUserResponse._id));
-                        if (!token.hasOwnProperty("error"))
-                            return res.status(200).send({ "token": token.toString() });
-                        else
+                        console.log(`token: ${token}`);
+                        if (token.hasOwnProperty("error"))
                             res.status(400).send(token);
+                        else
+                            res.status(200).send({ "token": token.toString() });
                     }
                 }
             }
@@ -106,10 +107,10 @@ class UserController {
                 res.status(400).send(); //null as parameter
             else {
                 const response = yield this.userService.getUserDataById(req.params.id);
-                if (!response.hasOwnProperty("error"))
-                    res.status(200).send(response); //not null result
-                else
+                if (response.hasOwnProperty("error"))
                     res.status(400).send();
+                else
+                    res.status(200).send(response); //not null result
             }
         });
         this.initRouter();

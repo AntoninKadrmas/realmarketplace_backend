@@ -18,7 +18,7 @@ function userAuthMiddlewareStrict(request, response, next) {
         try {
             const token = request.get("Authorization");
             if (token == null)
-                throw Error("Token does not exists in query params."); //token does not exists in header
+                throw Error("Token does not exists in header."); //token does not exists in header
             const tokenService = yield tokenService_1.TokenService.getInstance();
             const tokenExists = yield tokenService.tokenExists(new mongodb_1.ObjectId(token));
             if (!tokenExists.valid)

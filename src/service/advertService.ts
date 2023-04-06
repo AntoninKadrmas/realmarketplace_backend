@@ -15,6 +15,7 @@ export class AdvertService extends GenericService{
         this.client = await instance.getDbClient()                
         this.collection.push(process.env.ADVERT_COLLECTION)    
         this.collection.push(process.env.FAVORITE_COLLECTION)    
+        this.collection.push(process.env.USER_COLLECTION)    
         this.db = this.client.db(process.env.DB_NAME)
     }
     async createAdvert(advert:AdvertModel):Promise<{success:string,_id:string}|{error:string}>{
@@ -161,7 +162,7 @@ export class AdvertService extends GenericService{
     }
     async getAdvertByUserEmailTime(email:string,createdIn:string):Promise<AdvertModel[]|{error:string}>{
         try{
-            const result = await this.db.collection(this.collection[0]).aggregate([
+            const result = await this.db.collection(this.collection[2]).aggregate([
                 {
                 $match: {
                   "email":email,
@@ -173,11 +174,10 @@ export class AdvertService extends GenericService{
                   foreignField:"userId",
                   as:"adverts"}},
                   {$project: {
-                    advert:1
+                    adverts:1
                   }}
                 ]).toArray();
-            console.log(result)
-            return result.adverts
+            return result[0].adverts
         }catch(e){
             console.log(e)
             return {error:"Database dose not response."}

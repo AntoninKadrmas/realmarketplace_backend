@@ -18,7 +18,7 @@ function userAuthMiddlewareLenient(request, response, next) {
         try {
             const token = request.get("Authorization");
             if (token == null)
-                throw Error("Token does not exists in query params");
+                throw Error("Token does not exists in header.");
             const tokenService = yield tokenService_1.TokenService.getInstance();
             const tokenExists = yield tokenService.tokenExists(new mongodb_1.ObjectId(token));
             if (!tokenExists.valid)
