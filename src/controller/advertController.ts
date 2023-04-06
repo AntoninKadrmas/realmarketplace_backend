@@ -10,6 +10,7 @@ import * as dotenv from 'dotenv';
 import { Router } from "express";
 import path from 'path';
 import fs from 'fs';
+import { emit } from "process";
 dotenv.config();
 
 export class AdvertController implements GenericController{
@@ -179,9 +180,18 @@ export class AdvertController implements GenericController{
     }
     getUserAdverts: RequestHandler = async (req, res) => {
         try{
-            const userId = new ObjectId(req.query.token!.toString())
-            const adverts = await this.advertService.getAdvertByUserId(userId)
-            res.status(200).send(adverts)
+            if(req.get("userEmail")!=null&&req.get("userPhone")!=null){
+                const userEmail = req.get("userEmail")!
+                const userPhone = req.get("userPhone")!
+                const adverts = await this.advertService.getAdvertByUserPhoneEmail(userEmail,userPhone)
+                if(adverts.hasOwnProperty("error"))res.status(400).send(adverts)
+                else res.status(200).send(adverts)
+            }else{
+                const userId = new ObjectId(req.query.token!.toString())
+                const adverts = await this.advertService.getAdvertByUserId(userId)
+                if(adverts.hasOwnProperty("error"))res.status(400).send(adverts)
+                else res.status(200).send(adverts)
+            }
         }catch(e){
             console.log(e)
             res.status(400).send()

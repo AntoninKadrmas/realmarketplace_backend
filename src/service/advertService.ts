@@ -159,6 +159,15 @@ export class AdvertService extends GenericService{
             return {error:"Database dose not response."}
         }
     }
+    async getAdvertByUserPhoneEmail(email:string,phone:string):Promise<AdvertModel[]|{error:string}>{
+        try{
+            const result = await this.db.collection(this.collection[0]).find({"email":email,"phone":phone}).toArray();
+            return result
+        }catch(e){
+            console.log(e)
+            return {error:"Database dose not response."}
+        }
+    }
     async deleteAdvert(advertId:ObjectId,userId:ObjectId):Promise<{success:string}|{error:string}>{
         try{
             const result = await this.db.collection(this.collection[0]).deleteOne({"_id":advertId,"userId":userId})
