@@ -16,7 +16,7 @@ export class AdvertService extends GenericService{
         this.collection.push(process.env.ADVERT_COLLECTION)    
         this.collection.push(process.env.FAVORITE_COLLECTION)    
         this.collection.push(process.env.USER_COLLECTION)    
-        this.db = this.client.db(process.env.DB_NAME)
+        this.db = this.client.db(process.env.DBName)
     }
     async createAdvert(advert:AdvertModel):Promise<{success:string,_id:string}|{error:string}>{
         try{
@@ -64,8 +64,8 @@ export class AdvertService extends GenericService{
                     imagesUrls: 1,
                     mainImage: 1,
                     user: {
-                        first_name: 1,
-                        last_name: 1,
+                        firstName: 1,
+                        lastName: 1,
                         email: 1,
                         phone: 1,
                         createdIn: 1,
@@ -83,13 +83,25 @@ export class AdvertService extends GenericService{
     async getFavoriteAdvertByUserId(userId:ObjectId):Promise<FavoriteAdvertUser[]|{error:string}>{
         try{
             const result = await this.db.collection(this.collection[1]).aggregate([
-            {$match: {userId:userId,visible:true}}, 
+            {$match: {userId:userId}}, 
             {$unwind : "$advertId"},
             {$lookup:{
                 from: "adverts",
                 localField:"advertId",
                 foreignField:"_id",
                 as:"advert"}},
+            {$project: {
+                advert:{
+                    $filter:{
+                    "input": "$advert",
+                        "as": "advert",
+                        "cond": {
+                            "$eq": [ "$$advert.visible", true ]
+                        }
+                    }
+                }
+                }
+            },
             {$lookup:{
                 from: "users",
                 localField:"advert.userId",
@@ -114,9 +126,10 @@ export class AdvertService extends GenericService{
                   createdIn: 1,
                   imagesUrls: 1,
                   mainImage: 1,
+                  visible:1,
                   user: {
-                    first_name: 1,
-                    last_name: 1,
+                    firstName: 1,
+                    lastName: 1,
                     email: 1,
                     phone: 1,
                     createdIn: 1,
