@@ -30,7 +30,7 @@ export class AdvertService extends GenericService{
     }
     async getAdvertWithOutUser():Promise<AdvertModel[]|{error:string}>{
         try{
-            const result = await this.db.collection(this.collection[0]).find({}).toArray();
+            const result = await this.db.collection(this.collection[0]).find({visible:true}).toArray();
             return result
         }catch(e){
             console.log(e)
@@ -40,6 +40,7 @@ export class AdvertService extends GenericService{
     async getAdvertWithUser():Promise<AdvertModelWithUser[]|{error:string}>{
         try{
             const result = await this.db.collection(this.collection[0]).aggregate([
+                {$match:{visible:true}},
                 {$lookup:{
                 from: "users",
                 localField:"userId",
@@ -82,7 +83,7 @@ export class AdvertService extends GenericService{
     async getFavoriteAdvertByUserId(userId:ObjectId):Promise<FavoriteAdvertUser[]|{error:string}>{
         try{
             const result = await this.db.collection(this.collection[1]).aggregate([
-            {$match: {userId:userId}}, 
+            {$match: {userId:userId,visible:true}}, 
             {$unwind : "$advertId"},
             {$lookup:{
                 from: "adverts",
@@ -174,7 +175,15 @@ export class AdvertService extends GenericService{
                   foreignField:"userId",
                   as:"adverts"}},
                   {$project: {
-                    adverts:1
+                    adverts:{
+                      $filter:{
+                        "input": "$adverts",
+                            "as": "adverts",
+                            "cond": {
+                                "$eq": [ "$$adverts.visible", true ]
+                            }
+                      }
+                    }
                   }}
                 ]).toArray();
             return result[0].adverts
