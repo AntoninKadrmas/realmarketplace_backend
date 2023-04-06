@@ -176,6 +176,7 @@ export class AdvertService extends GenericService{
                     advert:1
                   }}
                 ]).toArray();
+            console.log(result)
             return result.adverts
         }catch(e){
             console.log(e)
