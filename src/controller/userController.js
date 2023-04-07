@@ -105,7 +105,7 @@ class UserController {
         });
         this.getFullUserById = (req, res) => __awaiter(this, void 0, void 0, function* () {
             var _a;
-            const userId = new mongodb_1.ObjectId((_a = req.query.userId) === null || _a === void 0 ? void 0 : _a.toString());
+            const userId = new mongodb_1.ObjectId((_a = req.query.token) === null || _a === void 0 ? void 0 : _a.toString());
             const response = yield this.userService.getUserDataById(userId);
             if (response.hasOwnProperty("error"))
                 res.status(400).send();

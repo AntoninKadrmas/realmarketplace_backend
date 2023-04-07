@@ -79,16 +79,24 @@ class UserService extends genericService_1.GenericService {
     getUserDataById(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const result = yield this.db.collection(this.collection[0]).findOne({ '_id': userId }, {
-                    createdIn: 1,
-                    email: 1,
-                    firstName: 1,
-                    lastName: 1,
-                    mainImageUrl: 1,
-                    phone: 1,
-                    validated: 1
-                });
-                return result;
+                const result = yield this.db.collection(this.collection[0]).aggregate([
+                    { $match: { '_id': userId } },
+                    { $project: {
+                            _id: 0,
+                            createdIn: 1,
+                            email: 1,
+                            firstName: 1,
+                            lastName: 1,
+                            mainImageUrl: 1,
+                            phone: 1,
+                            validated: 1
+                        }
+                    }
+                ]).toArray();
+                if (result.length > 0)
+                    return result[0];
+                else
+                    return { error: "User does not exists." };
             }
             catch (e) {
                 console.log(e);

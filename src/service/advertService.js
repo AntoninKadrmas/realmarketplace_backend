@@ -94,7 +94,6 @@ class AdvertService extends genericService_1.GenericService {
                             "user": { $arrayElemAt: ["$user", 0] }
                         } },
                     { $project: {
-                            _id: 1,
                             title: 1,
                             author: 1,
                             description: 1,
@@ -103,7 +102,6 @@ class AdvertService extends genericService_1.GenericService {
                             price: 1,
                             priceOption: 1,
                             condition: 1,
-                            userId: 1,
                             createdIn: 1,
                             imagesUrls: 1,
                             mainImageUrl: 1,
@@ -138,15 +136,15 @@ class AdvertService extends genericService_1.GenericService {
                             from: "adverts",
                             localField: "advertId",
                             foreignField: "_id",
-                            as: "advert"
+                            as: "adverts"
                         } },
                     { $project: {
-                            advert: {
+                            adverts: {
                                 $filter: {
-                                    "input": "$advert",
-                                    "as": "advert",
+                                    "input": "$adverts",
+                                    "as": "adverts",
                                     "cond": {
-                                        "$eq": ["$$advert.visible", true]
+                                        "$eq": ["$$adverts.visible", true]
                                     }
                                 }
                             }
@@ -154,15 +152,20 @@ class AdvertService extends genericService_1.GenericService {
                     },
                     { $lookup: {
                             from: "users",
-                            localField: "advert.userId",
+                            localField: "adverts.userId",
                             foreignField: "_id",
                             as: "user"
                         } },
                     { $addFields: {
-                            "advert.user": { $arrayElemAt: ["$user", 0] }
+                            "adverts.user": { $arrayElemAt: ["$user", 0] }
+                        }
+                    },
+                    { $addFields: {
+                            "advert": { $arrayElemAt: ["$adverts", 0] }
                         }
                     },
                     { $project: {
+                            _id: 0,
                             advert: {
                                 _id: 1,
                                 title: 1,
@@ -173,7 +176,6 @@ class AdvertService extends genericService_1.GenericService {
                                 price: 1,
                                 priceOption: 1,
                                 condition: 1,
-                                userId: 1,
                                 createdIn: 1,
                                 imagesUrls: 1,
                                 mainImageUrl: 1,
@@ -264,9 +266,15 @@ class AdvertService extends genericService_1.GenericService {
                                     "cond": {
                                         "$eq": ["$$adverts.visible", true]
                                     }
-                                }
+                                },
                             }
-                        } }
+                        } },
+                    { $project: {
+                            _id: 0,
+                            adverts: {
+                                userId: 0
+                            }
+                        } },
                 ]).toArray();
                 return result[0].adverts;
             }

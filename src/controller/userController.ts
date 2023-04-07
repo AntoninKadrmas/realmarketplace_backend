@@ -66,7 +66,7 @@ export class UserController implements GenericController{
         }
     }
     getFullUserById:RequestHandler = async (req,res)=>{
-        const userId = new ObjectId(req.query.userId?.toString())
+        const userId = new ObjectId(req.query.token?.toString())
         const response:UserModel | {error:string} = await this.userService.getUserDataById(userId)
         if(response.hasOwnProperty("error"))res.status(400).send()
         else res.status(200).send(response)

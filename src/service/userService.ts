@@ -37,19 +37,23 @@ export class UserService extends GenericService{
             return {error:"Database dose not response."}
         }
     }
-    async getUserDataById(userId?:ObjectId):Promise<UserModel | {error:string}>{
+    async getUserDataById(userId:ObjectId):Promise<UserModel | {error:string}>{
         try{    
-            const result =  await this.db.collection(this.collection[0]).find({'_id':userId },{
-                _id:0,
-                createdIn:1,
-                email:1,
-                firstName:1,
-                lastName:1,
-                mainImageUrl:1,
-                phone:1,
-                validated:1
-            })
-            return result
+            const result =  await this.db.collection(this.collection[0]).aggregate([
+                {$match:{'_id': userId}},
+                {$project:{
+                  _id:0,
+                  createdIn:1,
+                  email:1,
+                  firstName:1,
+                  lastName:1,
+                  mainImageUrl:1,
+                  phone:1,
+                  validated:1
+                }
+              }]).toArray();
+            if(result.length>0)return result[0]
+            else return {error:"User does not exists."}
         }catch(e){   
             console.log(e)  
             return {error:"Database dose not response."}
