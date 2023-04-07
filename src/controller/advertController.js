@@ -160,6 +160,7 @@ class AdvertController {
             var _g;
             try {
                 const userId = (_g = req.query.token) === null || _g === void 0 ? void 0 : _g.toString();
+                console.log(userId);
                 if (userId == "" || userId == null) {
                     const response = yield this.advertService.getAdvertWithOutUser();
                     if (response.hasOwnProperty("error"))
@@ -168,6 +169,7 @@ class AdvertController {
                         res.status(200).send(response);
                 }
                 else {
+                    console.log("there --------------------");
                     const response = yield this.advertService.getAdvertWithUser();
                     if (response.hasOwnProperty("error"))
                         res.status(400).send(response);
@@ -269,9 +271,6 @@ class AdvertController {
                     const advertId = new mongodb_1.ObjectId((_o = req.query.advertId) === null || _o === void 0 ? void 0 : _o.toString());
                     const userId = new mongodb_1.ObjectId((_p = req.query.token) === null || _p === void 0 ? void 0 : _p.toString());
                     const state = req.query.state.toString().toLowerCase() === 'true';
-                    console.log(advertId);
-                    console.log(userId);
-                    console.log(state);
                     const response = yield this.advertService.updateAdvertVisibility(advertId, userId, state);
                     if (response.hasOwnProperty("error"))
                         res.status(400).send(response);

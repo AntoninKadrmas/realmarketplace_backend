@@ -49,7 +49,7 @@ class AdvertService extends genericService_1.GenericService {
             this.collection.push(process.env.ADVERT_COLLECTION);
             this.collection.push(process.env.FAVORITE_COLLECTION);
             this.collection.push(process.env.USER_COLLECTION);
-            this.db = this.client.db(process.env.DB_NAME);
+            this.db = this.client.db(process.env.DBName);
         });
     }
     createAdvert(advert) {
@@ -70,7 +70,7 @@ class AdvertService extends genericService_1.GenericService {
     getAdvertWithOutUser() {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const result = yield this.db.collection(this.collection[0]).find({}).toArray();
+                const result = yield this.db.collection(this.collection[0]).find({ visible: true }).toArray();
                 return result;
             }
             catch (e) {
@@ -83,6 +83,7 @@ class AdvertService extends genericService_1.GenericService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const result = yield this.db.collection(this.collection[0]).aggregate([
+                    { $match: { visible: true } },
                     { $lookup: {
                             from: "users",
                             localField: "userId",
@@ -107,8 +108,8 @@ class AdvertService extends genericService_1.GenericService {
                             imagesUrls: 1,
                             mainImage: 1,
                             user: {
-                                first_name: 1,
-                                last_name: 1,
+                                firstName: 1,
+                                lastName: 1,
                                 email: 1,
                                 phone: 1,
                                 createdIn: 1,
@@ -117,6 +118,7 @@ class AdvertService extends genericService_1.GenericService {
                         }
                     }
                 ]).toArray();
+                console.log(result);
                 return result;
             }
             catch (e) {
@@ -137,6 +139,18 @@ class AdvertService extends genericService_1.GenericService {
                             foreignField: "_id",
                             as: "advert"
                         } },
+                    { $project: {
+                            advert: {
+                                $filter: {
+                                    "input": "$advert",
+                                    "as": "advert",
+                                    "cond": {
+                                        "$eq": ["$$advert.visible", true]
+                                    }
+                                }
+                            }
+                        }
+                    },
                     { $lookup: {
                             from: "users",
                             localField: "advert.userId",
@@ -162,9 +176,10 @@ class AdvertService extends genericService_1.GenericService {
                                 createdIn: 1,
                                 imagesUrls: 1,
                                 mainImage: 1,
+                                visible: 1,
                                 user: {
-                                    first_name: 1,
-                                    last_name: 1,
+                                    firstName: 1,
+                                    lastName: 1,
                                     email: 1,
                                     phone: 1,
                                     createdIn: 1,
@@ -241,7 +256,15 @@ class AdvertService extends genericService_1.GenericService {
                             as: "adverts"
                         } },
                     { $project: {
-                            adverts: 1
+                            adverts: {
+                                $filter: {
+                                    "input": "$adverts",
+                                    "as": "adverts",
+                                    "cond": {
+                                        "$eq": ["$$adverts.visible", true]
+                                    }
+                                }
+                            }
                         } }
                 ]).toArray();
                 return result[0].adverts;

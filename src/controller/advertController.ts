@@ -132,12 +132,14 @@ export class AdvertController implements GenericController{
     getAdvert: RequestHandler = async (req, res) => {
         try{
             const userId = req.query.token?.toString()
+            console.log(userId)
             if(userId==""||userId==null){
                 const response:AdvertModel[]|{error:string} = await this.advertService.getAdvertWithOutUser()
                 if(response.hasOwnProperty("error"))res.status(400).send(response)
                 else res.status(200).send(response)
             }
             else{
+                console.log("there --------------------")
                 const response:AdvertModelWithUser[]|{error:string} = await this.advertService.getAdvertWithUser()
                 if(response.hasOwnProperty("error"))res.status(400).send(response)
                 else res.status(200).send(response)

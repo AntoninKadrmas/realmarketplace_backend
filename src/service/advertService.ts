@@ -74,6 +74,7 @@ export class AdvertService extends GenericService{
                   }
                 }
                 ]).toArray();
+                console.log(result)
             return result
         }catch(e){
             console.log(e)
