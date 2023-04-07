@@ -5,6 +5,7 @@ import { GenericController } from "./genericController";
 import { TokenService } from "../service/tokenService";
 import * as dotenv from 'dotenv';
 import { ObjectId } from "mongodb";
+import { userAuthMiddlewareStrict } from "../middleware/userAuthMiddlewareStrict";
 dotenv.config();
 
 export class UserController implements GenericController{
@@ -16,7 +17,7 @@ export class UserController implements GenericController{
     initRouter(){
         this.router.post('/register',this.registerUser)
         this.router.post('/login',this.userLogin)
-        this.router.get('/full/:id',this.getFullUserById)
+        this.router.get('/',userAuthMiddlewareStrict,this.getFullUserById)
     }
     registerUser: RequestHandler = async (req, res) => {
         let user:UserModel
@@ -65,11 +66,9 @@ export class UserController implements GenericController{
         }
     }
     getFullUserById:RequestHandler = async (req,res)=>{
-        if(!req.params.id)res.status(400).send()//null as parameter
-        else{
-            const response = await this.userService.getUserDataById(req.params.id)
-            if(response.hasOwnProperty("error"))res.status(400).send()
-            else res.status(200).send(response)//not null result
-        }
+        const userId = new ObjectId(req.query.userId?.toString())
+        const response:UserModel | {error:string} = await this.userService.getUserDataById(userId)
+        if(response.hasOwnProperty("error"))res.status(400).send()
+        else res.status(200).send(response)
     }
 }

@@ -36,7 +36,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
-const mongodb_1 = require("mongodb");
 const dbConnection_1 = require("../db/dbConnection");
 const genericService_1 = require("./genericService");
 const dotenv = __importStar(require("dotenv"));
@@ -80,7 +79,15 @@ class UserService extends genericService_1.GenericService {
     getUserDataById(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const result = yield this.db.collection(this.collection[0]).findOne({ '_id': new mongodb_1.ObjectId(userId) });
+                const result = yield this.db.collection(this.collection[0]).findOne({ '_id': userId }, {
+                    createdIn: 1,
+                    email: 1,
+                    firstName: 1,
+                    lastName: 1,
+                    mainImageUrl: 1,
+                    phone: 1,
+                    validated: 1
+                });
                 return result;
             }
             catch (e) {

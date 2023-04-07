@@ -50,7 +50,6 @@ export class AdvertService extends GenericService{
                     "user": { $arrayElemAt: [ "$user", 0 ] }
                 }},
                 { $project: {
-                    _id: 1,
                     title: 1,
                     author: 1,
                     description: 1,
@@ -59,7 +58,6 @@ export class AdvertService extends GenericService{
                     price: 1,
                     priceOption: 1,
                     condition: 1,
-                    userId: 1,
                     createdIn: 1,
                     imagesUrls: 1,
                     mainImageUrl: 1,
@@ -85,62 +83,65 @@ export class AdvertService extends GenericService{
     async getFavoriteAdvertByUserId(userId:ObjectId):Promise<FavoriteAdvertUser[]|{error:string}>{
         try{
             const result = await this.db.collection(this.collection[1]).aggregate([
-            {$match: {userId:userId}}, 
-            {$unwind : "$advertId"},
-            {$lookup:{
-                from: "adverts",
-                localField:"advertId",
-                foreignField:"_id",
-                as:"advert"}},
-            {$project: {
-                advert:{
-                    $filter:{
-                    "input": "$advert",
-                        "as": "advert",
-                        "cond": {
-                            "$eq": [ "$$advert.visible", true ]
+                {$match: {userId:userId}},
+                {$unwind : "$advertId"},
+                {$lookup:{
+                    from: "adverts",
+                    localField:"advertId",
+                    foreignField:"_id",
+                    as:"adverts"}},
+                {$project: {
+                    adverts:{
+                        $filter:{
+                        "input": "$adverts",
+                            "as": "adverts",
+                            "cond": {
+                                "$eq": [ "$$adverts.visible", true ]
+                            }
                         }
                     }
-                }
-                }
-            },
-            {$lookup:{
-                from: "users",
-                localField:"advert.userId",
-                foreignField:"_id",
-                as:"user"}},    
-            { $addFields: {
-                "advert.user": { $arrayElemAt: [ "$user", 0 ] }
-              }
-            },
-            { $project: {
-                advert: {
-                  _id: 1,
-                  title: 1,
-                  author: 1,
-                  description: 1,
-                  genreName: 1,
-                  genreType: 1,
-                  price: 1,
-                  priceOption: 1,
-                  condition: 1,
-                  userId: 1,
-                  createdIn: 1,
-                  imagesUrls: 1,
-                  mainImageUrl: 1,
-                  user: {
-                    firstName: 1,
-                    lastName: 1,
-                    email: 1,
-                    phone: 1,
-                    createdIn: 1,
-                    validated: 1,
-                    mainImageUrl:1
+                    }
+                },
+                {$lookup:{
+                    from: "users",
+                    localField:"adverts.userId",
+                    foreignField:"_id",
+                    as:"user"}},    
+                { $addFields: {
+                    "adverts.user": { $arrayElemAt: [ "$user", 0 ] }
+                  }
+                },
+                { $addFields: {
+                    "advert": { $arrayElemAt: [ "$adverts", 0 ] }
+                  }
+                },
+                  { $project: {
+                    _id:0,
+                    advert: {
+                      title: 1,
+                      author: 1,
+                      description: 1,
+                      genreName: 1,
+                      genreType: 1,
+                      price: 1,
+                      priceOption: 1,
+                      condition: 1,
+                      createdIn: 1,
+                      imagesUrls: 1,
+                      mainImageUrl: 1,
+                      user: {
+                        firstName: 1,
+                        lastName: 1,
+                        email: 1,
+                        phone: 1,
+                        createdIn: 1,
+                        validated: 1,
+                        mainImageUrl:1
+                      }
+                    }
                   }
                 }
-              }
-            }
-            ]).toArray();
+                ]).toArray();
             return result
         }catch(e){
             console.log(e)
@@ -197,9 +198,15 @@ export class AdvertService extends GenericService{
                             "cond": {
                                 "$eq": [ "$$adverts.visible", true ]
                             }
-                      }
+                      },
                     }
-                  }}
+                  }},
+                  {$project: {
+                    _id:0,
+                    adverts:{
+                      userId:0
+                    }
+                  }},
                 ]).toArray();
             return result[0].adverts
         }catch(e){

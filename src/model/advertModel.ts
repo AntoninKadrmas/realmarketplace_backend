@@ -24,15 +24,7 @@ export class AdvertModel{
 export class AdvertModelWithUser extends AdvertModel{
     user!:LightUser
 }
-export class FavoriteAdvertWithoutUser{
-    _id!: string;
-    userId!: string;
-    advertId!: string;
-    advert!:AdvertModel
-}
+
 export class FavoriteAdvertUser{
-    _id!: string;
-    userId!: string;
-    advertId!: string;
-    advert!:AdvertModelWithUser[]
+    advert!:AdvertModelWithUser
 }

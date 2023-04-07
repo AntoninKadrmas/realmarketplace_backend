@@ -39,6 +39,7 @@ exports.UserController = void 0;
 const express_1 = __importDefault(require("express"));
 const dotenv = __importStar(require("dotenv"));
 const mongodb_1 = require("mongodb");
+const userAuthMiddlewareStrict_1 = require("../middleware/userAuthMiddlewareStrict");
 dotenv.config();
 class UserController {
     constructor(userService, tokenService) {
@@ -103,22 +104,20 @@ class UserController {
             }
         });
         this.getFullUserById = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            if (!req.params.id)
-                res.status(400).send(); //null as parameter
-            else {
-                const response = yield this.userService.getUserDataById(req.params.id);
-                if (response.hasOwnProperty("error"))
-                    res.status(400).send();
-                else
-                    res.status(200).send(response); //not null result
-            }
+            var _a;
+            const userId = new mongodb_1.ObjectId((_a = req.query.userId) === null || _a === void 0 ? void 0 : _a.toString());
+            const response = yield this.userService.getUserDataById(userId);
+            if (response.hasOwnProperty("error"))
+                res.status(400).send();
+            else
+                res.status(200).send(response);
         });
         this.initRouter();
     }
     initRouter() {
         this.router.post('/register', this.registerUser);
         this.router.post('/login', this.userLogin);
-        this.router.get('/full/:id', this.getFullUserById);
+        this.router.get('/', userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.getFullUserById);
     }
 }
 exports.UserController = UserController;
