@@ -62,14 +62,15 @@ export class AdvertService extends GenericService{
                     userId: 1,
                     createdIn: 1,
                     imagesUrls: 1,
-                    mainImage: 1,
+                    mainImageUrl: 1,
                     user: {
                         firstName: 1,
                         lastName: 1,
                         email: 1,
                         phone: 1,
                         createdIn: 1,
-                        validated: 1
+                        validated: 1,
+                        mainImageUrl:1
                     }
                   }
                 }
@@ -126,15 +127,15 @@ export class AdvertService extends GenericService{
                   userId: 1,
                   createdIn: 1,
                   imagesUrls: 1,
-                  mainImage: 1,
-                  visible:1,
+                  mainImageUrl: 1,
                   user: {
                     firstName: 1,
                     lastName: 1,
                     email: 1,
                     phone: 1,
                     createdIn: 1,
-                    validated: 1
+                    validated: 1,
+                    mainImageUrl:1
                   }
                 }
               }

@@ -26,5 +26,5 @@ export class LightUser{
     lastName!: string;
     phone!: string;
     validated!:UserValid
-    mainImage!:string;
+    mainImageUrl!:string;
 }
