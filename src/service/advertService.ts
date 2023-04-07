@@ -118,6 +118,7 @@ export class AdvertService extends GenericService{
                   { $project: {
                     _id:0,
                     advert: {
+                      _id:1,
                       title: 1,
                       author: 1,
                       description: 1,
