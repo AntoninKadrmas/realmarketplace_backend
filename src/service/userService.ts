@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 import { DBConnection } from "../db/dbConnection";
-import { UserModel } from "../model/userModel";
+import { LightUser, UserModel } from "../model/userModel";
 import { GenericService } from "./genericService";
 import * as dotenv from 'dotenv';
 import bcrypt from 'bcrypt';
@@ -23,14 +23,10 @@ export class UserService extends GenericService{
     async createNewUser(user:UserModel):Promise<{userId:string}|{error:string}>{
         user.password = await this.hashPassword(user.password!)
         try{
-            let userExists = await this.db.collection(this.collection[0]).findOne({phone : user.phone})
-            if(userExists!=null)return {error:"User with same Phone number already exists."}
-            userExists = await this.db.collection(this.collection[0]).findOne({email : user.email})
+            let userExists = await this.db.collection(this.collection[0]).findOne({email : user.email})
             if(userExists!=null)return {error:"User with same Email Address already exists."}
             const new_user = await this.db.collection(this.collection[0]).insertOne(user)
-            if(!new_user.acknowledged) {
-                return {error:"Database dose not response."}
-            }
+            if(!new_user.acknowledged) return {error:"Database dose not response."}
             return {userId:new_user.insertedId.toString()}
         }
         catch{
@@ -106,6 +102,23 @@ export class UserService extends GenericService{
                 }
                 else return {error:"Incorrect password."}
             }
+        }catch(e){
+            console.log(e)
+            return {error:"Database dose not response."}
+        }
+    }
+    async updateUser(userId:ObjectId,user:LightUser):Promise<{success:string}|{error:string}>{
+        try{
+            const result =  await this.db.collection(this.collection[0]).updateOne({_id:userId},{
+                    $set:{
+                        firstName:user.firstName,
+                        lastName:user.lastName,
+                        phone:user.phone
+                    }
+                })
+            if(result.acknowledged&&result.modifiedCount==1)return {success:"User profile successfully updated."}
+            else if(result.acknowledged&&result.modifiedCount==0)return {error:"User does not exists."}
+            else return {error:"There is some problem with database."}
         }catch(e){
             console.log(e)
             return {error:"Database dose not response."}
