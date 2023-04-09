@@ -85,7 +85,8 @@ export class UserController implements GenericController{
             const folder = process.env.IMAGE_PROFILE!!
             if(req.body==null)res.status(400).send({error:"Body does not contains advert information's"})
             else{
-                if(req.body.oldUrl!=null&&req.body.oldUrl!="") fs.unlinkSync(__dirname.split('src')[0]+folder+req.body.oldUrl)
+                const oldDirUrl=__dirname.split('src')[0]+folder+req.body.oldUrl
+                if(req.body.oldUrl!=null&&req.body.oldUrl!=""&&fs.existsSync(oldDirUrl)) fs.unlinkSync(oldDirUrl)
                 const userId = new ObjectId(req.query.token?.toString())
                 const file = req.file!
                 const dirUrl = __dirname.split('src')[0]+`${folder}/`+file.filename

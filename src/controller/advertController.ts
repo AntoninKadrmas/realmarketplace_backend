@@ -110,7 +110,8 @@ export class AdvertController implements GenericController{
     private deleteFiles(imagesUrls:string[]){
         const folder = process.env.IMAGE_PUBLIC!!
         for(var image of imagesUrls){
-            fs.unlinkSync(__dirname.split('src')[0]+folder+image)
+            const oldDirUrl=__dirname.split('src')[0]+folder+image
+            if(fs.existsSync(oldDirUrl)) fs.unlinkSync(oldDirUrl)
         }
     }
     deleteAdvert: RequestHandler = async (req, res) => {
