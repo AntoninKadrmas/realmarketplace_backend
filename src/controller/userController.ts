@@ -23,6 +23,8 @@ export class UserController implements GenericController{
         this.router.post('/login',this.userLogin)
         this.router.get('/',userAuthMiddlewareStrict,this.getFullUserById)
         this.router.post('/image',userAuthMiddlewareStrict,upload_public.single('uploaded_file'),this.userProfileImage)
+        this.router.use(express.static(path.join(__dirname.split('src')[0],process.env.IMAGE_PROFILE!!)))
+
     }
     registerUser: RequestHandler = async (req, res) => {
         let user:UserModel
