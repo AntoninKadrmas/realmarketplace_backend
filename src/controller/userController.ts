@@ -98,10 +98,7 @@ export class UserController implements GenericController{
                             fs.unlinkSync(__dirname.split('src')[0]+"public"+imageUrl)
                             res.status(400).send(response)
                         }
-                        else {
-                            const success = response as {success:string}
-                            res.status(200).send({success:success.success,imageUrls:[imageUrl]})
-                        }
+                        else res.status(200).send(response)
                     }
                 }
             }
