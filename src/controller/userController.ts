@@ -22,7 +22,7 @@ export class UserController implements GenericController{
         this.router.post('/register',this.registerUser)
         this.router.post('/login',this.userLogin)
         this.router.get('/',userAuthMiddlewareStrict,this.getFullUserById)
-        this.router.post('/image',userAuthMiddlewareStrict,upload_public.single('uploaded_file'))
+        this.router.post('/image',userAuthMiddlewareStrict,upload_public.single('uploaded_file'),this.userProfileImage)
     }
     registerUser: RequestHandler = async (req, res) => {
         let user:UserModel
