@@ -9,7 +9,7 @@ export class ImageMiddleWare{
         "image/png":"png",
         "image/jpg":"jpg"
     }
-    public getStorage() {
+    public getStorage(useFolder:string) {
         return multer({
             fileFilter(req,file,callback){
                 if(!file.originalname.match(/\.(png|jpg|jpeg)$/)){
@@ -21,9 +21,6 @@ export class ImageMiddleWare{
             },
             storage:multer.diskStorage({
                 destination:(req,file,callback)=>{
-                    const publicFolder:string = process.env.IMAGE_PUBLIC!=undefined?process.env.IMAGE_PUBLIC:"public"
-                    const privateFolder:string  = process.env.IMAGE_PRIVATE!=undefined?process.env.IMAGE_PRIVATE:"private"
-                    const useFolder = publicFolder?publicFolder:privateFolder
                     this.existsFolder(__dirname.split('src')[0]+useFolder)
                     callback(null,useFolder)
                 },

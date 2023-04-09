@@ -73,6 +73,21 @@ export class UserService extends GenericService{
             return {error:"Database dose not response."}
         }
     }
+    async updateUserImage(userId:ObjectId,newUrl:string):Promise<{success:string} | {error:string}>{
+        try{
+            const result =  await this.db.collection(this.collection[0]).updateOne({_id:userId},{
+                    $set:{
+                        mainImageUrl:newUrl
+                    }
+                })
+            if(result.acknowledged&&result.modifiedCount==1)return {success:"User image successfully updated."}
+            else if(result.acknowledged&&result.modifiedCount==0)return {error:"User does not exists."}
+            else return {error:"There is some problem with database."}
+        }catch(e){
+            console.log(e)
+            return {error:"Database dose not response."}
+        }
+    }
     private async hashPassword(password:string):Promise<string>{
         const salt = await bcrypt.genSalt(this.salt_rounds)
         return await bcrypt.hash(password, salt)

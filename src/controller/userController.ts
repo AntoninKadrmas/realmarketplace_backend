@@ -6,6 +6,9 @@ import { TokenService } from "../service/tokenService";
 import * as dotenv from 'dotenv';
 import { ObjectId } from "mongodb";
 import { userAuthMiddlewareStrict } from "../middleware/userAuthMiddlewareStrict";
+import { ImageMiddleWare } from "../middleware/imageMiddleware";
+import path from 'path';
+import fs from 'fs';
 dotenv.config();
 
 export class UserController implements GenericController{
@@ -15,9 +18,11 @@ export class UserController implements GenericController{
         this.initRouter()
     }
     initRouter(){
+        const upload_public = new ImageMiddleWare().getStorage(process.env.IMAGE_PROFILE!!)
         this.router.post('/register',this.registerUser)
         this.router.post('/login',this.userLogin)
         this.router.get('/',userAuthMiddlewareStrict,this.getFullUserById)
+        this.router.post('/image',userAuthMiddlewareStrict,upload_public.single('uploaded_file'))
     }
     registerUser: RequestHandler = async (req, res) => {
         let user:UserModel
@@ -35,8 +40,7 @@ export class UserController implements GenericController{
                 }
                 else res.status(400).send(createUserResponse)
             }
-        }
-        catch(e){
+        }catch(e){
             console.log(e)
             res.status(400).send({error:"Body does not contains correct user model."})
         }
@@ -59,16 +63,51 @@ export class UserController implements GenericController{
                     else res.status(200).send({"token":token.toString()})
                 }
             }
-        }
-        catch(e){
+        }catch(e){
             console.log(e)
             res.status(400).send({error:"Body does not contains correct user login model."})
         }
     }
     getFullUserById:RequestHandler = async (req,res)=>{
-        const userId = new ObjectId(req.query.token?.toString())
-        const response:UserModel | {error:string} = await this.userService.getUserDataById(userId)
-        if(response.hasOwnProperty("error"))res.status(400).send()
-        else res.status(200).send(response)
+        try{
+            const userId = new ObjectId(req.query.token?.toString())
+            const response:UserModel | {error:string} = await this.userService.getUserDataById(userId)
+            if(response.hasOwnProperty("error"))res.status(400).send(response)
+            else res.status(200).send(response)
+        }catch(e){
+            console.log(e)
+            res.status(400).send({error:"Some problem on the server."})
+        }
+    }
+    userProfileImage:RequestHandler = async (req,res)=>{
+        try{
+            if(req.body==null)res.status(400).send({error:"Body does not contains advert information's"})
+            else{
+                if(req.body.oldUrl!=null||req.body.oldUrl!="") fs.unlinkSync(__dirname.split('src')[0]+"public"+req.body.oldUrl)
+                const userId = new ObjectId(req.query.token?.toString())
+                const file = req.file!
+                const dirUrl = __dirname.split('src')[0]+"public/"+file.filename
+                if(!fs.existsSync(dirUrl)) res.status(400).send()
+                else{
+                    const dirUrl = __dirname.split('src')[0]+"public/"+file.filename
+                    if(!fs.existsSync(dirUrl)) res.status(400).send("Error when saving image.")
+                    else{
+                        const imageUrl = `/${file.filename}`
+                        const response:{success:string} | {error:string}  = await this.userService.updateUserImage(userId,imageUrl)
+                        if(response.hasOwnProperty("error")){
+                            fs.unlinkSync(__dirname.split('src')[0]+"public"+imageUrl)
+                            res.status(400).send(response)
+                        }
+                        else {
+                            const success = response as {success:string}
+                            res.status(200).send({success:success.success,imageUrls:[imageUrl]})
+                        }
+                    }
+                }
+            }
+        }catch(e){
+            console.log(e)
+            res.status(400).send()
+        }
     }
 }

@@ -19,8 +19,7 @@ export class AdvertController implements GenericController{
         this.initRouter()
     }
     initRouter(): void {
-        const upload_public = new ImageMiddleWare().getStorage()
-
+        const upload_public = new ImageMiddleWare().getStorage(process.env.IMAGE_PUBLIC!!)
         this.router.post("",userAuthMiddlewareStrict,upload_public.array('uploaded_file',5),this.createAdvert)
         this.router.put("",userAuthMiddlewareStrict,upload_public.array('uploaded_file',5),this.updateAdvert)
         this.router.delete("",userAuthMiddlewareStrict,this.deleteAdvert)
