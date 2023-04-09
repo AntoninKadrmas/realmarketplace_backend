@@ -21,7 +21,9 @@ export class UserController implements GenericController{
         const upload_public = new ImageMiddleWare().getStorage(process.env.IMAGE_PROFILE!!)
         this.router.post('/register',this.registerUser)
         this.router.post('/login',this.userLogin)
-        this.router.get('/',userAuthMiddlewareStrict,this.getFullUserById)
+        this.router.get('/',userAuthMiddlewareStrict,this.getUserById)
+        this.router.post('/',userAuthMiddlewareStrict,this.userUpdatePassword)
+        this.router.put('/',userAuthMiddlewareStrict)//implement update user account
         this.router.post('/image',userAuthMiddlewareStrict,upload_public.single('uploaded_file'),this.userProfileImage)
         this.router.use(express.static(path.join(__dirname.split('src')[0],process.env.IMAGE_PROFILE!!)))
     }
@@ -69,7 +71,7 @@ export class UserController implements GenericController{
             res.status(400).send({error:"Body does not contains correct user login model."})
         }
     }
-    getFullUserById:RequestHandler = async (req,res)=>{
+    getUserById:RequestHandler = async (req,res)=>{
         try{
             const userId = new ObjectId(req.query.token?.toString())
             const response:UserModel | {error:string} = await this.userService.getUserDataById(userId)
@@ -111,6 +113,24 @@ export class UserController implements GenericController{
         }catch(e){
             console.log(e)
             res.status(400).send()
+        }
+    }
+    userUpdatePassword: RequestHandler = async (req, res) => {
+        try{
+            const userId = new ObjectId(req.query.token?.toString())
+            let loadCredential = req.headers.authorization
+            if(loadCredential==null){res.status(400).send("Incorrect request.")}
+            else{
+                const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString()
+                const passwordOld = credentials.substring(0,credentials.indexOf(':'))
+                const passwordNew = credentials.substring(credentials.indexOf(':')+1,credentials.length)
+                const response:{success:string} | {error:string}= await this.userService.updateUserPassword(userId,passwordOld,passwordNew)
+                if(response.hasOwnProperty("error"))res.status(400).send(response)
+                else res.status(200).send(response)
+            }
+        }catch(e){
+            console.log(e)
+            res.status(400).send({error:"Body does not contains correct user login model."})
         }
     }
 }
