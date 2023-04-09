@@ -34,6 +34,7 @@ export class AdvertController implements GenericController{
     }
     createAdvert: RequestHandler = async (req, res) => {
         try{
+            const folder = process.env.IMAGE_PUBLIC!!
             if(req.body==null)res.status(400).send({error:"Body does not contains advert information's"})
             else{
                 const advert:AdvertModel = req.body as AdvertModel
@@ -45,7 +46,7 @@ export class AdvertController implements GenericController{
                 if(req.files!=null){
                     //@ts-ignore
                     for(let file of req.files){
-                        const dirUrl = __dirname.split('src')[0]+"public/"+file.filename
+                        const dirUrl = __dirname.split('src')[0]+`${folder}/`+file.filename
                         if(!fs.existsSync(dirUrl)){}
                         else{
                             const imageUrl = `/${file.filename}`
@@ -70,6 +71,7 @@ export class AdvertController implements GenericController{
     }
     updateAdvert: RequestHandler = async (req, res) => {
         try{
+            const folder = process.env.IMAGE_PUBLIC!!
             if(req.body==null)res.status(400).send({error:"Body does not contains advert information's"})
             else{
                 const deleteUrl=req.body.deletedUrls.split(";").filter((x:string)=>x!="")
@@ -85,7 +87,7 @@ export class AdvertController implements GenericController{
                 if(req.files!=null){
                     //@ts-ignore
                     for(let file of req.files){
-                        const dirUrl = __dirname.split('src')[0]+"public/"+file.filename
+                        const dirUrl = __dirname.split('src')[0]+`${folder}/`+file.filename
                         if(!fs.existsSync(dirUrl)){}
                         else{
                             const imageUrl = `/${file.filename}`
@@ -106,8 +108,9 @@ export class AdvertController implements GenericController{
         }
     }
     private deleteFiles(imagesUrls:string[]){
+        const folder = process.env.IMAGE_PUBLIC!!
         for(var image of imagesUrls){
-            fs.unlinkSync(__dirname.split('src')[0]+"public"+image)
+            fs.unlinkSync(__dirname.split('src')[0]+folder+image)
         }
     }
     deleteAdvert: RequestHandler = async (req, res) => {
