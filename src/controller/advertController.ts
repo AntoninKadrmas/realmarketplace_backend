@@ -98,6 +98,7 @@ export class AdvertController implements GenericController{
                     }
                 }
                 for(let oldUrl of oldUrls){
+                    console.log(`${oldUrl.position} --> ${oldUrl.url}`)
                     advert.imagesUrls.splice(oldUrl.position,0,oldUrl.url)
                 }
                 if(advert.imagesUrls!.length>0)advert.mainImageUrl = advert.imagesUrls![0]
