@@ -79,7 +79,6 @@ export class AdvertController implements GenericController{
                 const userId=new ObjectId(req.query.token?.toString())
                 this.deleteFiles(deleteUrl)
                 const oldUrls:OldImagesUrls[]= req.body.imagesUrls.split(";")
-                console.log(`${req.body.imagesUrls.split(";")} --------------------------------------- ${oldUrls}`)
                 delete req.body.deletedUrls
                 delete req.body._id
                 const advert:AdvertModel = req.body as AdvertModel
@@ -98,9 +97,9 @@ export class AdvertController implements GenericController{
                         }
                     }
                 }
-                // for(let oldUrl in oldUrls){
-                //     advert.imagesUrls.splice(parseInt(oldUrl.position))
-                // }
+                for(let oldUrl of oldUrls){
+                    advert.imagesUrls.splice(oldUrl.position,0,oldUrl.url)
+                }
                 if(advert.imagesUrls!.length>0)advert.mainImageUrl = advert.imagesUrls![0]
                 const response:{success:string}|{error:string} = await this.advertService.updateAdvert(advertId,userId,advert)
                 if(response.hasOwnProperty("error"))res.status(400).send(response)
