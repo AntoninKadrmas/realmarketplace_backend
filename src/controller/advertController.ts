@@ -78,7 +78,15 @@ export class AdvertController implements GenericController{
                 const advertId = new ObjectId(req.body._id.toString())
                 const userId=new ObjectId(req.query.token?.toString())
                 this.deleteFiles(deleteUrl)
-                const oldUrls:OldImagesUrls[]= req.body.imagesUrls.split(";")
+                const tempOldUrls = req.body.imagesUrls.split(";;")
+                const oldUrls:OldImagesUrls[] = [] 
+                for(let oldUrl of tempOldUrls){
+                    const urlPosition = oldUrl.split(";")
+                    oldUrls.push({
+                        url:urlPosition[0],
+                        position:urlPosition[1]
+                    })
+                }
                 delete req.body.deletedUrls
                 delete req.body._id
                 const advert:AdvertModel = req.body as AdvertModel
