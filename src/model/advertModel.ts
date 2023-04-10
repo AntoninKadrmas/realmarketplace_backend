@@ -28,3 +28,7 @@ export class AdvertModelWithUser extends AdvertModel{
 export class FavoriteAdvertUser{
     advert!:AdvertModelWithUser
 }
+export class OldImagesUrls{
+    url!:string;
+    position!:number;
+}
