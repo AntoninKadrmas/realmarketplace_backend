@@ -177,6 +177,7 @@ export class UserController implements GenericController{
         const folder = process.env.IMAGE_PROFILE!!
         for(var image of imagesUrls){
             const oldDirUrl=__dirname.split('src')[0]+folder+image
+            console.log(`${oldDirUrl} ---- ${fs.existsSync(oldDirUrl)}`)
             if(fs.existsSync(oldDirUrl)) fs.unlinkSync(oldDirUrl)
         }
     }
