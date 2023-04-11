@@ -36,13 +36,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
+const mongodb_1 = require("mongodb");
 const dbConnection_1 = require("../db/dbConnection");
 const genericService_1 = require("./genericService");
 const dotenv = __importStar(require("dotenv"));
 const bcrypt_1 = __importDefault(require("bcrypt"));
+const advertService_1 = require("./advertService");
 class UserService extends genericService_1.GenericService {
     constructor() {
         super();
+        this.advertService = new advertService_1.AdvertService();
         this.connect().then();
     }
     connect() {
@@ -52,6 +55,7 @@ class UserService extends genericService_1.GenericService {
             this.client = yield instance.getDbClient();
             this.db = this.client.db(process.env.DB_NAME);
             this.collection.push(process.env.USER_COLLECTION);
+            this.collection.push(process.env.ADVERT_COLLECTION);
             this.salt_rounds = process.env.SALT_ROUNDS != null ? parseInt(process.env.SALT_ROUNDS) : 10;
         });
     }
@@ -59,16 +63,12 @@ class UserService extends genericService_1.GenericService {
         return __awaiter(this, void 0, void 0, function* () {
             user.password = yield this.hashPassword(user.password);
             try {
-                let userExists = yield this.db.collection(this.collection[0]).findOne({ phone: user.phone });
-                if (userExists != null)
-                    return { error: "User with same Phone number already exists." };
-                userExists = yield this.db.collection(this.collection[0]).findOne({ email: user.email });
+                let userExists = yield this.db.collection(this.collection[0]).findOne({ email: user.email });
                 if (userExists != null)
                     return { error: "User with same Email Address already exists." };
                 const new_user = yield this.db.collection(this.collection[0]).insertOne(user);
-                if (!new_user.acknowledged) {
+                if (!new_user.acknowledged)
                     return { error: "Database dose not response." };
-                }
                 return { userId: new_user.insertedId.toString() };
             }
             catch (_a) {
@@ -120,6 +120,126 @@ class UserService extends genericService_1.GenericService {
                 console.log(e);
                 return { error: "Database dose not response." };
             }
+        });
+    }
+    updateUserImage(userId, newUrl) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const result = yield this.db.collection(this.collection[0]).updateOne({ _id: userId }, {
+                    $set: {
+                        mainImageUrl: newUrl
+                    }
+                });
+                if (result.acknowledged && result.modifiedCount == 1)
+                    return { success: "User image successfully updated." };
+                else if (result.acknowledged && result.modifiedCount == 0)
+                    return { error: "User does not exists." };
+                else
+                    return { error: "There is some problem with database." };
+            }
+            catch (e) {
+                console.log(e);
+                return { error: "Database dose not response." };
+            }
+        });
+    }
+    updateUserPassword(userId, oldPassword, newPassword) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const verification = yield this.verifyUser(userId, oldPassword);
+                if (verification.number == 2) {
+                    const password = yield this.hashPassword(newPassword);
+                    const result = yield this.db.collection(this.collection[0]).updateOne({ _id: userId }, {
+                        $set: {
+                            password: password
+                        }
+                    });
+                    if (result.acknowledged && result.modifiedCount == 1)
+                        return { success: "User password successfully updated." };
+                    else if (result.acknowledged && result.modifiedCount == 0)
+                        return { error: "User does not exists." };
+                    else
+                        return { error: "There is some problem with database." };
+                }
+                else if (verification.number == 1)
+                    return { error: "Incorrect password." };
+                else
+                    return { error: "User does not exists." };
+            }
+            catch (e) {
+                console.log(e);
+                return { error: "Database dose not response." };
+            }
+        });
+    }
+    updateUser(userId, user) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const result = yield this.db.collection(this.collection[0]).updateOne({ _id: userId }, {
+                    $set: {
+                        firstName: user.firstName,
+                        lastName: user.lastName,
+                        phone: user.phone
+                    }
+                });
+                if (result.acknowledged && result.modifiedCount == 1)
+                    return { success: "User profile successfully updated." };
+                else if (result.acknowledged && result.modifiedCount == 0)
+                    return { error: "User does not exists." };
+                else
+                    return { error: "There is some problem with database." };
+            }
+            catch (e) {
+                console.log(e);
+                return { error: "Database dose not response." };
+            }
+        });
+    }
+    deleteUser(userId, password) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const verification = yield this.verifyUser(userId, password);
+                if (verification.number == 2) {
+                    const result = yield this.db.collection(this.collection[0]).delete({ _id: userId });
+                    if (result.acknowledged && result.deletedCount == 1)
+                        return { success: "User was successfully deleted.", user: verification.user };
+                    else if (result.acknowledged && result.deletedCount == 0)
+                        return { error: "User does not exists." };
+                    else
+                        return { error: "There is some problem with database." };
+                }
+                else if (verification.number == 1)
+                    return { error: "Incorrect password." };
+                else
+                    return { error: "User does not exists." };
+            }
+            catch (e) {
+                console.log(e);
+                return { error: "Database dose not response." };
+            }
+        });
+    }
+    deleteUserAdverts(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const ids = yield this.db.collection(this.collection[1]).find({ userId: userId }, { _id: 1 });
+                for (let id of ids) {
+                    const advertId = new mongodb_1.ObjectId(id.toString());
+                    yield this.advertService.deleteAdvert(advertId, userId);
+                }
+            }
+            catch (e) {
+                console.log(e);
+                return { error: "Database dose not response." };
+            }
+        });
+    }
+    verifyUser(userId, oldPassword) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield this.db.collection(this.collection[0]).findOne({ _id: userId });
+            if (user.password == null || user.password == "")
+                return { number: 0, user: null };
+            return (yield this.comparePassword(oldPassword, user.password)) == true ? { number: 2, user: user } : { number: 1, user: null };
         });
     }
     hashPassword(password) {

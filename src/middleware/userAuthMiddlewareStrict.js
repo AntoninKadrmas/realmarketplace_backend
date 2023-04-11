@@ -16,9 +16,10 @@ function userAuthMiddlewareStrict(request, response, next) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const token = request.get("Authorization");
-            if (token == null)
-                throw Error("Token does not exists in header."); //token does not exists in header
+            var validToken = /^[a-f\d]{24}$/g;
+            const token = request.get("Authentication");
+            if (validToken.test(token.toString()))
+                throw Error("Incorrect token.");
             const tokenService = yield tokenService_1.TokenService.getInstance();
             const tokenExists = yield tokenService.tokenExists(new mongodb_1.ObjectId(token));
             if (!tokenExists.valid)

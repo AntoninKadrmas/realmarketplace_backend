@@ -40,6 +40,9 @@ const express_1 = __importDefault(require("express"));
 const dotenv = __importStar(require("dotenv"));
 const mongodb_1 = require("mongodb");
 const userAuthMiddlewareStrict_1 = require("../middleware/userAuthMiddlewareStrict");
+const imageMiddleware_1 = require("../middleware/imageMiddleware");
+const path_1 = __importDefault(require("path"));
+const fs_1 = __importDefault(require("fs"));
 dotenv.config();
 class UserController {
     constructor(userService, tokenService) {
@@ -103,21 +106,146 @@ class UserController {
                 res.status(400).send({ error: "Body does not contains correct user login model." });
             }
         });
-        this.getFullUserById = (req, res) => __awaiter(this, void 0, void 0, function* () {
+        this.getUserById = (req, res) => __awaiter(this, void 0, void 0, function* () {
             var _a;
-            const userId = new mongodb_1.ObjectId((_a = req.query.token) === null || _a === void 0 ? void 0 : _a.toString());
-            const response = yield this.userService.getUserDataById(userId);
-            if (response.hasOwnProperty("error"))
+            try {
+                const userId = new mongodb_1.ObjectId((_a = req.query.token) === null || _a === void 0 ? void 0 : _a.toString());
+                const response = yield this.userService.getUserDataById(userId);
+                if (response.hasOwnProperty("error"))
+                    res.status(400).send(response);
+                else
+                    res.status(200).send(response);
+            }
+            catch (e) {
+                console.log(e);
+                res.status(400).send({ error: "Some problem on the server." });
+            }
+        });
+        this.userProfileImage = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            var _b;
+            try {
+                const folder = process.env.IMAGE_PROFILE;
+                if (req.body == null)
+                    res.status(400).send({ error: "Body does not contains advert information's" });
+                else {
+                    const oldDirUrl = __dirname.split('src')[0] + folder + req.body.oldUrl;
+                    if (req.body.oldUrl != null && req.body.oldUrl != "" && fs_1.default.existsSync(oldDirUrl))
+                        fs_1.default.unlinkSync(oldDirUrl);
+                    const userId = new mongodb_1.ObjectId((_b = req.query.token) === null || _b === void 0 ? void 0 : _b.toString());
+                    const file = req.file;
+                    const dirUrl = __dirname.split('src')[0] + `${folder}/` + file.filename;
+                    if (!fs_1.default.existsSync(dirUrl))
+                        res.status(400).send();
+                    else {
+                        const dirUrl = __dirname.split('src')[0] + `${folder}/` + file.filename;
+                        if (!fs_1.default.existsSync(dirUrl))
+                            res.status(400).send("Error when saving image.");
+                        else {
+                            const imageUrl = `/${file.filename}`;
+                            const response = yield this.userService.updateUserImage(userId, imageUrl);
+                            if (response.hasOwnProperty("error")) {
+                                fs_1.default.unlinkSync(__dirname.split('src')[0] + folder + imageUrl);
+                                res.status(400).send(response);
+                            }
+                            else {
+                                const success = response;
+                                res.status(200).send({ success: success.success, imageUrls: [imageUrl] });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (e) {
+                console.log(e);
                 res.status(400).send();
-            else
-                res.status(200).send(response);
+            }
+        });
+        this.userUpdatePassword = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            var _c;
+            try {
+                const userId = new mongodb_1.ObjectId((_c = req.query.token) === null || _c === void 0 ? void 0 : _c.toString());
+                let loadCredential = req.headers.authorization;
+                if (loadCredential == null) {
+                    res.status(400).send("Incorrect request.");
+                }
+                else {
+                    const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString();
+                    const passwordOld = credentials.substring(0, credentials.indexOf(':'));
+                    const passwordNew = credentials.substring(credentials.indexOf(':') + 1, credentials.length);
+                    const response = yield this.userService.updateUserPassword(userId, passwordOld, passwordNew);
+                    if (response.hasOwnProperty("error"))
+                        res.status(400).send(response);
+                    else
+                        res.status(200).send(response);
+                }
+            }
+            catch (e) {
+                console.log(e);
+                res.status(400).send({ error: "Body does not contains correct user login model." });
+            }
+        });
+        this.userUpdate = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            var _d;
+            try {
+                const userId = new mongodb_1.ObjectId((_d = req.query.token) === null || _d === void 0 ? void 0 : _d.toString());
+                if (req.body == null)
+                    res.status(400).send({ error: "Body does not contains user model." });
+                else {
+                    const user = req.body;
+                    const response = yield this.userService.updateUser(userId, user);
+                    if (response.hasOwnProperty("error"))
+                        res.status(400).send(response);
+                    else
+                        res.status(200).send(response);
+                }
+            }
+            catch (e) {
+                console.log(e);
+                res.status(400).send({ error: "Body does not contains correct user login model." });
+            }
+        });
+        this.userDelete = (req, res) => __awaiter(this, void 0, void 0, function* () {
+            var _e;
+            try {
+                const folder = process.env.IMAGE_PROFILE;
+                const userId = new mongodb_1.ObjectId((_e = req.query.token) === null || _e === void 0 ? void 0 : _e.toString());
+                let loadCredential = req.headers.authorization;
+                if (loadCredential == null) {
+                    res.status(400).send("Incorrect request.");
+                }
+                else {
+                    const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString();
+                    const password = credentials.substring(0, credentials.indexOf(':'));
+                    const response = yield this.userService.deleteUser(userId, password);
+                    if (response.hasOwnProperty("error"))
+                        res.status(400).send(response);
+                    else {
+                        const success = response;
+                        const oldDirUrl = __dirname.split('src')[0] + folder + success.user.mainImageUrl;
+                        if (fs_1.default.existsSync(oldDirUrl))
+                            fs_1.default.unlinkSync(oldDirUrl);
+                        yield this.userService.deleteUserAdverts(userId);
+                        res.status(200).send(success.success);
+                    }
+                }
+            }
+            catch (e) {
+                console.log(e);
+                res.status(400).send({ error: "Body does not contains correct user login model." });
+            }
         });
         this.initRouter();
     }
     initRouter() {
+        const upload_public = new imageMiddleware_1.ImageMiddleWare().getStorage(process.env.IMAGE_PROFILE);
         this.router.post('/register', this.registerUser);
         this.router.post('/login', this.userLogin);
-        this.router.get('/', userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.getFullUserById);
+        this.router.get('/', userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.getUserById);
+        this.router.post('/', userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.userUpdatePassword);
+        this.router.put('/', userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.userUpdate);
+        this.router.delete('/', userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.userDelete);
+        this.router.post('/image', userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, upload_public.single('uploaded_file'), this.userProfileImage);
+        this.router.use(express_1.default.static(path_1.default.join(__dirname.split('src')[0], process.env.IMAGE_PROFILE)));
     }
 }
 exports.UserController = UserController;

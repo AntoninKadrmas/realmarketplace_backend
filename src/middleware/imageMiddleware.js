@@ -40,7 +40,7 @@ class ImageMiddleWare {
             "image/jpg": "jpg"
         };
     }
-    getStorage() {
+    getStorage(useFolder) {
         return (0, multer_1.default)({
             fileFilter(req, file, callback) {
                 if (!file.originalname.match(/\.(png|jpg|jpeg)$/)) {
@@ -52,9 +52,6 @@ class ImageMiddleWare {
             },
             storage: multer_1.default.diskStorage({
                 destination: (req, file, callback) => {
-                    const publicFolder = process.env.IMAGE_PUBLIC != undefined ? process.env.IMAGE_PUBLIC : "public";
-                    const privateFolder = process.env.IMAGE_PRIVATE != undefined ? process.env.IMAGE_PRIVATE : "private";
-                    const useFolder = publicFolder ? publicFolder : privateFolder;
                     this.existsFolder(__dirname.split('src')[0] + useFolder);
                     callback(null, useFolder);
                 },

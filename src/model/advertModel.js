@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.FavoriteAdvertUser = exports.AdvertModelWithUser = exports.AdvertModel = void 0;
+exports.OldImagesUrls = exports.FavoriteAdvertUser = exports.AdvertModelWithUser = exports.AdvertModel = void 0;
 class AdvertModel {
 }
 exports.AdvertModel = AdvertModel;
@@ -10,3 +10,6 @@ exports.AdvertModelWithUser = AdvertModelWithUser;
 class FavoriteAdvertUser {
 }
 exports.FavoriteAdvertUser = FavoriteAdvertUser;
+class OldImagesUrls {
+}
+exports.OldImagesUrls = OldImagesUrls;

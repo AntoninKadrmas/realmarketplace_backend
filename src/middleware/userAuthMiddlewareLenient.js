@@ -16,7 +16,7 @@ function userAuthMiddlewareLenient(request, response, next) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const token = request.get("Authorization");
+            const token = request.get("Authentication");
             if (token == null)
                 throw Error("Token does not exists in header.");
             const tokenService = yield tokenService_1.TokenService.getInstance();

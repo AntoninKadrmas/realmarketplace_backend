@@ -288,6 +288,7 @@ class AdvertService extends genericService_1.GenericService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const result = yield this.db.collection(this.collection[0]).deleteOne({ "_id": advertId, "userId": userId });
+                yield this.db.collection(this.collection[1]).updateMany({}, { $pull: { advertId: advertId } });
                 if (result.acknowledged && result.deletedCount == 1)
                     return { success: "Advert successfully deleted." };
                 else if (result.acknowledged && result.deletedCount == 0)
