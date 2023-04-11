@@ -129,14 +129,15 @@ export class AdvertController implements GenericController{
     }
     deleteAdvert: RequestHandler = async (req, res) => {
         try{
-            if(req.body==null)res.status(400).send({error:"Missing query params."})
+            if(req.query.advertId==null)res.status(400).send({error:"Missing query params."})
             else{
                 const userId = new ObjectId(req.query.token?.toString())
-                const advert:AdvertModel = req.body
-                if(advert._id==null||advert._id=="")res.status(400).send({error:"Missing advert id."})
+                const imagesUrls:string[] = req.get("deleteUrls")!.split(";")
+                const advertId = new ObjectId(req.query.advertId?.toString())
+                if(advertId==null||imagesUrls==null)res.status(400).send({error:"Missing advert id or delete urls."})
                 else{
-                    this.deleteFiles(advert.imagesUrls!=null?advert.imagesUrls:[])
-                    const response = await this.advertService.deleteAdvert(new ObjectId(advert._id),userId)
+                    this.deleteFiles(imagesUrls)
+                    const response = await this.advertService.deleteAdvert(advertId,userId)
                     if(response.hasOwnProperty("error"))res.status(400).send(response)
                     else res.status(200).send(response)
                 }
