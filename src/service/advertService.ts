@@ -218,7 +218,7 @@ export class AdvertService extends GenericService{
     async deleteAdvert(advertId:ObjectId,userId:ObjectId):Promise<{success:string}|{error:string}>{
         try{
             const result = await this.db.collection(this.collection[0]).deleteOne({"_id":advertId,"userId":userId})
-            await this.db.collection(this.collection[1]).updateMany({},{$pull:{updateMany:advertId}})
+            await this.db.collection(this.collection[1]).updateMany({},{$pull:{advertId:advertId}})
             if(result.acknowledged&&result.deletedCount==1)return {success:"Advert successfully deleted."}
             else if(result.acknowledged&&result.deletedCount==0)return {error:"Can't delete foreign advert."}
             else return {error:"There is some problem with database."}
