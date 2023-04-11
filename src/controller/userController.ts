@@ -88,7 +88,7 @@ export class UserController implements GenericController{
             const folder = process.env.IMAGE_PROFILE!!
             if(req.body==null)res.status(400).send({error:"Body does not contains advert information's"})
             else{
-                if(req.body.oldUrl!=null&&req.body.oldUrl!="") this.deleteFiles([__dirname.split('src')[0]+folder+req.body.oldUrl])
+                if(req.body.oldUrl!=null&&req.body.oldUrl!="") this.deleteFiles([req.body.oldUrl])
                 const userId = new ObjectId(req.query.token?.toString())
                 const file = req.file!
                 const dirUrl = __dirname.split('src')[0]+`${folder}/`+file.filename
@@ -161,7 +161,7 @@ export class UserController implements GenericController{
                 if(response.hasOwnProperty("error"))res.status(400).send(response)
                 else {
                     const success = (response as {success:string,user:UserModel})
-                    this.deleteFiles([__dirname.split('src')[0]+folder+success.user.mainImageUrl])
+                    this.deleteFiles([success.user.mainImageUrl])
                     const deleteUrls = await this.userService.deleteUserAdverts(userId)
                     if(!response.hasOwnProperty("error"))this.deleteFiles(deleteUrls as string[])
                     await this.tokenService.deleteToken(userId)
