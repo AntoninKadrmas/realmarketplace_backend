@@ -88,8 +88,7 @@ export class UserController implements GenericController{
             const folder = process.env.IMAGE_PROFILE!!
             if(req.body==null)res.status(400).send({error:"Body does not contains advert information's"})
             else{
-                const oldDirUrl=__dirname.split('src')[0]+folder+req.body.oldUrl
-                if(req.body.oldUrl!=null&&req.body.oldUrl!=""&&fs.existsSync(oldDirUrl)) fs.unlinkSync(oldDirUrl)
+                if(req.body.oldUrl!=null&&req.body.oldUrl!="") this.deleteFiles([__dirname.split('src')[0]+folder+req.body.oldUrl])
                 const userId = new ObjectId(req.query.token?.toString())
                 const file = req.file!
                 const dirUrl = __dirname.split('src')[0]+`${folder}/`+file.filename
@@ -101,7 +100,7 @@ export class UserController implements GenericController{
                         const imageUrl = `/${file.filename}`
                         const response:{success:string} | {error:string}  = await this.userService.updateUserImage(userId,imageUrl)
                         if(response.hasOwnProperty("error")){
-                            fs.unlinkSync(__dirname.split('src')[0]+folder+imageUrl)
+                            this.deleteFiles([imageUrl])
                             res.status(400).send(response)
                         }
                         else {
@@ -164,13 +163,21 @@ export class UserController implements GenericController{
                     const success = (response as {success:string,user:UserModel})
                     const oldDirUrl= __dirname.split('src')[0]+folder+success.user.mainImageUrl
                     if(fs.existsSync(oldDirUrl)) fs.unlinkSync(oldDirUrl)
-                    await this.userService.deleteUserAdverts(userId)
+                    const deleteUrls = await this.userService.deleteUserAdverts(userId)
+                    if(!response.hasOwnProperty("error"))this.deleteFiles(deleteUrls as string[])
                     res.status(200).send(success.success)
                 }
             }
         }catch(e){
             console.log(e)
             res.status(400).send({error:"Body does not contains correct user login model."})
+        }
+    }
+    private deleteFiles(imagesUrls:string[]){
+        const folder = process.env.IMAGE_PROFILE!!
+        for(var image of imagesUrls){
+            const oldDirUrl=__dirname.split('src')[0]+folder+image
+            if(fs.existsSync(oldDirUrl)) fs.unlinkSync(oldDirUrl)
         }
     }
 }

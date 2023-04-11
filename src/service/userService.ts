@@ -141,13 +141,16 @@ export class UserService extends GenericService{
             return {error:"Database dose not response."}
         }
     }
-    async deleteUserAdverts(userId:ObjectId){
+    async deleteUserAdverts(userId:ObjectId):Promise<string[]|{error:string}>{
         try{
-            const ids = await this.db.collection(this.collection[1]).find({userId:userId},{_id:1})
+            let deleteImageUrls:string[]=[]
+            const ids:{_id:ObjectId,imagesUrls:[]}[] = await this.db.collection(this.collection[1]).find({userId:userId},{_id:1,imagesUrls:1})
             for(let id of ids){
-                const advertId = new ObjectId(id.toString())
+                id.imagesUrls.forEach(url=>deleteImageUrls.push(url))
+                const advertId = new ObjectId(id._id.toString())
                 await this.advertService.deleteAdvert(advertId,userId)
             }
+            return deleteImageUrls
         }catch(e){
             console.log(e)
             return {error:"Database dose not response."}
