@@ -57,9 +57,7 @@ export class TokenService extends GenericService{
     }
     async tokenExists(tokenId:ObjectId):Promise<TokenExistsModel>{
         try{
-            console.log(tokenId)
             const token:TokenModel =  await this.db.collection(this.collection[0]).findOne({_id:tokenId}) 
-            console.log(token)           
             const valid = await this.tokenIsValid(token) 
             if(valid)return {
                 valid: valid,
@@ -74,6 +72,18 @@ export class TokenService extends GenericService{
             return {
                 valid: false,
             }
+        }
+    }
+    async deleteToken(userId:ObjectId):Promise<{success:string}|{error:string}>{
+        try{
+            const result =  await this.db.collection(this.collection[0]).delete({userId:userId}) 
+            if(result.acknowledged&&result.deletedCount==1)return {success:"Advert successfully deleted."}
+            else if(result.acknowledged&&result.deletedCount==0)return {error:"Can't delete foreign advert."}
+            else return {error:"There is some problem with database."}
+        }
+        catch(e){
+            console.log(e)
+            return {error:"Database dose not response."}
         }
     }
     private async tokenIsValid(token:TokenModel):Promise<boolean>{ 

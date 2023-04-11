@@ -150,6 +150,7 @@ export class UserService extends GenericService{
                 const advertId = new ObjectId(id._id.toString())
                 await this.advertService.deleteAdvert(advertId,userId)
             }
+            await this.advertService.deleteFavoriteAdvertWhole(userId)
             return deleteImageUrls
         }catch(e){
             console.log(e)

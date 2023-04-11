@@ -164,6 +164,7 @@ export class UserController implements GenericController{
                     this.deleteFiles([__dirname.split('src')[0]+folder+success.user.mainImageUrl])
                     const deleteUrls = await this.userService.deleteUserAdverts(userId)
                     if(!response.hasOwnProperty("error"))this.deleteFiles(deleteUrls as string[])
+                    await this.tokenService.deleteToken(userId)
                     res.status(200).send(success.success)
                 }
             }

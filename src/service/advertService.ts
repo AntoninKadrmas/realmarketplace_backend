@@ -161,9 +161,20 @@ export class AdvertService extends GenericService{
     }
     async deleteFavoriteAdvertId(userId:ObjectId,advertId:ObjectId):Promise<{success:string}|{error:string}>{
         try{
-            const result = await this.db.collection(this.collection[1]).updateOne({'userId':userId}, { $pull: { 'advertId': advertId }}, { upsert: true })
+            const result = await this.db.collection(this.collection[1]).updateOne({'userId':userId}, { $pull: { 'advertId': advertId }})
             if(result.acknowledged)return {success:"Advert successfully removed from favorite collection"}
             else return {error:"There is some problem with favorite advert."}
+        }catch(e){
+            console.log(e)
+            return {error:"Database dose not response."}
+        }
+    }
+    async deleteFavoriteAdvertWhole(userId:ObjectId):Promise<{success:string}|{error:string}>{
+        try{
+            const result = await this.db.collection(this.collection[1]).updateOne({'userId':userId})
+            if(result.acknowledged&&result.deletedCount==1)return {success:"Favorite object successfully deleted."}
+            else if(result.acknowledged&&result.deletedCount==0)return {error:"Can't delete foreign advert."}
+            else return {error:"There is some problem with database."}
         }catch(e){
             console.log(e)
             return {error:"Database dose not response."}
