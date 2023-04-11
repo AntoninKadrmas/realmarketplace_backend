@@ -5,8 +5,9 @@ import { ObjectId } from 'mongodb';
 
 export async function userAuthMiddlewareStrict(request: express.Request, response: express.Response, next: NextFunction) {
     try{
+        var validToken = new RegExp('/^[a-f\d]{24}$/i')
         const token = request.get("Authentication")
-        if(token==null)throw Error("Token does not exists in header.")//token does not exists in header
+        if(!token?.match(validToken))throw Error("Incorrect token.")
         const tokenService:TokenService = await TokenService.getInstance()
         const tokenExists:TokenExistsModel = await tokenService.tokenExists(new ObjectId(token));
         if(!tokenExists.valid)throw Error("Token expired.")
