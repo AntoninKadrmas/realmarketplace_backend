@@ -151,17 +151,21 @@ export class UserController implements GenericController{
     }
     userDelete: RequestHandler = async (req, res) => {
         try{
+            const folder = process.env.IMAGE_PROFILE!!
             const userId = new ObjectId(req.query.token?.toString())
             let loadCredential = req.headers.authorization
             if(loadCredential==null){res.status(400).send("Incorrect request.")}
             else{
                 const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString()
                 const password = credentials.substring(0,credentials.indexOf(':'))
-                const response:{success:string} | {error:string}= await this.userService.deleteUser(userId,password)
+                const response:{success:string,user:UserModel} | {error:string}= await this.userService.deleteUser(userId,password)
                 if(response.hasOwnProperty("error"))res.status(400).send(response)
                 else {
+                    const success = (response as {success:string,user:UserModel})
+                    const oldDirUrl= __dirname.split('src')[0]+folder+success.user.mainImageUrl
+                    if(fs.existsSync(oldDirUrl)) fs.unlinkSync(oldDirUrl)
                     await this.userService.deleteUserAdverts(userId)
-                    res.status(200).send(response)
+                    res.status(200).send(success.success)
                 }
             }
         }catch(e){

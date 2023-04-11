@@ -90,7 +90,7 @@ export class UserService extends GenericService{
     async updateUserPassword(userId:ObjectId,oldPassword:string,newPassword:string):Promise<{success:string} | {error:string}>{
         try{
             const verification = await this.verifyUser(userId,oldPassword)
-            if(verification==2){
+            if(verification.number==2){
                 const password = await this.hashPassword(newPassword)
                 const result =  await this.db.collection(this.collection[0]).updateOne({_id:userId},{
                         $set:{
@@ -101,7 +101,7 @@ export class UserService extends GenericService{
                 else if(result.acknowledged&&result.modifiedCount==0)return {error:"User does not exists."}
                 else return {error:"There is some problem with database."}
             }
-            else if(verification==1) return {error:"Incorrect password."}
+            else if(verification.number==1) return {error:"Incorrect password."}
             else return {error:"User does not exists."}
         }catch(e){
             console.log(e)
@@ -125,16 +125,16 @@ export class UserService extends GenericService{
             return {error:"Database dose not response."}
         }
     }
-    async deleteUser(userId:ObjectId,password:string):Promise<{success:string}|{error:string}>{
+    async deleteUser(userId:ObjectId,password:string):Promise<{success:string,user:UserModel}|{error:string}>{
         try{
             const verification = await this.verifyUser(userId,password)
-            if(verification==2){
+            if(verification.number==2){
                 const result =  await this.db.collection(this.collection[0]).delete({_id:userId})
-                if(result.acknowledged&&result.deletedCount==1)return {success:"User was successfully deleted."}
+                if(result.acknowledged&&result.deletedCount==1)return {success:"User was successfully deleted.",user:verification.user as UserModel}
                 else if(result.acknowledged&&result.deletedCount==0)return {error:"User does not exists."}
                 else return {error:"There is some problem with database."}
             }
-            else if(verification==1) return {error:"Incorrect password."}
+            else if(verification.number==1) return {error:"Incorrect password."}
             else return {error:"User does not exists."}
         }catch(e){
             console.log(e)
@@ -153,10 +153,10 @@ export class UserService extends GenericService{
             return {error:"Database dose not response."}
         }
     }
-    private async verifyUser(userId:ObjectId,oldPassword:string):Promise<number>{
+    private async verifyUser(userId:ObjectId,oldPassword:string):Promise<{number:number,user:UserModel|null}>{
         const user:UserModel = await this.db.collection(this.collection[0]).findOne({_id:userId})
-        if(user.password==null||user.password=="")return 0
-        return await this.comparePassword(oldPassword,user.password!)==true?2:1
+        if(user.password==null||user.password=="")return {number:0,user:null}
+        return await this.comparePassword(oldPassword,user.password!)==true?{number:2,user:user}:{number:1,user:null}
     }
     private async hashPassword(password:string):Promise<string>{
         const salt = await bcrypt.genSalt(this.salt_rounds)
