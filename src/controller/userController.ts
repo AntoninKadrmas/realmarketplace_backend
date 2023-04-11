@@ -1,6 +1,6 @@
 import express, { RequestHandler} from "express";
 import { UserService } from "../service/userService";
-import { LightUser, UserModel, UserModelLogin, UserValid } from "../model/userModel";
+import { LightUser, UserModel } from "../model/userModel";
 import { GenericController } from "./genericController";
 import { TokenService } from "../service/tokenService";
 import * as dotenv from 'dotenv';
@@ -24,6 +24,7 @@ export class UserController implements GenericController{
         this.router.get('/',userAuthMiddlewareStrict,this.getUserById)
         this.router.post('/',userAuthMiddlewareStrict,this.userUpdatePassword)
         this.router.put('/',userAuthMiddlewareStrict,this.userUpdate)
+        this.router.delete('/',userAuthMiddlewareStrict,this.userDelete)
         this.router.post('/image',userAuthMiddlewareStrict,upload_public.single('uploaded_file'),this.userProfileImage)
         this.router.use(express.static(path.join(__dirname.split('src')[0],process.env.IMAGE_PROFILE!!)))
     }
@@ -142,6 +143,26 @@ export class UserController implements GenericController{
                 const response:{success:string} | {error:string}= await this.userService.updateUser(userId,user)
                 if(response.hasOwnProperty("error"))res.status(400).send(response)
                 else res.status(200).send(response)
+            }
+        }catch(e){
+            console.log(e)
+            res.status(400).send({error:"Body does not contains correct user login model."})
+        }
+    }
+    userDelete: RequestHandler = async (req, res) => {
+        try{
+            const userId = new ObjectId(req.query.token?.toString())
+            let loadCredential = req.headers.authorization
+            if(loadCredential==null){res.status(400).send("Incorrect request.")}
+            else{
+                const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString()
+                const password = credentials.substring(0,credentials.indexOf(':'))
+                const response:{success:string} | {error:string}= await this.userService.deleteUser(userId,password)
+                if(response.hasOwnProperty("error"))res.status(400).send(response)
+                else {
+                    await this.userService.deleteUserAdverts(userId)
+                    res.status(200).send(response)
+                }
             }
         }catch(e){
             console.log(e)
