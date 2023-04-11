@@ -129,7 +129,7 @@ export class UserService extends GenericService{
         try{
             const verification = await this.verifyUser(userId,password)
             if(verification.number==2){
-                const result =  await this.db.collection(this.collection[0]).delete({_id:userId})
+                const result =  await this.db.collection(this.collection[0]).deleteOne({_id:userId})
                 if(result.acknowledged&&result.deletedCount==1)return {success:"User was successfully deleted.",user:verification.user as UserModel}
                 else if(result.acknowledged&&result.deletedCount==0)return {error:"User does not exists."}
                 else return {error:"There is some problem with database."}
