@@ -161,8 +161,7 @@ export class UserController implements GenericController{
                 if(response.hasOwnProperty("error"))res.status(400).send(response)
                 else {
                     const success = (response as {success:string,user:UserModel})
-                    const oldDirUrl= __dirname.split('src')[0]+folder+success.user.mainImageUrl
-                    if(fs.existsSync(oldDirUrl)) fs.unlinkSync(oldDirUrl)
+                    this.deleteFiles([__dirname.split('src')[0]+folder+success.user.mainImageUrl])
                     const deleteUrls = await this.userService.deleteUserAdverts(userId)
                     if(!response.hasOwnProperty("error"))this.deleteFiles(deleteUrls as string[])
                     res.status(200).send(success.success)
