@@ -69,7 +69,7 @@ export class UserController implements GenericController{
             }
         }catch(e){
             console.log(e)
-            res.status(400).send({error:"Body does not contains correct user login model."})
+            res.status(400).send({error:"Server error."})
         }
     }
     getUserById:RequestHandler = async (req,res)=>{
@@ -130,7 +130,7 @@ export class UserController implements GenericController{
             }
         }catch(e){
             console.log(e)
-            res.status(400).send({error:"Body does not contains correct user login model."})
+            res.status(400).send({error:"Server error."})
         }
     }
     userUpdate: RequestHandler = async (req, res) => {
@@ -145,7 +145,7 @@ export class UserController implements GenericController{
             }
         }catch(e){
             console.log(e)
-            res.status(400).send({error:"Body does not contains correct user login model."})
+            res.status(400).send({error:"Server error."})
         }
     }
     userDelete: RequestHandler = async (req, res) => {
@@ -170,7 +170,7 @@ export class UserController implements GenericController{
             }
         }catch(e){
             console.log(e)
-            res.status(400).send({error:"Body does not contains correct user login model."})
+            res.status(400).send({error:"Server error."})
         }
     }
     private deleteFiles(imagesUrls:string[]){
