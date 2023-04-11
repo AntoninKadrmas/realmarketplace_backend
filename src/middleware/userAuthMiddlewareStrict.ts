@@ -5,7 +5,7 @@ import { ObjectId } from 'mongodb';
 
 export async function userAuthMiddlewareStrict(request: express.Request, response: express.Response, next: NextFunction) {
     try{
-        var validToken = new RegExp('/^[a-f\d]{24}$/i')
+        var validToken = new RegExp('^[a-f\d]{24}$')
         const token = request.get("Authentication")
         if(!token?.match(validToken))throw Error("Incorrect token.")
         const tokenService:TokenService = await TokenService.getInstance()
