@@ -171,7 +171,7 @@ export class AdvertService extends GenericService{
     }
     async deleteFavoriteAdvertWhole(userId:ObjectId):Promise<{success:string}|{error:string}>{
         try{
-            const result = await this.db.collection(this.collection[1]).updateOne({'userId':userId})
+            const result = await this.db.collection(this.collection[1]).deleteMany({'userId':userId})
             if(result.acknowledged&&result.deletedCount==1)return {success:"Favorite object successfully deleted."}
             else if(result.acknowledged&&result.deletedCount==0)return {error:"Can't delete foreign advert."}
             else return {error:"There is some problem with database."}
