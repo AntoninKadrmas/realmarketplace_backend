@@ -144,7 +144,13 @@ export class UserService extends GenericService{
     async deleteUserAdverts(userId:ObjectId):Promise<string[]|{error:string}>{
         try{
             let deleteImageUrls:string[]=[]
-            const ids:{_id:ObjectId,imagesUrls:string[]}[] = await this.db.collection(this.collection[1]).find({userId:userId},{_id:1,imagesUrls:1})
+            const ids:{_id:ObjectId,imagesUrls:string[]}[] = await this.db.collection(this.collection[1]).aggregate([
+                {$match:{'userId': userId}},
+                {$project:{
+                  _id:1,
+                  imagesUrls:1
+                }
+              }]).toArray();
             console.log(ids)
             for(let id of ids){
                 id.imagesUrls.forEach(url=>deleteImageUrls.push(url))
