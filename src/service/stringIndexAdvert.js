@@ -38,7 +38,6 @@ const dotenv = __importStar(require("dotenv"));
 dotenv.config();
 class StringIndexAdvert {
     constructor() {
-        var _a, _b, _c;
         this.baseUrl = 'https://cloud.mongodb.com/api/atlas/v1.0';
         this.projectId = process.env.MONGO_PROJECT_ID;
         this.clusterName = process.env.MONGO_CLUSTER_NAME;
@@ -47,9 +46,9 @@ class StringIndexAdvert {
         this.auth = `${this.publicKey}:${this.privateKey}`;
         this.clusterApiUrl = `${this.baseUrl}/groups/${this.projectId}/clusters/${this.clusterName}`;
         this.searchIndexUrl = `${this.clusterApiUrl}/fts/indexes`;
-        this.db = (_a = process.env.MONGO_DB_NAME) === null || _a === void 0 ? void 0 : _a.toString();
-        this.collection = (_b = process.env.MONGO_ADVERT_COLLECTION) === null || _b === void 0 ? void 0 : _b.toString();
-        this.indexName = (_c = process.env.MONGO_SEARCH_INDEX_ADVERT_NAME) === null || _c === void 0 ? void 0 : _c.toString();
+        this.db = process.env.MONGO_DB_NAME;
+        this.collection = process.env.MONGO_ADVERT_COLLECTION;
+        this.indexName = process.env.MONGO_SEARCH_INDEX_ADVERT_NAME !== undefined ? process.env.MONGO_SEARCH_INDEX_ADVERT_NAME.toString() : '';
     }
     existsSearchIndex(indexName) {
         return __awaiter(this, void 0, void 0, function* () {
