@@ -1,3 +1,4 @@
+required node js 14 or higher
 git clone realmarketplace_backend repo
 
 sudo apt install ufw

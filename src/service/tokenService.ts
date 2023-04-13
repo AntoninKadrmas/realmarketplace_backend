@@ -32,6 +32,7 @@ export class TokenService extends GenericService{
                 userId: userId,
                 expirationTime: this.getActualValidTime()
             }
+            await await this.db.collection(this.collection[0]).deleteMany({userId:userId})
             const newTokenOrFind = await this.db.collection(this.collection[0]).insertOne(token)
             if(!newTokenOrFind.acknowledged)return "Can't create auth token."
             else return newTokenOrFind.insertedId
