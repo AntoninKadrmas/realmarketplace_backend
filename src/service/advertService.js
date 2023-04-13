@@ -30,7 +30,8 @@ const dbConnection_1 = require("../db/dbConnection");
 class AdvertService extends genericService_1.GenericService {
     constructor() {
         super();
-        this.advertIndex = process.env.MONGO_SEARCH_INDEX_ADVERT_NAME?.toString();
+        this.advertIndex = process.env.MONGO_SEARCH_INDEX_ADVERT_NAME!== undefined 
+        ? process.env.MONGO_DB_NAME.toString() : ''
         this.connect().then();
     }
     async connect() {

@@ -8,7 +8,8 @@ export class AdvertService extends GenericService{
     advertIndex:string
     constructor(){
         super()
-        this.advertIndex=process.env.MONGO_SEARCH_INDEX_ADVERT_NAME?.toString()!
+        this.advertIndex=process.env.MONGO_SEARCH_INDEX_ADVERT_NAME!== undefined 
+        ? process.env.MONGO_SEARCH_INDEX_ADVERT_NAME.toString() : ''
         this.connect().then()
     }
     override async connect(){

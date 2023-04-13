@@ -63,7 +63,7 @@ class AdvertController {
                                 const imageUrl = `/${file.filename}`;
                                 if (counter == 0)
                                     advert.mainImageUrl = imageUrl;
-                                advert.imagesUrls?.push(imageUrl);
+                                advert.imagesUrls.push(imageUrl);
                                 counter++;
                             }
                         }
@@ -116,7 +116,7 @@ class AdvertController {
                             if (!fs_1.default.existsSync(dirUrl)) { }
                             else {
                                 const imageUrl = `/${file.filename}`;
-                                advert.imagesUrls?.push(imageUrl);
+                                advert.imagesUrls.push(imageUrl);
                                 counter++;
                             }
                         }
@@ -147,7 +147,7 @@ class AdvertController {
                     const user = JSON.parse(req.query.user);
                     const userId = new mongodb_1.ObjectId(user._id.toString());
                     const imagesUrls = req.get("deleteUrls").split(";");
-                    const advertId = new mongodb_1.ObjectId(req.query.advertId?.toString());
+                    const advertId = new mongodb_1.ObjectId(req.query.advertId.toString());
                     if (advertId == null || imagesUrls == null)
                         res.status(400).send({ error: "Missing advert id or delete urls." });
                     else {
@@ -209,7 +209,7 @@ class AdvertController {
                 if (req.query.advertId == null)
                     res.status(400).send({ error: "Missing query params." });
                 else {
-                    const advertId = new mongodb_1.ObjectId(req.query.advertId?.toString());
+                    const advertId = new mongodb_1.ObjectId(req.query.advertId.toString());
                     const user = JSON.parse(req.query.user);
                     const userId = new mongodb_1.ObjectId(user._id.toString());
                     const response = await this.advertService.saveFavoriteAdvertId(userId, advertId);
@@ -229,7 +229,7 @@ class AdvertController {
                 if (req.query.advertId == null)
                     res.status(400).send({ error: "Missing query params." });
                 else {
-                    const advertId = new mongodb_1.ObjectId(req.query.advertId?.toString());
+                    const advertId = new mongodb_1.ObjectId(req.query.advertId.toString());
                     const user = JSON.parse(req.query.user);
                     const userId = new mongodb_1.ObjectId(user._id.toString());
                     const response = await this.advertService.deleteFavoriteAdvertId(userId, advertId);
@@ -275,7 +275,7 @@ class AdvertController {
                 if (req.query.advertId == null || req.query.state == null)
                     res.status(400).send({ error: "Missing query params." });
                 else {
-                    const advertId = new mongodb_1.ObjectId(req.query.advertId?.toString());
+                    const advertId = new mongodb_1.ObjectId(req.query.advertId.toString());
                     const user = JSON.parse(req.query.user);
                     const userId = new mongodb_1.ObjectId(user._id.toString());
                     const state = req.query.state.toString().toLowerCase() === 'true';

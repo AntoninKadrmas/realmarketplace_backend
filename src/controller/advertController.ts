@@ -52,7 +52,7 @@ export class AdvertController implements GenericController{
                         else{
                             const imageUrl = `/${file.filename}`
                             if(counter==0) advert.mainImageUrl = imageUrl
-                            advert.imagesUrls?.push(imageUrl)
+                            advert.imagesUrls.push(imageUrl)
                             counter++
                         }
                     }
@@ -102,7 +102,7 @@ export class AdvertController implements GenericController{
                         if(!fs.existsSync(dirUrl)){}
                         else{
                             const imageUrl = `/${file.filename}`
-                            advert.imagesUrls?.push(imageUrl)
+                            advert.imagesUrls.push(imageUrl)
                             counter++
                         }
                     }
@@ -129,7 +129,7 @@ export class AdvertController implements GenericController{
                 const user:UserModel = JSON.parse(req.query.user as string)
                 const userId=new ObjectId(user._id!.toString())
                 const imagesUrls:string[] = req.get("deleteUrls")!.split(";")
-                const advertId = new ObjectId(req.query.advertId?.toString())
+                const advertId = new ObjectId(req.query.advertId.toString())
                 if(advertId==null||imagesUrls==null)res.status(400).send({error:"Missing advert id or delete urls."})
                 else{
                     this.deleteFiles(imagesUrls)
@@ -179,7 +179,7 @@ export class AdvertController implements GenericController{
         try{
             if(req.query.advertId==null)res.status(400).send({error:"Missing query params."})
             else{
-                const advertId = new ObjectId(req.query.advertId?.toString())
+                const advertId = new ObjectId(req.query.advertId.toString())
                 const user:UserModel = JSON.parse(req.query.user as string)
                 const userId=new ObjectId(user._id!.toString())
                 const response = await this.advertService.saveFavoriteAdvertId(userId,advertId)
@@ -195,7 +195,7 @@ export class AdvertController implements GenericController{
         try{
             if(req.query.advertId==null)res.status(400).send({error:"Missing query params."})
             else{
-                const advertId = new ObjectId(req.query.advertId?.toString())
+                const advertId = new ObjectId(req.query.advertId.toString())
                 const user:UserModel = JSON.parse(req.query.user as string)
                 const userId=new ObjectId(user._id!.toString())
                 const response = await this.advertService.deleteFavoriteAdvertId(userId,advertId)
@@ -231,7 +231,7 @@ export class AdvertController implements GenericController{
         try{
             if(req.query.advertId==null||req.query.state==null)res.status(400).send({error:"Missing query params."})
             else{
-                const advertId = new ObjectId(req.query.advertId?.toString())
+                const advertId = new ObjectId(req.query.advertId.toString())
                 const user:UserModel = JSON.parse(req.query.user as string)
                 const userId=new ObjectId(user._id!.toString())
                 const state = req.query.state.toString().toLowerCase() === 'true'
