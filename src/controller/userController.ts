@@ -120,6 +120,7 @@ export class UserController implements GenericController{
     userUpdatePassword: RequestHandler = async (req, res) => {
         try{
             const user:UserModel = JSON.parse(req.query.user as string)
+            console.log(user)
             let loadCredential = req.headers.authorization
             if(loadCredential==null){res.status(400).send("Incorrect request.")}
             else{

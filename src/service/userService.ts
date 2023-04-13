@@ -94,7 +94,8 @@ export class UserService extends GenericService{
         try{
             if(await this.comparePassword(oldPassword,user.password!)){
                 const password = await this.hashPassword(newPassword)
-                const result =  await this.db.collection(this.collection[0]).updateOne({_id:user._id},{
+                const userId=new ObjectId(user._id!.toString())
+                const result =  await this.db.collection(this.collection[0]).updateOne({_id:userId},{
                         $set:{
                             password:password
                         }
@@ -129,7 +130,8 @@ export class UserService extends GenericService{
     async deleteUser(user:UserModel,password:string):Promise<{success:string}|{error:string}>{
         try{
             if(await this.comparePassword(password,user.password!)){
-                const result =  await this.db.collection(this.collection[0]).deleteOne({_id:user._id})
+                const userId=new ObjectId(user._id!.toString())
+                const result =  await this.db.collection(this.collection[0]).deleteOne({_id:userId})
                 if(result.acknowledged&&result.deletedCount==1)return {success:"User was successfully deleted."}
                 else if(result.acknowledged&&result.deletedCount==0)return {error:"User does not exists."}
                 else return {error:"There is some problem with database."}

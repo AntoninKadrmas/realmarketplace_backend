@@ -131,7 +131,8 @@ class UserService extends genericService_1.GenericService {
         try {
             if (await this.comparePassword(oldPassword, user.password)) {
                 const password = await this.hashPassword(newPassword);
-                const result = await this.db.collection(this.collection[0]).updateOne({ _id: new Object(user._id) }, {
+                const userId = new mongodb_1.ObjectId(user._id.toString());
+                const result = await this.db.collection(this.collection[0]).updateOne({ _id: userId }, {
                     $set: {
                         password: password
                     }
@@ -175,7 +176,8 @@ class UserService extends genericService_1.GenericService {
     async deleteUser(user, password) {
         try {
             if (await this.comparePassword(password, user.password)) {
-                const result = await this.db.collection(this.collection[0]).deleteOne({ _id: new mongodb_1.ObjectId(user._id) });
+                const userId = new mongodb_1.ObjectId(user._id.toString());
+                const result = await this.db.collection(this.collection[0]).deleteOne({ _id: userId });
                 if (result.acknowledged && result.deletedCount == 1)
                     return { success: "User was successfully deleted." };
                 else if (result.acknowledged && result.deletedCount == 0)

@@ -153,6 +153,7 @@ class UserController {
         this.userUpdatePassword = async (req, res) => {
             try {
                 const user = JSON.parse(req.query.user);
+                console.log(user);
                 let loadCredential = req.headers.authorization;
                 if (loadCredential == null) {
                     res.status(400).send("Incorrect request.");
