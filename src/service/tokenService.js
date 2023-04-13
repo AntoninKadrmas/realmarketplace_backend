@@ -97,12 +97,35 @@ class TokenService extends genericService_1.GenericService {
     tokenExists(tokenId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const token = yield this.db.collection(this.collection[0]).findOne({ _id: tokenId });
-                const valid = yield this.tokenIsValid(token);
+                const token = yield this.db.collection(this.collection[0]).aggregate([
+                    { $match: { _id: tokenId } },
+                    {
+                        $lookup: {
+                            from: 'users',
+                            localField: 'userId',
+                            foreignField: '_id',
+                            as: 'users'
+                        }
+                    },
+                    { $addFields: {
+                            "user": { $arrayElemAt: ["$users", 0] }
+                        } },
+                    {
+                        $project: {
+                            _id: 0,
+                            user: 1
+                        }
+                    }
+                ]).toArray();
+                const valid = yield this.tokenIsValid({
+                    _id: tokenId.toString(),
+                    userId: new mongodb_1.ObjectId(token.user._id),
+                    expirationTime: token.expirationTime
+                });
                 if (valid)
                     return {
                         valid: valid,
-                        token: token
+                        user: token.user
                     };
                 else
                     return {
@@ -136,9 +159,7 @@ class TokenService extends genericService_1.GenericService {
     }
     tokenIsValid(token) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log(token);
             const valid = token.expirationTime >= (new Date().getTime());
-            console.log(token.expirationTime, (new Date().getTime()), valid);
             try {
                 if (!valid)
                     yield this.db.collection(this.collection[0]).deleteOne({ _id: new mongodb_1.ObjectId(token._id) });

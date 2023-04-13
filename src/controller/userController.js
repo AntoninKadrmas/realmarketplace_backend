@@ -107,9 +107,9 @@ class UserController {
             }
         });
         this.getUserById = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            var _a;
             try {
-                const userId = new mongodb_1.ObjectId((_a = req.query.token) === null || _a === void 0 ? void 0 : _a.toString());
+                const user = JSON.parse(req.query.user);
+                const userId = new mongodb_1.ObjectId(user._id.toString());
                 const response = yield this.userService.getUserDataById(userId);
                 if (response.hasOwnProperty("error"))
                     res.status(400).send(response);
@@ -122,7 +122,6 @@ class UserController {
             }
         });
         this.userProfileImage = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            var _b;
             try {
                 const folder = process.env.IMAGE_PROFILE;
                 if (req.body == null)
@@ -130,7 +129,8 @@ class UserController {
                 else {
                     if (req.body.oldUrl != null && req.body.oldUrl != "")
                         this.deleteFiles([req.body.oldUrl]);
-                    const userId = new mongodb_1.ObjectId((_b = req.query.token) === null || _b === void 0 ? void 0 : _b.toString());
+                    const user = JSON.parse(req.query.user);
+                    const userId = new mongodb_1.ObjectId(user._id.toString());
                     const file = req.file;
                     const dirUrl = __dirname.split('src')[0] + `${folder}/` + file.filename;
                     if (!fs_1.default.existsSync(dirUrl))
@@ -160,9 +160,8 @@ class UserController {
             }
         });
         this.userUpdatePassword = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            var _c;
             try {
-                const userId = new mongodb_1.ObjectId((_c = req.query.token) === null || _c === void 0 ? void 0 : _c.toString());
+                const user = JSON.parse(req.query.user);
                 let loadCredential = req.headers.authorization;
                 if (loadCredential == null) {
                     res.status(400).send("Incorrect request.");
@@ -171,7 +170,7 @@ class UserController {
                     const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString();
                     const passwordOld = credentials.substring(0, credentials.indexOf(':'));
                     const passwordNew = credentials.substring(credentials.indexOf(':') + 1, credentials.length);
-                    const response = yield this.userService.updateUserPassword(userId, passwordOld, passwordNew);
+                    const response = yield this.userService.updateUserPassword(user, passwordOld, passwordNew);
                     if (response.hasOwnProperty("error"))
                         res.status(400).send(response);
                     else
@@ -184,9 +183,9 @@ class UserController {
             }
         });
         this.userUpdate = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            var _d;
             try {
-                const userId = new mongodb_1.ObjectId((_d = req.query.token) === null || _d === void 0 ? void 0 : _d.toString());
+                const user = JSON.parse(req.query.user);
+                const userId = new mongodb_1.ObjectId(user._id.toString());
                 if (req.body == null)
                     res.status(400).send({ error: "Body does not contains user model." });
                 else {
@@ -204,10 +203,9 @@ class UserController {
             }
         });
         this.userDelete = (req, res) => __awaiter(this, void 0, void 0, function* () {
-            var _e;
             try {
-                const folder = process.env.IMAGE_PROFILE;
-                const userId = new mongodb_1.ObjectId((_e = req.query.token) === null || _e === void 0 ? void 0 : _e.toString());
+                const user = JSON.parse(req.query.user);
+                const userId = new mongodb_1.ObjectId(user._id.toString());
                 let loadCredential = req.headers.authorization;
                 if (loadCredential == null) {
                     res.status(400).send("Incorrect request.");
@@ -215,17 +213,16 @@ class UserController {
                 else {
                     const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString();
                     const password = credentials.substring(0, credentials.indexOf(':'));
-                    const response = yield this.userService.deleteUser(userId, password);
+                    const response = yield this.userService.deleteUser(user, password);
                     if (response.hasOwnProperty("error"))
                         res.status(400).send(response);
                     else {
-                        const success = response;
-                        this.deleteFiles([success.user.mainImageUrl]);
+                        this.deleteFiles([user.mainImageUrl]);
                         const deleteUrls = yield this.userService.deleteUserAdverts(userId);
                         if (!response.hasOwnProperty("error"))
                             this.deleteFiles(deleteUrls);
                         yield this.tokenService.deleteToken(userId);
-                        res.status(200).send({ success: success.success });
+                        res.status(200).send(response);
                     }
                 }
             }

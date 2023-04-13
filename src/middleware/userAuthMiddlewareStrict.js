@@ -13,7 +13,6 @@ exports.userAuthMiddlewareStrict = void 0;
 const tokenService_1 = require("../service/tokenService");
 const mongodb_1 = require("mongodb");
 function userAuthMiddlewareStrict(request, response, next) {
-    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             var validToken = /^[a-f\d]{24}$/g;
@@ -22,10 +21,11 @@ function userAuthMiddlewareStrict(request, response, next) {
                 throw Error("Incorrect token.");
             const tokenService = yield tokenService_1.TokenService.getInstance();
             const tokenExists = yield tokenService.tokenExists(new mongodb_1.ObjectId(token));
+            console.log(tokenExists);
             if (!tokenExists.valid)
                 throw Error("Token expired.");
             else {
-                request.query.token = (_a = tokenExists.token) === null || _a === void 0 ? void 0 : _a.userId.toString();
+                request.query.user = JSON.stringify(tokenExists.user);
                 yield tokenService.updateTokenByTokenId(token);
             }
             next();

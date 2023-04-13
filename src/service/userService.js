@@ -146,13 +146,13 @@ class UserService extends genericService_1.GenericService {
             }
         });
     }
-    updateUserPassword(userId, oldPassword, newPassword) {
+    updateUserPassword(user, oldPassword, newPassword) {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const verification = yield this.verifyUser(userId, oldPassword);
-                if (verification.number == 2) {
+                if (yield this.comparePassword(oldPassword, user.password)) {
                     const password = yield this.hashPassword(newPassword);
-                    const result = yield this.db.collection(this.collection[0]).updateOne({ _id: userId }, {
+                    const result = yield this.db.collection(this.collection[0]).updateOne({ _id: new Object((_a = user._id) === null || _a === void 0 ? void 0 : _a.toString()) }, {
                         $set: {
                             password: password
                         }
@@ -164,10 +164,8 @@ class UserService extends genericService_1.GenericService {
                     else
                         return { error: "There is some problem with database." };
                 }
-                else if (verification.number == 1)
-                    return { error: "Incorrect password." };
                 else
-                    return { error: "User does not exists." };
+                    return { error: "Incorrect password." };
             }
             catch (e) {
                 console.log(e);
@@ -198,23 +196,21 @@ class UserService extends genericService_1.GenericService {
             }
         });
     }
-    deleteUser(userId, password) {
+    deleteUser(user, password) {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const verification = yield this.verifyUser(userId, password);
-                if (verification.number == 2) {
-                    const result = yield this.db.collection(this.collection[0]).deleteOne({ _id: userId });
+                if (yield this.comparePassword(password, user.password)) {
+                    const result = yield this.db.collection(this.collection[0]).deleteOne({ _id: new mongodb_1.ObjectId((_a = user._id) === null || _a === void 0 ? void 0 : _a.toString()) });
                     if (result.acknowledged && result.deletedCount == 1)
-                        return { success: "User was successfully deleted.", user: verification.user };
+                        return { success: "User was successfully deleted." };
                     else if (result.acknowledged && result.deletedCount == 0)
                         return { error: "User does not exists." };
                     else
                         return { error: "There is some problem with database." };
                 }
-                else if (verification.number == 1)
-                    return { error: "Incorrect password." };
                 else
-                    return { error: "User does not exists." };
+                    return { error: "Incorrect password." };
             }
             catch (e) {
                 console.log(e);
@@ -234,7 +230,6 @@ class UserService extends genericService_1.GenericService {
                         }
                     }
                 ]).toArray();
-                console.log(ids);
                 for (let id of ids) {
                     id.imagesUrls.forEach(url => deleteImageUrls.push(url));
                     const advertId = new mongodb_1.ObjectId(id._id.toString());
@@ -247,14 +242,6 @@ class UserService extends genericService_1.GenericService {
                 console.log(e);
                 return { error: "Database dose not response." };
             }
-        });
-    }
-    verifyUser(userId, oldPassword) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const user = yield this.db.collection(this.collection[0]).findOne({ _id: userId });
-            if (user.password == null || user.password == "")
-                return { number: 0, user: null };
-            return (yield this.comparePassword(oldPassword, user.password)) == true ? { number: 2, user: user } : { number: 1, user: null };
         });
     }
     hashPassword(password) {

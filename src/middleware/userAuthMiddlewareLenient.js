@@ -13,7 +13,6 @@ exports.userAuthMiddlewareLenient = void 0;
 const tokenService_1 = require("../service/tokenService");
 const mongodb_1 = require("mongodb");
 function userAuthMiddlewareLenient(request, response, next) {
-    var _a;
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const token = request.get("Authentication");
@@ -22,9 +21,9 @@ function userAuthMiddlewareLenient(request, response, next) {
             const tokenService = yield tokenService_1.TokenService.getInstance();
             const tokenExists = yield tokenService.tokenExists(new mongodb_1.ObjectId(token));
             if (!tokenExists.valid)
-                request.query.token = "";
+                request.query.user = "";
             else {
-                request.query.token = (_a = tokenExists.token) === null || _a === void 0 ? void 0 : _a.userId.toString();
+                request.query.user = JSON.stringify(tokenExists.user);
                 yield tokenService.updateTokenByTokenId(token);
             }
             next();

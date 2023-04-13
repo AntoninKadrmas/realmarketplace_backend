@@ -54,7 +54,6 @@ class AdvertService extends genericService_1.GenericService {
             this.db = this.client.db(process.env.DBName);
             yield this.db.collection(this.collection[2]).createIndex({ email: 1 }, { unique: true });
             yield this.db.collection(this.collection[1]).createIndex({ userId: 1 }, { unique: true });
-            yield this.db.collection(this.collection[0]).createIndex({ title: 'text', author: 'text' });
         });
     }
     createAdvert(advert) {
