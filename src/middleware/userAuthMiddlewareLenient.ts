@@ -9,9 +9,9 @@ export async function userAuthMiddlewareLenient(request: express.Request, respon
         if(token==null)throw Error("Token does not exists in header.")
         const tokenService:TokenService = await TokenService.getInstance()
         const tokenExists:TokenExistsModel = await tokenService.tokenExists(new ObjectId(token));
-        if(!tokenExists.valid) request.query.token=""
+        if(!tokenExists.valid) request.query.user=""
         else {
-            request.query.token =tokenExists.token?.userId.toString()
+            request.query.user =JSON.stringify(tokenExists.user)
             await tokenService.updateTokenByTokenId(token)
         }
         next()

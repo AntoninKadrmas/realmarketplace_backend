@@ -187,8 +187,8 @@ class AdvertController {
                         res.status(200).send(response);
                 }
                 else {
-                    console.log("there --------------------");
-                    const response = yield this.advertService.getAdvertWithUser();
+                    const search = req.query.search;
+                    const response = yield this.advertService.getAdvertWithUser(search);
                     if (response.hasOwnProperty("error"))
                         res.status(400).send(response);
                     else

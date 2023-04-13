@@ -39,7 +39,7 @@ class DBConnection {
     constructor() {
         this.uri = "";
         dotenv.config();
-        this.uri = process.env.DB_CONNECTION;
+        this.uri = process.env.MONGO_DB_CONNECTION;
         this.mongoClient = mongodb_1.MongoClient.connect(this.uri);
     }
     getDbClient() {

@@ -4,7 +4,7 @@ import { LightUser, UserModel } from "../model/userModel";
 import { GenericController } from "./genericController";
 import { TokenService } from "../service/tokenService";
 import * as dotenv from 'dotenv';
-import { ObjectId } from "mongodb";
+import { MongoServerError, ObjectId } from "mongodb";
 import { userAuthMiddlewareStrict } from "../middleware/userAuthMiddlewareStrict";
 import { ImageMiddleWare } from "../middleware/imageMiddleware";
 import path from 'path';
@@ -74,7 +74,8 @@ export class UserController implements GenericController{
     }
     getUserById:RequestHandler = async (req,res)=>{
         try{
-            const userId = new ObjectId(req.query.token?.toString())
+            const user:UserModel = JSON.parse(req.query.user as string)
+            const userId=new ObjectId(user._id!.toString())
             const response:UserModel | {error:string} = await this.userService.getUserDataById(userId)
             if(response.hasOwnProperty("error"))res.status(400).send(response)
             else res.status(200).send(response)
@@ -89,7 +90,8 @@ export class UserController implements GenericController{
             if(req.body==null)res.status(400).send({error:"Body does not contains advert information's"})
             else{
                 if(req.body.oldUrl!=null&&req.body.oldUrl!="") this.deleteFiles([req.body.oldUrl])
-                const userId = new ObjectId(req.query.token?.toString())
+                const user:UserModel = JSON.parse(req.query.user as string)
+                const userId=new ObjectId(user._id!.toString())
                 const file = req.file!
                 const dirUrl = __dirname.split('src')[0]+`${folder}/`+file.filename
                 if(!fs.existsSync(dirUrl)) res.status(400).send()
@@ -117,14 +119,14 @@ export class UserController implements GenericController{
     }
     userUpdatePassword: RequestHandler = async (req, res) => {
         try{
-            const userId = new ObjectId(req.query.token?.toString())
+            const user:UserModel = JSON.parse(req.query.user as string)
             let loadCredential = req.headers.authorization
             if(loadCredential==null){res.status(400).send("Incorrect request.")}
             else{
                 const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString()
                 const passwordOld = credentials.substring(0,credentials.indexOf(':'))
                 const passwordNew = credentials.substring(credentials.indexOf(':')+1,credentials.length)
-                const response:{success:string} | {error:string}= await this.userService.updateUserPassword(userId,passwordOld,passwordNew)
+                const response:{success:string} | {error:string}= await this.userService.updateUserPassword(user,passwordOld,passwordNew)
                 if(response.hasOwnProperty("error"))res.status(400).send(response)
                 else res.status(200).send(response)
             }
@@ -135,7 +137,8 @@ export class UserController implements GenericController{
     }
     userUpdate: RequestHandler = async (req, res) => {
         try{
-            const userId = new ObjectId(req.query.token?.toString())
+            const user:UserModel = JSON.parse(req.query.user as string)
+            const userId=new ObjectId(user._id!.toString())
             if(req.body==null) res.status(400).send({error:"Body does not contains user model."})
             else{
                 const user:LightUser = req.body
@@ -150,22 +153,21 @@ export class UserController implements GenericController{
     }
     userDelete: RequestHandler = async (req, res) => {
         try{
-            const folder = process.env.IMAGE_PROFILE!!
-            const userId = new ObjectId(req.query.token?.toString())
+            const user:UserModel = JSON.parse(req.query.user as string)
+            const userId=new ObjectId(user._id!.toString())
             let loadCredential = req.headers.authorization
             if(loadCredential==null){res.status(400).send("Incorrect request.")}
             else{
                 const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString()
                 const password = credentials.substring(0,credentials.indexOf(':'))
-                const response:{success:string,user:UserModel} | {error:string}= await this.userService.deleteUser(userId,password)
+                const response:{success:string} | {error:string}= await this.userService.deleteUser(user,password)
                 if(response.hasOwnProperty("error"))res.status(400).send(response)
                 else {
-                    const success = (response as {success:string,user:UserModel})
-                    this.deleteFiles([success.user.mainImageUrl])
+                    this.deleteFiles([user.mainImageUrl])
                     const deleteUrls = await this.userService.deleteUserAdverts(userId)
                     if(!response.hasOwnProperty("error"))this.deleteFiles(deleteUrls as string[])
                     await this.tokenService.deleteToken(userId)
-                    res.status(200).send({success:success.success})
+                    res.status(200).send(response)
                 }
             }
         }catch(e){

@@ -10,6 +10,7 @@ import * as dotenv from 'dotenv';
 import { Router } from "express";
 import path from 'path';
 import fs from 'fs';
+import { UserModel } from "../model/userModel";
 dotenv.config();
 
 export class AdvertController implements GenericController{
@@ -37,7 +38,8 @@ export class AdvertController implements GenericController{
             if(req.body==null)res.status(400).send({error:"Body does not contains advert information's"})
             else{
                 const advert:AdvertModel = req.body as AdvertModel
-                advert.userId=new ObjectId(req.query.token?.toString())
+                const user:UserModel = JSON.parse(req.query.user as string)
+                advert.userId=new ObjectId(user._id!.toString())
                 advert.createdIn = new Date()
                 advert.imagesUrls = []
                 advert.visible=true
@@ -75,7 +77,8 @@ export class AdvertController implements GenericController{
             else{
                 const deleteUrl=req.body.deletedUrls.split(";").filter((x:string)=>x!="")
                 const advertId = new ObjectId(req.body._id.toString())
-                const userId=new ObjectId(req.query.token?.toString())
+                const user:UserModel = JSON.parse(req.query.user as string)
+                const userId=new ObjectId(user._id!.toString())
                 this.deleteFiles(deleteUrl)
                 const tempOldUrls = req.body.imagesUrls.split(";;")
                 const oldUrls:OldImagesUrls[] = [] 
@@ -123,7 +126,8 @@ export class AdvertController implements GenericController{
         try{
             if(req.query.advertId==null)res.status(400).send({error:"Missing query params."})
             else{
-                const userId = new ObjectId(req.query.token?.toString())
+                const user:UserModel = JSON.parse(req.query.user as string)
+                const userId=new ObjectId(user._id!.toString())
                 const imagesUrls:string[] = req.get("deleteUrls")!.split(";")
                 const advertId = new ObjectId(req.query.advertId?.toString())
                 if(advertId==null||imagesUrls==null)res.status(400).send({error:"Missing advert id or delete urls."})
@@ -142,16 +146,15 @@ export class AdvertController implements GenericController{
     }
     getAdvert: RequestHandler = async (req, res) => {
         try{
-            const userId = req.query.token?.toString()
-            if(userId==""||userId==null){
+            if(req.query.user==""){
                 const search = req.query.search as string
                 const response:AdvertModel[]|{error:string} = await this.advertService.getAdvertWithOutUser(search)
                 if(response.hasOwnProperty("error"))res.status(400).send(response)
                 else res.status(200).send(response)
             }
-            else{
-                console.log("there --------------------")
-                const response:AdvertModelWithUser[]|{error:string} = await this.advertService.getAdvertWithUser()
+            else{                
+                const search = req.query.search as string
+                const response:AdvertModelWithUser[]|{error:string} = await this.advertService.getAdvertWithUser(search)
                 if(response.hasOwnProperty("error"))res.status(400).send(response)
                 else res.status(200).send(response)
             }
@@ -162,7 +165,8 @@ export class AdvertController implements GenericController{
     }
     getFavoriteAdvert: RequestHandler = async (req, res) => {
         try{
-            const userId = new ObjectId(req.query.token?.toString())
+            const user:UserModel = JSON.parse(req.query.user as string)
+            const userId=new ObjectId(user._id!.toString())
             const response = await this.advertService.getFavoriteAdvertByUserId(userId)
             if(response.hasOwnProperty("error"))res.status(400).send(response)
             else res.status(200).send(response)
@@ -176,7 +180,8 @@ export class AdvertController implements GenericController{
             if(req.query.advertId==null)res.status(400).send({error:"Missing query params."})
             else{
                 const advertId = new ObjectId(req.query.advertId?.toString())
-                const userId = new ObjectId(req.query.token?.toString())
+                const user:UserModel = JSON.parse(req.query.user as string)
+                const userId=new ObjectId(user._id!.toString())
                 const response = await this.advertService.saveFavoriteAdvertId(userId,advertId)
                 if(response.hasOwnProperty("error"))res.status(400).send(response)
                 else res.status(200).send(response)
@@ -191,7 +196,8 @@ export class AdvertController implements GenericController{
             if(req.query.advertId==null)res.status(400).send({error:"Missing query params."})
             else{
                 const advertId = new ObjectId(req.query.advertId?.toString())
-                const userId = new ObjectId(req.query.token?.toString())
+                const user:UserModel = JSON.parse(req.query.user as string)
+                const userId=new ObjectId(user._id!.toString())
                 const response = await this.advertService.deleteFavoriteAdvertId(userId,advertId)
                 if(response.hasOwnProperty("error"))res.status(400).send(response)
                 else res.status(200).send(response)
@@ -204,14 +210,14 @@ export class AdvertController implements GenericController{
     getUserAdverts: RequestHandler = async (req, res) => {
         try{
             if(req.get("userEmail")!=null&&req.get("createdIn")!=null){
-
                 const userEmail = req.get("userEmail")!
                 const createdIn = req.get("createdIn")!
                 const adverts = await this.advertService.getAdvertByUserEmailTime(userEmail,createdIn)
                 if(adverts.hasOwnProperty("error"))res.status(400).send(adverts)
                 else res.status(200).send(adverts)
             }else{
-                const userId = new ObjectId(req.query.token!.toString())
+                const user:UserModel = JSON.parse(req.query.user as string)
+                const userId=new ObjectId(user._id!.toString())
                 const adverts = await this.advertService.getAdvertByUserId(userId)
                 if(adverts.hasOwnProperty("error"))res.status(400).send(adverts)
                 else res.status(200).send(adverts)
@@ -226,7 +232,8 @@ export class AdvertController implements GenericController{
             if(req.query.advertId==null||req.query.state==null)res.status(400).send({error:"Missing query params."})
             else{
                 const advertId = new ObjectId(req.query.advertId?.toString())
-                const userId = new ObjectId(req.query.token?.toString())
+                const user:UserModel = JSON.parse(req.query.user as string)
+                const userId=new ObjectId(user._id!.toString())
                 const state = req.query.state.toString().toLowerCase() === 'true'
                 const response = await this.advertService.updateAdvertVisibility(advertId,userId,state)
                 if(response.hasOwnProperty("error"))res.status(400).send(response)

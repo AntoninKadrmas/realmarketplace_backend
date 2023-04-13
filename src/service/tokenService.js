@@ -47,8 +47,9 @@ class TokenService extends genericService_1.GenericService {
             dotenv.config();
             const instance = dbConnection_1.DBConnection.getInstance();
             this.client = yield instance.getDbClient();
-            this.collection.push(process.env.TOKEN_COLLECTION);
-            this.db = this.client.db(process.env.DB_NAME);
+            this.collection.push(process.env.MONGO_TOKEN_COLLECTION);
+            this.db = this.client.db(process.env.MONGO_DB_NAME);
+            yield this.db.collection(this.collection[0]).createIndex({ userId: 1 }, { unique: true });
         });
     }
     static getInstance() {

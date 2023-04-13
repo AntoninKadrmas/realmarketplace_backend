@@ -1,4 +1,4 @@
-import { ObjectId } from "mongodb";
+import { MongoServerError, ObjectId } from "mongodb";
 import { DBConnection } from "../db/dbConnection";
 import { LightUser, UserModel } from "../model/userModel";
 import { GenericService } from "./genericService";
@@ -18,22 +18,25 @@ export class UserService extends GenericService{
         dotenv.config();
         const instance = DBConnection.getInstance()
         this.client = await instance.getDbClient()        
-        this.db = this.client.db(process.env.DB_NAME)
-        this.collection.push(process.env.USER_COLLECTION)
-        this.collection.push(process.env.ADVERT_COLLECTION)
+        this.db = this.client.db(process.env.MONGO_DB_NAME)
+        this.collection.push(process.env.MONGO_USER_COLLECTION)
+        this.collection.push(process.env.MONGO_ADVERT_COLLECTION)
         this.salt_rounds = process.env.SALT_ROUNDS!=null?parseInt(process.env.SALT_ROUNDS):10
     }
     async createNewUser(user:UserModel):Promise<{userId:string}|{error:string}>{
         user.password = await this.hashPassword(user.password!)
         try{
-            let userExists = await this.db.collection(this.collection[0]).findOne({email : user.email})
-            if(userExists!=null)return {error:"User with same Email Address already exists."}
             const new_user = await this.db.collection(this.collection[0]).insertOne(user)
             if(!new_user.acknowledged) return {error:"Database dose not response."}
             return {userId:new_user.insertedId.toString()}
         }
-        catch{
-            return {error:"Database dose not response."}
+        catch(e){
+            if(e instanceof MongoServerError){
+                return { error: "User with same Email Address already exists." };
+            }else{
+                console.log(e)
+                return {error:"Database dose not response."}
+            }
         }
     }
     async getUserDataById(userId:ObjectId):Promise<UserModel | {error:string}>{
@@ -87,12 +90,11 @@ export class UserService extends GenericService{
             return {error:"Database dose not response."}
         }
     }
-    async updateUserPassword(userId:ObjectId,oldPassword:string,newPassword:string):Promise<{success:string} | {error:string}>{
+    async updateUserPassword(user:UserModel,oldPassword:string,newPassword:string):Promise<{success:string} | {error:string}>{
         try{
-            const verification = await this.verifyUser(userId,oldPassword)
-            if(verification.number==2){
+            if(await this.comparePassword(oldPassword,user.password!)){
                 const password = await this.hashPassword(newPassword)
-                const result =  await this.db.collection(this.collection[0]).updateOne({_id:userId},{
+                const result =  await this.db.collection(this.collection[0]).updateOne({_id:new Object(user._id?.toString())},{
                         $set:{
                             password:password
                         }
@@ -101,8 +103,7 @@ export class UserService extends GenericService{
                 else if(result.acknowledged&&result.modifiedCount==0)return {error:"User does not exists."}
                 else return {error:"There is some problem with database."}
             }
-            else if(verification.number==1) return {error:"Incorrect password."}
-            else return {error:"User does not exists."}
+            else return {error:"Incorrect password."}
         }catch(e){
             console.log(e)
             return {error:"Database dose not response."}
@@ -125,17 +126,15 @@ export class UserService extends GenericService{
             return {error:"Database dose not response."}
         }
     }
-    async deleteUser(userId:ObjectId,password:string):Promise<{success:string,user:UserModel}|{error:string}>{
+    async deleteUser(user:UserModel,password:string):Promise<{success:string}|{error:string}>{
         try{
-            const verification = await this.verifyUser(userId,password)
-            if(verification.number==2){
-                const result =  await this.db.collection(this.collection[0]).deleteOne({_id:userId})
-                if(result.acknowledged&&result.deletedCount==1)return {success:"User was successfully deleted.",user:verification.user as UserModel}
+            if(await this.comparePassword(password,user.password!)){
+                const result =  await this.db.collection(this.collection[0]).deleteOne({_id:new ObjectId(user._id?.toString())})
+                if(result.acknowledged&&result.deletedCount==1)return {success:"User was successfully deleted."}
                 else if(result.acknowledged&&result.deletedCount==0)return {error:"User does not exists."}
                 else return {error:"There is some problem with database."}
             }
-            else if(verification.number==1) return {error:"Incorrect password."}
-            else return {error:"User does not exists."}
+            else return {error:"Incorrect password."}
         }catch(e){
             console.log(e)
             return {error:"Database dose not response."}
@@ -151,7 +150,6 @@ export class UserService extends GenericService{
                   imagesUrls:1
                 }
               }]).toArray();
-            console.log(ids)
             for(let id of ids){
                 id.imagesUrls.forEach(url=>deleteImageUrls.push(url))
                 const advertId = new ObjectId(id._id.toString())
@@ -163,11 +161,6 @@ export class UserService extends GenericService{
             console.log(e)
             return {error:"Database dose not response."}
         }
-    }
-    private async verifyUser(userId:ObjectId,oldPassword:string):Promise<{number:number,user:UserModel|null}>{
-        const user:UserModel = await this.db.collection(this.collection[0]).findOne({_id:userId})
-        if(user.password==null||user.password=="")return {number:0,user:null}
-        return await this.comparePassword(oldPassword,user.password!)==true?{number:2,user:user}:{number:1,user:null}
     }
     private async hashPassword(password:string):Promise<string>{
         const salt = await bcrypt.genSalt(this.salt_rounds)

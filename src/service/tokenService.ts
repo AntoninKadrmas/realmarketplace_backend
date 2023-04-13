@@ -3,6 +3,7 @@ import { DBConnection } from "../db/dbConnection";
 import { TokenExistsModel, TokenModel } from "../model/tokenModel";
 import * as dotenv from 'dotenv';
 import { GenericService } from "./genericService";
+import { UserModel } from "../model/userModel";
 
 export class TokenService extends GenericService{
     constructor(){
@@ -13,8 +14,9 @@ export class TokenService extends GenericService{
         dotenv.config();
         const instance = DBConnection.getInstance()
         this.client = await instance.getDbClient()                
-        this.collection.push(process.env.TOKEN_COLLECTION)        
-        this.db = this.client.db(process.env.DB_NAME)
+        this.collection.push(process.env.MONGO_TOKEN_COLLECTION)        
+        this.db = this.client.db(process.env.MONGO_DB_NAME)
+        await this.db.collection(this.collection[0]).createIndex({userId:1},{ unique: true })
     }
     static instance:TokenService
     public static async getInstance(){
@@ -57,11 +59,33 @@ export class TokenService extends GenericService{
     }
     async tokenExists(tokenId:ObjectId):Promise<TokenExistsModel>{
         try{
-            const token:TokenModel =  await this.db.collection(this.collection[0]).findOne({_id:tokenId}) 
-            const valid = await this.tokenIsValid(token) 
+            const token:{user:UserModel,expirationTime:number} =  await this.db.collection(this.collection[0]).aggregate([
+                {$match:{_id:tokenId}},
+                {
+                $lookup: {
+                  from: 'users',
+                  localField: 'userId',
+                  foreignField: '_id',
+                  as: 'users'
+                }},
+                 {$addFields: {
+                    "user": { $arrayElemAt: [ "$users", 0 ] }
+                }},
+                {
+                  $project:{
+                    _id:0,
+                    user:1
+                  }
+                }
+              ]).toArray()
+            const valid = await this.tokenIsValid({
+                _id:tokenId.toString(),
+                userId:new ObjectId(token.user._id),
+                expirationTime:token.expirationTime
+                }) 
             if(valid)return {
                 valid: valid,
-                token:token
+                user:token.user
             }
             else return {
                 valid: valid,
@@ -87,9 +111,7 @@ export class TokenService extends GenericService{
         }
     }
     private async tokenIsValid(token:TokenModel):Promise<boolean>{ 
-        console.log(token)
         const valid = token.expirationTime>=(new Date().getTime())
-        console.log(token.expirationTime,(new Date().getTime()),valid);
         try{
             if(!valid) await this.db.collection(this.collection[0]).deleteOne({_id:new ObjectId(token._id)})
         }

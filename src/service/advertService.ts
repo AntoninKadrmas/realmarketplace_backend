@@ -5,20 +5,22 @@ import { AdvertModel, AdvertModelWithUser, FavoriteAdvertUser } from "../model/a
 import { ObjectId } from "mongodb";
 
 export class AdvertService extends GenericService{
+    advertIndex:string
     constructor(){
         super()
+        this.advertIndex=process.env.MONGO_SEARCH_INDEX_ADVERT_NAME?.toString()!
         this.connect().then()
     }
     override async connect(){
         dotenv.config();
         const instance = DBConnection.getInstance()
         this.client = await instance.getDbClient()                
-        this.collection.push(process.env.ADVERT_COLLECTION)    
-        this.collection.push(process.env.FAVORITE_COLLECTION)    
-        this.collection.push(process.env.USER_COLLECTION)    
+        this.collection.push(process.env.MONGO_ADVERT_COLLECTION)    
+        this.collection.push(process.env.MONGO_FAVORITE_COLLECTION)    
+        this.collection.push(process.env.MONGO_USER_COLLECTION)    
         this.db = this.client.db(process.env.DBName)
-        await this.db.collection(this.collection[2]).createIndex({email:'text'},{ unique: true })
-        await this.db.collection(this.collection[0]).createIndex({title:'text',author:'text'})
+        await this.db.collection(this.collection[2]).createIndex({email:1},{ unique: true })
+        await this.db.collection(this.collection[1]).createIndex({userId:1},{ unique: true })
     }
     async createAdvert(advert:AdvertModel):Promise<{success:string,_id:string}|{error:string}>{
         try{
@@ -32,18 +34,39 @@ export class AdvertService extends GenericService{
     }
     async getAdvertWithOutUser(search:String):Promise<AdvertModel[]|{error:string}>{
         try{
-            const result = await this.db.collection(this.collection[0]).find({
-                visible:true,
-                $text:{
-                    $search:search,
-                    $caseSensitive:false,
-                    $diacriticSensitive:false
-                }
-            }).project({
-                score:{$meta:'textScore'}
-            }).sort({
-                score:{$meta:'textScore'}
-            })
+            const result = await this.db.collection(this.collection[0]).aggregate([
+                {$search:{
+                    index:this.advertIndex,
+                    compound:{
+                        must:[{
+                            text:{
+                                query:search,
+                                path:['title','author'],
+                                fuzzy:{},
+                            }
+                        },{
+                            equals:{
+                                value:true,
+                                path:'visible'
+                            }
+                        }]
+                    }
+                }},
+                {$project:{
+                    title: 1,
+                    author: 1,
+                    description: 1,
+                    genreName: 1,
+                    genreType: 1,
+                    price: 1,
+                    priceOption: 1,
+                    condition: 1,
+                    createdIn: 1,
+                    imagesUrls: 1,
+                    mainImageUrl: 1,
+                    score:{ $meta:'searchScore' },
+                }}
+            ]).sort({score:-1})
             .toArray();
             return result
         }catch(e){
@@ -51,16 +74,35 @@ export class AdvertService extends GenericService{
             return {error:"Database dose not response."}
         }
     }
-    async getAdvertWithUser():Promise<AdvertModelWithUser[]|{error:string}>{
+    async getAdvertWithUser(search:String):Promise<AdvertModelWithUser[]|{error:string}>{
         try{
             const result = await this.db.collection(this.collection[0]).aggregate([
-                {$match:{visible:true}},
                 {$lookup:{
-                from: "users",
-                localField:"userId",
-                foreignField:"_id",
-                as:"user"}},
-               { $addFields: {
+                    from: "users",
+                    localField:"userId",
+                    foreignField:"_id",
+                    as:"user",
+                    pipeline:[
+                        {$search:{
+                            index:this.advertIndex,
+                            compound:{
+                                must:[{
+                                    text:{
+                                        query:search,
+                                        path:['title','author'],
+                                        fuzzy:{},
+                                    }
+                                },{
+                                    equals:{
+                                        value:true,
+                                        path:'visible'
+                                    }
+                                }]
+                            }
+                        }},
+                    ]}
+                },
+                {$addFields: {
                     "user": { $arrayElemAt: [ "$user", 0 ] }
                 }},
                 { $project: {

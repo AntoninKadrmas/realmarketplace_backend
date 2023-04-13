@@ -9,10 +9,12 @@ import * as dotenv from 'dotenv';
 import { TokenService } from './service/tokenService';
 import { AdvertService } from './service/advertService';
 import { AdvertController } from './controller/advertController';
+import { StringIndexAdvert } from './service/stringIndexAdvert';
+dotenv.config();
+
 export class Server{
     private app:express.Express
     constructor(){
-        dotenv.config();
         this.app = express();
         this.app.use(require('body-parser').json())
         this.app.use(cors())
@@ -31,6 +33,11 @@ export class Server{
                 log_file.write(`[${new Date()}] ${util.format(d) + '\n'}`);
             }
         };
+        this.setIndex().then()
+    }
+    private async setIndex():Promise<void>{
+        const stringIndex = new StringIndexAdvert()
+        await stringIndex.setSearchIndex()
     }
     private setControllers(){
         const userController = new UserController(new UserService(),new TokenService())

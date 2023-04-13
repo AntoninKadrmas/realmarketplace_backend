@@ -38,7 +38,9 @@ const dotenv = __importStar(require("dotenv"));
 const dbConnection_1 = require("../db/dbConnection");
 class AdvertService extends genericService_1.GenericService {
     constructor() {
+        var _a;
         super();
+        this.advertIndex = (_a = process.env.MONGO_SEARCH_INDEX_ADVERT_NAME) === null || _a === void 0 ? void 0 : _a.toString();
         this.connect().then();
     }
     connect() {
@@ -46,11 +48,12 @@ class AdvertService extends genericService_1.GenericService {
             dotenv.config();
             const instance = dbConnection_1.DBConnection.getInstance();
             this.client = yield instance.getDbClient();
-            this.collection.push(process.env.ADVERT_COLLECTION);
-            this.collection.push(process.env.FAVORITE_COLLECTION);
-            this.collection.push(process.env.USER_COLLECTION);
+            this.collection.push(process.env.MONGO_ADVERT_COLLECTION);
+            this.collection.push(process.env.MONGO_FAVORITE_COLLECTION);
+            this.collection.push(process.env.MONGO_USER_COLLECTION);
             this.db = this.client.db(process.env.DBName);
-            yield this.db.collection(this.collection[2]).createIndex({ email: 'text' }, { unique: true });
+            yield this.db.collection(this.collection[2]).createIndex({ email: 1 }, { unique: true });
+            yield this.db.collection(this.collection[1]).createIndex({ userId: 1 }, { unique: true });
             yield this.db.collection(this.collection[0]).createIndex({ title: 'text', author: 'text' });
         });
     }
@@ -72,18 +75,39 @@ class AdvertService extends genericService_1.GenericService {
     getAdvertWithOutUser(search) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const result = yield this.db.collection(this.collection[0]).find({
-                    visible: true,
-                    $text: {
-                        $search: search,
-                        $caseSensitive: false,
-                        $diacriticSensitive: false
-                    }
-                }).project({
-                    score: { $meta: 'textScore' }
-                }).sort({
-                    score: { $meta: 'textScore' }
-                })
+                const result = yield this.db.collection(this.collection[0]).aggregate([
+                    { $search: {
+                            index: this.advertIndex,
+                            compound: {
+                                must: [{
+                                        text: {
+                                            query: search,
+                                            path: ['title', 'author'],
+                                            fuzzy: {},
+                                        }
+                                    }, {
+                                        equals: {
+                                            value: true,
+                                            path: 'visible'
+                                        }
+                                    }]
+                            }
+                        } },
+                    { $project: {
+                            title: 1,
+                            author: 1,
+                            description: 1,
+                            genreName: 1,
+                            genreType: 1,
+                            price: 1,
+                            priceOption: 1,
+                            condition: 1,
+                            createdIn: 1,
+                            imagesUrls: 1,
+                            mainImageUrl: 1,
+                            score: { $meta: 'searchScore' },
+                        } }
+                ]).sort({ score: -1 })
                     .toArray();
                 return result;
             }
@@ -93,17 +117,36 @@ class AdvertService extends genericService_1.GenericService {
             }
         });
     }
-    getAdvertWithUser() {
+    getAdvertWithUser(search) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const result = yield this.db.collection(this.collection[0]).aggregate([
-                    { $match: { visible: true } },
                     { $lookup: {
                             from: "users",
                             localField: "userId",
                             foreignField: "_id",
-                            as: "user"
-                        } },
+                            as: "user",
+                            pipeline: [
+                                { $search: {
+                                        index: this.advertIndex,
+                                        compound: {
+                                            must: [{
+                                                    text: {
+                                                        query: search,
+                                                        path: ['title', 'author'],
+                                                        fuzzy: {},
+                                                    }
+                                                }, {
+                                                    equals: {
+                                                        value: true,
+                                                        path: 'visible'
+                                                    }
+                                                }]
+                                        }
+                                    } },
+                            ]
+                        }
+                    },
                     { $addFields: {
                             "user": { $arrayElemAt: ["$user", 0] }
                         } },

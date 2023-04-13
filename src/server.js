@@ -47,9 +47,10 @@ const dotenv = __importStar(require("dotenv"));
 const tokenService_1 = require("./service/tokenService");
 const advertService_1 = require("./service/advertService");
 const advertController_1 = require("./controller/advertController");
+const stringIndexAdvert_1 = require("./service/stringIndexAdvert");
+dotenv.config();
 class Server {
     constructor() {
-        dotenv.config();
         this.app = (0, express_1.default)();
         this.app.use(require('body-parser').json());
         this.app.use((0, cors_1.default)());
@@ -70,6 +71,13 @@ class Server {
                 log_file.write(`[${new Date()}] ${util_1.default.format(d) + '\n'}`);
             }
         };
+        this.setIndex().then();
+    }
+    setIndex() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const stringIndex = new stringIndexAdvert_1.StringIndexAdvert();
+            yield stringIndex.setSearchIndex();
+        });
     }
     setControllers() {
         const userController = new userController_1.UserController(new userService_1.UserService(), new tokenService_1.TokenService());

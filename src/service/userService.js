@@ -53,9 +53,9 @@ class UserService extends genericService_1.GenericService {
             dotenv.config();
             const instance = dbConnection_1.DBConnection.getInstance();
             this.client = yield instance.getDbClient();
-            this.db = this.client.db(process.env.DB_NAME);
-            this.collection.push(process.env.USER_COLLECTION);
-            this.collection.push(process.env.ADVERT_COLLECTION);
+            this.db = this.client.db(process.env.MONGO_DB_NAME);
+            this.collection.push(process.env.MONGO_USER_COLLECTION);
+            this.collection.push(process.env.MONGO_ADVERT_COLLECTION);
             this.salt_rounds = process.env.SALT_ROUNDS != null ? parseInt(process.env.SALT_ROUNDS) : 10;
         });
     }
@@ -63,16 +63,19 @@ class UserService extends genericService_1.GenericService {
         return __awaiter(this, void 0, void 0, function* () {
             user.password = yield this.hashPassword(user.password);
             try {
-                let userExists = yield this.db.collection(this.collection[0]).findOne({ email: user.email });
-                if (userExists != null)
-                    return { error: "User with same Email Address already exists." };
                 const new_user = yield this.db.collection(this.collection[0]).insertOne(user);
                 if (!new_user.acknowledged)
                     return { error: "Database dose not response." };
                 return { userId: new_user.insertedId.toString() };
             }
-            catch (_a) {
-                return { error: "Database dose not response." };
+            catch (e) {
+                if (e instanceof mongodb_1.MongoServerError) {
+                    return { error: "User with same Email Address already exists." };
+                }
+                else {
+                    console.log(e);
+                    return { error: "Database dose not response." };
+                }
             }
         });
     }

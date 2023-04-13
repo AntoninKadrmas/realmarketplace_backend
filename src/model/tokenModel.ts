@@ -1,4 +1,5 @@
 import { ObjectId } from "mongodb"
+import { UserModel } from "./userModel"
 
 export class TokenModel{
     _id?:string
@@ -7,5 +8,5 @@ export class TokenModel{
 }
 export class TokenExistsModel{
     valid!:boolean
-    token?:TokenModel
+    user?:UserModel
 }

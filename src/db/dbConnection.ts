@@ -7,7 +7,7 @@ export class DBConnection{
     private uri:any="";
     constructor(){
         dotenv.config();
-        this.uri = process.env.DB_CONNECTION
+        this.uri = process.env.MONGO_DB_CONNECTION
         this.mongoClient = MongoClient.connect(this.uri)
     }
     public async getDbClient():Promise<MongoClient>{
