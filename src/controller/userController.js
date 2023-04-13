@@ -22,15 +22,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -50,7 +41,7 @@ class UserController {
         this.tokenService = tokenService;
         this.path = '/user';
         this.router = express_1.default.Router();
-        this.registerUser = (req, res) => __awaiter(this, void 0, void 0, function* () {
+        this.registerUser = async (req, res) => {
             let user;
             try {
                 if (req.body == null) {
@@ -59,10 +50,10 @@ class UserController {
                 else {
                     user = req.body;
                     user.createdIn = new Date();
-                    const createUserResponse = yield this.userService.createNewUser(user);
+                    const createUserResponse = await this.userService.createNewUser(user);
                     if (createUserResponse.hasOwnProperty("userId")) {
                         const userIds = createUserResponse;
-                        const token = yield this.tokenService.createToken(new mongodb_1.ObjectId(userIds.userId));
+                        const token = await this.tokenService.createToken(new mongodb_1.ObjectId(userIds.userId));
                         if (token.hasOwnProperty("error"))
                             res.status(400).send(token);
                         else
@@ -76,8 +67,8 @@ class UserController {
                 console.log(e);
                 res.status(400).send({ error: "Body does not contains correct user model." });
             }
-        });
-        this.userLogin = (req, res) => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.userLogin = async (req, res) => {
             try {
                 let loadCredential = req.headers.authorization;
                 if (loadCredential == null) {
@@ -87,12 +78,12 @@ class UserController {
                     const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString();
                     const name = credentials.substring(0, credentials.indexOf(':'));
                     const password = credentials.substring(credentials.indexOf(':') + 1, credentials.length);
-                    const userResponse = yield this.userService.getUserDataByEmail(name, password);
+                    const userResponse = await this.userService.getUserDataByEmail(name, password);
                     if (userResponse.hasOwnProperty("error"))
                         res.status(400).send(userResponse);
                     else {
                         const tempUserResponse = userResponse;
-                        const token = yield this.tokenService.createToken(new mongodb_1.ObjectId(tempUserResponse._id));
+                        const token = await this.tokenService.createToken(new mongodb_1.ObjectId(tempUserResponse._id));
                         console.log(`token: ${token}`);
                         if (token.hasOwnProperty("error"))
                             res.status(400).send(token);
@@ -105,12 +96,12 @@ class UserController {
                 console.log(e);
                 res.status(400).send({ error: "Server error." });
             }
-        });
-        this.getUserById = (req, res) => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.getUserById = async (req, res) => {
             try {
                 const user = JSON.parse(req.query.user);
                 const userId = new mongodb_1.ObjectId(user._id.toString());
-                const response = yield this.userService.getUserDataById(userId);
+                const response = await this.userService.getUserDataById(userId);
                 if (response.hasOwnProperty("error"))
                     res.status(400).send(response);
                 else
@@ -120,8 +111,8 @@ class UserController {
                 console.log(e);
                 res.status(400).send({ error: "Some problem on the server." });
             }
-        });
-        this.userProfileImage = (req, res) => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.userProfileImage = async (req, res) => {
             try {
                 const folder = process.env.IMAGE_PROFILE;
                 if (req.body == null)
@@ -141,7 +132,7 @@ class UserController {
                             res.status(400).send("Error when saving image.");
                         else {
                             const imageUrl = `/${file.filename}`;
-                            const response = yield this.userService.updateUserImage(userId, imageUrl);
+                            const response = await this.userService.updateUserImage(userId, imageUrl);
                             if (response.hasOwnProperty("error")) {
                                 this.deleteFiles([imageUrl]);
                                 res.status(400).send(response);
@@ -158,8 +149,8 @@ class UserController {
                 console.log(e);
                 res.status(400).send();
             }
-        });
-        this.userUpdatePassword = (req, res) => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.userUpdatePassword = async (req, res) => {
             try {
                 const user = JSON.parse(req.query.user);
                 let loadCredential = req.headers.authorization;
@@ -170,7 +161,7 @@ class UserController {
                     const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString();
                     const passwordOld = credentials.substring(0, credentials.indexOf(':'));
                     const passwordNew = credentials.substring(credentials.indexOf(':') + 1, credentials.length);
-                    const response = yield this.userService.updateUserPassword(user, passwordOld, passwordNew);
+                    const response = await this.userService.updateUserPassword(user, passwordOld, passwordNew);
                     if (response.hasOwnProperty("error"))
                         res.status(400).send(response);
                     else
@@ -181,8 +172,8 @@ class UserController {
                 console.log(e);
                 res.status(400).send({ error: "Server error." });
             }
-        });
-        this.userUpdate = (req, res) => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.userUpdate = async (req, res) => {
             try {
                 const user = JSON.parse(req.query.user);
                 const userId = new mongodb_1.ObjectId(user._id.toString());
@@ -190,7 +181,7 @@ class UserController {
                     res.status(400).send({ error: "Body does not contains user model." });
                 else {
                     const user = req.body;
-                    const response = yield this.userService.updateUser(userId, user);
+                    const response = await this.userService.updateUser(userId, user);
                     if (response.hasOwnProperty("error"))
                         res.status(400).send(response);
                     else
@@ -201,8 +192,8 @@ class UserController {
                 console.log(e);
                 res.status(400).send({ error: "Server error." });
             }
-        });
-        this.userDelete = (req, res) => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.userDelete = async (req, res) => {
             try {
                 const user = JSON.parse(req.query.user);
                 const userId = new mongodb_1.ObjectId(user._id.toString());
@@ -213,15 +204,15 @@ class UserController {
                 else {
                     const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString();
                     const password = credentials.substring(0, credentials.indexOf(':'));
-                    const response = yield this.userService.deleteUser(user, password);
+                    const response = await this.userService.deleteUser(user, password);
                     if (response.hasOwnProperty("error"))
                         res.status(400).send(response);
                     else {
                         this.deleteFiles([user.mainImageUrl]);
-                        const deleteUrls = yield this.userService.deleteUserAdverts(userId);
+                        const deleteUrls = await this.userService.deleteUserAdverts(userId);
                         if (!response.hasOwnProperty("error"))
                             this.deleteFiles(deleteUrls);
-                        yield this.tokenService.deleteToken(userId);
+                        await this.tokenService.deleteToken(userId);
                         res.status(200).send(response);
                     }
                 }
@@ -230,7 +221,7 @@ class UserController {
                 console.log(e);
                 res.status(400).send({ error: "Server error." });
             }
-        });
+        };
         this.initRouter();
     }
     initRouter() {

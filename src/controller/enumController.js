@@ -1,13 +1,4 @@
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -24,18 +15,18 @@ class EnumController {
         this.enumPriceOptionList = [];
         this.enumConditionOptionList = [];
         this.enumGenreOptionList = [];
-        this.getBookCondition = (req, res) => __awaiter(this, void 0, void 0, function* () {
+        this.getBookCondition = async (req, res) => {
             res.set("Cache-Control", "max-age=3600");
             res.status(200).send(this.enumConditionOptionList);
-        });
-        this.getGenre = (req, res) => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.getGenre = async (req, res) => {
             res.set("Cache-Control", "max-age=1000");
             res.status(200).send(this.enumGenreOptionList);
-        });
-        this.getPriceOption = (req, res) => __awaiter(this, void 0, void 0, function* () {
+        };
+        this.getPriceOption = async (req, res) => {
             res.set("Cache-Control", "max-age=3600");
             res.status(200).send(this.enumPriceOptionList);
-        });
+        };
         this.initRouter();
         const genreFictionEnum = Object.entries(genreEnum_1.GenreFictionEnum).map(([key, value]) => ({ key, value }));
         const genreNonFictionEnum = Object.entries(genreEnum_1.GenreNonFictionEnum).map(([key, value]) => ({ key, value }));

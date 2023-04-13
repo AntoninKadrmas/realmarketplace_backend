@@ -22,15 +22,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StringIndexAdvert = void 0;
 const urllib_1 = require("urllib");
@@ -50,35 +41,31 @@ class StringIndexAdvert {
         this.collection = process.env.MONGO_ADVERT_COLLECTION;
         this.indexName = process.env.MONGO_SEARCH_INDEX_ADVERT_NAME !== undefined ? process.env.MONGO_SEARCH_INDEX_ADVERT_NAME.toString() : '';
     }
-    existsSearchIndex(indexName) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const allSetINdexes = yield (0, urllib_1.request)(`${this.searchIndexUrl}/${this.db}/${this.collection}`, {
+    async existsSearchIndex(indexName) {
+        const allSetINdexes = await (0, urllib_1.request)(`${this.searchIndexUrl}/${this.db}/${this.collection}`, {
+            dataType: 'json',
+            contentType: "application/json",
+            method: 'GET',
+            digestAuth: this.auth
+        });
+        return !(allSetINdexes.data.find(x => x.name == indexName));
+    }
+    async setSearchIndex() {
+        if (await this.existsSearchIndex(this.indexName))
+            await (0, urllib_1.request)(this.searchIndexUrl, {
+                data: {
+                    database: this.db,
+                    collectionName: this.collection,
+                    name: this.indexName,
+                    mappings: {
+                        dynamic: true
+                    }
+                },
                 dataType: 'json',
                 contentType: "application/json",
-                method: 'GET',
+                method: 'POST',
                 digestAuth: this.auth
             });
-            return !(allSetINdexes.data.find(x => x.name == indexName));
-        });
-    }
-    setSearchIndex() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (yield this.existsSearchIndex(this.indexName))
-                yield (0, urllib_1.request)(this.searchIndexUrl, {
-                    data: {
-                        database: this.db,
-                        collectionName: this.collection,
-                        name: this.indexName,
-                        mappings: {
-                            dynamic: true
-                        }
-                    },
-                    dataType: 'json',
-                    contentType: "application/json",
-                    method: 'POST',
-                    digestAuth: this.auth
-                });
-        });
     }
 }
 exports.StringIndexAdvert = StringIndexAdvert;
