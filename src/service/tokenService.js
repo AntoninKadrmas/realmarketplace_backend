@@ -96,9 +96,7 @@ class TokenService extends genericService_1.GenericService {
     tokenExists(tokenId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                console.log(tokenId);
                 const token = yield this.db.collection(this.collection[0]).findOne({ _id: tokenId });
-                console.log(token);
                 const valid = yield this.tokenIsValid(token);
                 if (valid)
                     return {
@@ -115,6 +113,23 @@ class TokenService extends genericService_1.GenericService {
                 return {
                     valid: false,
                 };
+            }
+        });
+    }
+    deleteToken(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const result = yield this.db.collection(this.collection[0]).deleteMany({ userId: userId });
+                if (result.acknowledged && result.deletedCount == 1)
+                    return { success: "Advert successfully deleted." };
+                else if (result.acknowledged && result.deletedCount == 0)
+                    return { error: "Can't delete foreign advert." };
+                else
+                    return { error: "There is some problem with database." };
+            }
+            catch (e) {
+                console.log(e);
+                return { error: "Database dose not response." };
             }
         });
     }

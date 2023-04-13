@@ -50,6 +50,8 @@ class AdvertService extends genericService_1.GenericService {
             this.collection.push(process.env.FAVORITE_COLLECTION);
             this.collection.push(process.env.USER_COLLECTION);
             this.db = this.client.db(process.env.DBName);
+            yield this.db.collection(this.collection[2]).createIndex({ email: 'text' }, { unique: true });
+            yield this.db.collection(this.collection[0]).createIndex({ title: 'text', author: 'text' });
         });
     }
     createAdvert(advert) {
@@ -67,10 +69,22 @@ class AdvertService extends genericService_1.GenericService {
             }
         });
     }
-    getAdvertWithOutUser() {
+    getAdvertWithOutUser(search) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const result = yield this.db.collection(this.collection[0]).find({ visible: true }).toArray();
+                const result = yield this.db.collection(this.collection[0]).find({
+                    visible: true,
+                    $text: {
+                        $search: search,
+                        $caseSensitive: false,
+                        $diacriticSensitive: false
+                    }
+                }).project({
+                    score: { $meta: 'textScore' }
+                }).sort({
+                    score: { $meta: 'textScore' }
+                })
+                    .toArray();
                 return result;
             }
             catch (e) {
@@ -218,11 +232,28 @@ class AdvertService extends genericService_1.GenericService {
     deleteFavoriteAdvertId(userId, advertId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const result = yield this.db.collection(this.collection[1]).updateOne({ 'userId': userId }, { $pull: { 'advertId': advertId } }, { upsert: true });
+                const result = yield this.db.collection(this.collection[1]).updateOne({ 'userId': userId }, { $pull: { 'advertId': advertId } });
                 if (result.acknowledged)
                     return { success: "Advert successfully removed from favorite collection" };
                 else
                     return { error: "There is some problem with favorite advert." };
+            }
+            catch (e) {
+                console.log(e);
+                return { error: "Database dose not response." };
+            }
+        });
+    }
+    deleteFavoriteAdvertWhole(userId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const result = yield this.db.collection(this.collection[1]).deleteMany({ 'userId': userId });
+                if (result.acknowledged && result.deletedCount == 1)
+                    return { success: "Favorite object successfully deleted." };
+                else if (result.acknowledged && result.deletedCount == 0)
+                    return { error: "Can't delete foreign advert." };
+                else
+                    return { error: "There is some problem with database." };
             }
             catch (e) {
                 console.log(e);

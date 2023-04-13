@@ -103,7 +103,7 @@ class UserController {
             }
             catch (e) {
                 console.log(e);
-                res.status(400).send({ error: "Body does not contains correct user login model." });
+                res.status(400).send({ error: "Server error." });
             }
         });
         this.getUserById = (req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -128,9 +128,8 @@ class UserController {
                 if (req.body == null)
                     res.status(400).send({ error: "Body does not contains advert information's" });
                 else {
-                    const oldDirUrl = __dirname.split('src')[0] + folder + req.body.oldUrl;
-                    if (req.body.oldUrl != null && req.body.oldUrl != "" && fs_1.default.existsSync(oldDirUrl))
-                        fs_1.default.unlinkSync(oldDirUrl);
+                    if (req.body.oldUrl != null && req.body.oldUrl != "")
+                        this.deleteFiles([req.body.oldUrl]);
                     const userId = new mongodb_1.ObjectId((_b = req.query.token) === null || _b === void 0 ? void 0 : _b.toString());
                     const file = req.file;
                     const dirUrl = __dirname.split('src')[0] + `${folder}/` + file.filename;
@@ -144,7 +143,7 @@ class UserController {
                             const imageUrl = `/${file.filename}`;
                             const response = yield this.userService.updateUserImage(userId, imageUrl);
                             if (response.hasOwnProperty("error")) {
-                                fs_1.default.unlinkSync(__dirname.split('src')[0] + folder + imageUrl);
+                                this.deleteFiles([imageUrl]);
                                 res.status(400).send(response);
                             }
                             else {
@@ -181,7 +180,7 @@ class UserController {
             }
             catch (e) {
                 console.log(e);
-                res.status(400).send({ error: "Body does not contains correct user login model." });
+                res.status(400).send({ error: "Server error." });
             }
         });
         this.userUpdate = (req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -201,7 +200,7 @@ class UserController {
             }
             catch (e) {
                 console.log(e);
-                res.status(400).send({ error: "Body does not contains correct user login model." });
+                res.status(400).send({ error: "Server error." });
             }
         });
         this.userDelete = (req, res) => __awaiter(this, void 0, void 0, function* () {
@@ -221,17 +220,18 @@ class UserController {
                         res.status(400).send(response);
                     else {
                         const success = response;
-                        const oldDirUrl = __dirname.split('src')[0] + folder + success.user.mainImageUrl;
-                        if (fs_1.default.existsSync(oldDirUrl))
-                            fs_1.default.unlinkSync(oldDirUrl);
-                        yield this.userService.deleteUserAdverts(userId);
-                        res.status(200).send(success.success);
+                        this.deleteFiles([success.user.mainImageUrl]);
+                        const deleteUrls = yield this.userService.deleteUserAdverts(userId);
+                        if (!response.hasOwnProperty("error"))
+                            this.deleteFiles(deleteUrls);
+                        yield this.tokenService.deleteToken(userId);
+                        res.status(200).send({ success: success.success });
                     }
                 }
             }
             catch (e) {
                 console.log(e);
-                res.status(400).send({ error: "Body does not contains correct user login model." });
+                res.status(400).send({ error: "Server error." });
             }
         });
         this.initRouter();
@@ -246,6 +246,17 @@ class UserController {
         this.router.delete('/', userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.userDelete);
         this.router.post('/image', userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, upload_public.single('uploaded_file'), this.userProfileImage);
         this.router.use(express_1.default.static(path_1.default.join(__dirname.split('src')[0], process.env.IMAGE_PROFILE)));
+    }
+    deleteFiles(imagesUrls) {
+        const folder = process.env.IMAGE_PROFILE;
+        for (var image of imagesUrls) {
+            const oldDirUrl = __dirname.split('src')[0] + folder + image;
+            console.log(`${oldDirUrl} ---- ${fs_1.default.existsSync(oldDirUrl)}`);
+            if (fs_1.default.existsSync(oldDirUrl))
+                fs_1.default.unlink(oldDirUrl, (err) => {
+                    console.log(err);
+                });
+        }
     }
 }
 exports.UserController = UserController;

@@ -17,6 +17,8 @@ export class AdvertService extends GenericService{
         this.collection.push(process.env.FAVORITE_COLLECTION)    
         this.collection.push(process.env.USER_COLLECTION)    
         this.db = this.client.db(process.env.DBName)
+        await this.db.collection(this.collection[2]).createIndex({email:'text'},{ unique: true })
+        await this.db.collection(this.collection[0]).createIndex({title:'text',author:'text'})
     }
     async createAdvert(advert:AdvertModel):Promise<{success:string,_id:string}|{error:string}>{
         try{
@@ -28,9 +30,21 @@ export class AdvertService extends GenericService{
             return {error:"Database dose not response."}
         }
     }
-    async getAdvertWithOutUser():Promise<AdvertModel[]|{error:string}>{
+    async getAdvertWithOutUser(search:String):Promise<AdvertModel[]|{error:string}>{
         try{
-            const result = await this.db.collection(this.collection[0]).find({visible:true}).toArray();
+            const result = await this.db.collection(this.collection[0]).find({
+                visible:true,
+                $text:{
+                    $search:search,
+                    $caseSensitive:false,
+                    $diacriticSensitive:false
+                }
+            }).project({
+                score:{$meta:'textScore'}
+            }).sort({
+                score:{$meta:'textScore'}
+            })
+            .toArray();
             return result
         }catch(e){
             console.log(e)

@@ -53,9 +53,22 @@ class Server {
         this.app = (0, express_1.default)();
         this.app.use(require('body-parser').json());
         this.app.use((0, cors_1.default)());
-        var log_file = fs_1.default.createWriteStream(__dirname + '/debug.log', { flags: 'a' });
+        var log_file;
         console.log = function (d) {
-            log_file.write(`[${new Date()}] ${util_1.default.format(d) + '\n'}`);
+            const actualDate = new Date();
+            const date = `${actualDate.getFullYear()}_${actualDate.getMonth()}_${actualDate.getDate()}`;
+            const path = `${__dirname}/debug/${date}.log`;
+            if (fs_1.default.existsSync(path)) {
+                if (!log_file)
+                    log_file = fs_1.default.createWriteStream(path, { flags: 'a' });
+                log_file.write(`[${new Date()}] ${util_1.default.format(d) + '\n'}`);
+            }
+            else {
+                if (!fs_1.default.existsSync(`${__dirname}/debug`))
+                    fs_1.default.mkdirSync(`${__dirname}/debug`);
+                log_file = fs_1.default.createWriteStream(path, { flags: 'a' });
+                log_file.write(`[${new Date()}] ${util_1.default.format(d) + '\n'}`);
+            }
         };
     }
     setControllers() {

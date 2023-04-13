@@ -29,7 +29,6 @@ export class AdvertController implements GenericController{
         this.router.post("/favorite",userAuthMiddlewareStrict,this.addFavoriteAdvert)
         this.router.delete("/favorite",userAuthMiddlewareStrict,this.deleteFavoriteAdvert)
         this.router.put("/visible",userAuthMiddlewareStrict,this.updateAdvertVisibility)
-
         this.router.use(express.static(path.join(__dirname.split('src')[0],process.env.IMAGE_PUBLIC!!)))
     }
     createAdvert: RequestHandler = async (req, res) => {
@@ -120,13 +119,6 @@ export class AdvertController implements GenericController{
             res.status(400).send()
         }
     }
-    private deleteFiles(imagesUrls:string[]){
-        const folder = process.env.IMAGE_PUBLIC!!
-        for(var image of imagesUrls){
-            const oldDirUrl=__dirname.split('src')[0]+folder+image
-            if(fs.existsSync(oldDirUrl)) fs.unlinkSync(oldDirUrl)
-        }
-    }
     deleteAdvert: RequestHandler = async (req, res) => {
         try{
             if(req.query.advertId==null)res.status(400).send({error:"Missing query params."})
@@ -151,9 +143,9 @@ export class AdvertController implements GenericController{
     getAdvert: RequestHandler = async (req, res) => {
         try{
             const userId = req.query.token?.toString()
-            console.log(userId)
             if(userId==""||userId==null){
-                const response:AdvertModel[]|{error:string} = await this.advertService.getAdvertWithOutUser()
+                const search = req.query.search as string
+                const response:AdvertModel[]|{error:string} = await this.advertService.getAdvertWithOutUser(search)
                 if(response.hasOwnProperty("error"))res.status(400).send(response)
                 else res.status(200).send(response)
             }
@@ -212,6 +204,7 @@ export class AdvertController implements GenericController{
     getUserAdverts: RequestHandler = async (req, res) => {
         try{
             if(req.get("userEmail")!=null&&req.get("createdIn")!=null){
+
                 const userEmail = req.get("userEmail")!
                 const createdIn = req.get("createdIn")!
                 const adverts = await this.advertService.getAdvertByUserEmailTime(userEmail,createdIn)
@@ -242,6 +235,15 @@ export class AdvertController implements GenericController{
         }catch(e){
             console.log(e)
             res.status(400).send()
+        }
+    }
+    private deleteFiles(imagesUrls:string[]){
+        const folder = process.env.IMAGE_PUBLIC!!
+        for(var image of imagesUrls){
+            const oldDirUrl=__dirname.split('src')[0]+folder+image
+            if(fs.existsSync(oldDirUrl)) fs.unlink(oldDirUrl,(err)=>{
+                console.log(err)
+            })
         }
     }
 }

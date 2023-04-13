@@ -18,7 +18,7 @@ function userAuthMiddlewareStrict(request, response, next) {
         try {
             var validToken = /^[a-f\d]{24}$/g;
             const token = request.get("Authentication");
-            if (validToken.test(token.toString()))
+            if (!validToken.test(token))
                 throw Error("Incorrect token.");
             const tokenService = yield tokenService_1.TokenService.getInstance();
             const tokenExists = yield tokenService.tokenExists(new mongodb_1.ObjectId(token));

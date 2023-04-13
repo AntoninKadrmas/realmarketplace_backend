@@ -200,7 +200,7 @@ class UserService extends genericService_1.GenericService {
             try {
                 const verification = yield this.verifyUser(userId, password);
                 if (verification.number == 2) {
-                    const result = yield this.db.collection(this.collection[0]).delete({ _id: userId });
+                    const result = yield this.db.collection(this.collection[0]).deleteOne({ _id: userId });
                     if (result.acknowledged && result.deletedCount == 1)
                         return { success: "User was successfully deleted.", user: verification.user };
                     else if (result.acknowledged && result.deletedCount == 0)
@@ -222,11 +222,23 @@ class UserService extends genericService_1.GenericService {
     deleteUserAdverts(userId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const ids = yield this.db.collection(this.collection[1]).find({ userId: userId }, { _id: 1 });
+                let deleteImageUrls = [];
+                const ids = yield this.db.collection(this.collection[1]).aggregate([
+                    { $match: { 'userId': userId } },
+                    { $project: {
+                            _id: 1,
+                            imagesUrls: 1
+                        }
+                    }
+                ]).toArray();
+                console.log(ids);
                 for (let id of ids) {
-                    const advertId = new mongodb_1.ObjectId(id.toString());
+                    id.imagesUrls.forEach(url => deleteImageUrls.push(url));
+                    const advertId = new mongodb_1.ObjectId(id._id.toString());
                     yield this.advertService.deleteAdvert(advertId, userId);
                 }
+                yield this.advertService.deleteFavoriteAdvertWhole(userId);
+                return deleteImageUrls;
             }
             catch (e) {
                 console.log(e);
