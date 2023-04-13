@@ -131,7 +131,7 @@ class UserService extends genericService_1.GenericService {
         try {
             if (await this.comparePassword(oldPassword, user.password)) {
                 const password = await this.hashPassword(newPassword);
-                const result = await this.db.collection(this.collection[0]).updateOne({ _id: new Object(user._id?.toString()) }, {
+                const result = await this.db.collection(this.collection[0]).updateOne({ _id: new Object(user._id) }, {
                     $set: {
                         password: password
                     }

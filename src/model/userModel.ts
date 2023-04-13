@@ -1,5 +1,7 @@
+import { ObjectId } from "mongodb";
+
 export class UserModel{
-    _id?:string;
+    _id?:ObjectId;
     firstName!:string;
     lastName!:string;
     password?:string;

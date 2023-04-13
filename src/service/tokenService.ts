@@ -32,7 +32,6 @@ export class TokenService extends GenericService{
                 userId: userId,
                 expirationTime: this.getActualValidTime()
             }
-            await this.db.collection(this.collection[0]).deleteMany({userId: userId})
             const newTokenOrFind = await this.db.collection(this.collection[0]).insertOne(token)
             if(!newTokenOrFind.acknowledged)return "Can't create auth token."
             else return newTokenOrFind.insertedId
@@ -59,7 +58,7 @@ export class TokenService extends GenericService{
     }
     async tokenExists(tokenId:ObjectId):Promise<TokenExistsModel>{
         try{
-            const token:{user:UserModel,expirationTime:number} =  await this.db.collection(this.collection[0]).aggregate([
+            const token:{user:UserModel,expirationTime:number}[] =  await this.db.collection(this.collection[0]).aggregate([
                 {$match:{_id:tokenId}},
                 {
                 $lookup: {
@@ -74,18 +73,19 @@ export class TokenService extends GenericService{
                 {
                   $project:{
                     _id:0,
-                    user:1
+                    user:1,
+                    expirationTime:1
                   }
                 }
               ]).toArray()
             const valid = await this.tokenIsValid({
-                _id:tokenId.toString(),
-                userId:new ObjectId(token.user._id),
-                expirationTime:token.expirationTime
+                _id:tokenId,
+                userId:token[0].user._id!,
+                expirationTime:token[0].expirationTime
                 }) 
             if(valid)return {
                 valid: valid,
-                user:token.user
+                user:token[0].user
             }
             else return {
                 valid: valid,
@@ -111,9 +111,11 @@ export class TokenService extends GenericService{
         }
     }
     private async tokenIsValid(token:TokenModel):Promise<boolean>{ 
+        console.log(token)
         const valid = token.expirationTime>=(new Date().getTime())
+        console.log(valid)
         try{
-            if(!valid) await this.db.collection(this.collection[0]).deleteOne({_id:new ObjectId(token._id)})
+            if(!valid) await this.db.collection(this.collection[0]).deleteOne({_id:token._id})
         }
         catch(e){            
             console.log(e)

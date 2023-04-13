@@ -54,7 +54,6 @@ class TokenService extends genericService_1.GenericService {
                 userId: userId,
                 expirationTime: this.getActualValidTime()
             };
-            await this.db.collection(this.collection[0]).deleteMany({ userId: userId });
             const newTokenOrFind = await this.db.collection(this.collection[0]).insertOne(token);
             if (!newTokenOrFind.acknowledged)
                 return "Can't create auth token.";
@@ -93,19 +92,20 @@ class TokenService extends genericService_1.GenericService {
                 {
                     $project: {
                         _id: 0,
-                        user: 1
+                        user: 1,
+                        expirationTime: 1
                     }
                 }
             ]).toArray();
             const valid = await this.tokenIsValid({
-                _id: tokenId.toString(),
-                userId: new mongodb_1.ObjectId(token.user._id),
-                expirationTime: token.expirationTime
+                _id: tokenId,
+                userId: token[0].user._id,
+                expirationTime: token[0].expirationTime
             });
             if (valid)
                 return {
                     valid: valid,
-                    user: token.user
+                    user: token[0].user
                 };
             else
                 return {
@@ -135,10 +135,12 @@ class TokenService extends genericService_1.GenericService {
         }
     }
     async tokenIsValid(token) {
+        console.log(token);
         const valid = token.expirationTime >= (new Date().getTime());
+        console.log(valid);
         try {
             if (!valid)
-                await this.db.collection(this.collection[0]).deleteOne({ _id: new mongodb_1.ObjectId(token._id) });
+                await this.db.collection(this.collection[0]).deleteOne({ _id: token._id });
         }
         catch (e) {
             console.log(e);
