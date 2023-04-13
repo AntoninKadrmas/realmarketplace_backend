@@ -11,9 +11,9 @@ export class StringIndexAdvert{
     private auth  = `${this.publicKey}:${this.privateKey}`
     private clusterApiUrl = `${this.baseUrl}/groups/${this.projectId}/clusters/${this.clusterName}`
     private searchIndexUrl = `${this.clusterApiUrl}/fts/indexes`
-    private db=process.env.MONGO_DB_NAME!
-    private collection=process.env.MONGO_ADVERT_COLLECTION!
-    private indexName=process.env.MONGO_SEARCH_INDEX_ADVERT_NAME!
+    private db=process.env.MONGO_DB_NAME
+    private collection=process.env.MONGO_ADVERT_COLLECTION
+    private indexName=process.env.MONGO_SEARCH_INDEX_ADVERT_NAME!== undefined ? process.env.MONGO_SEARCH_INDEX_ADVERT_NAME.toString() : ''
     private async existsSearchIndex(indexName:string):Promise<boolean>{
         const allSetINdexes = await request(
             `${this.searchIndexUrl}/${this.db}/${this.collection}`,{
