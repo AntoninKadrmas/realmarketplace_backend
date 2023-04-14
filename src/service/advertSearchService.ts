@@ -95,7 +95,7 @@ export class AdvertSearchService extends GenericService{
                 score:{ $meta:'searchScore' },
             }}, ]
             const optionsSecond = [
-                { $sort : { score: -1 ,createdIn:-1} },
+                { $sort : { score: -1 ,createdIn:1} },
                 { $facet: {
                     counts:  [{ $count: "count" }],
                     advert:[{$skip:this.pagesize*page},{$limit:this.pagesize}]
@@ -181,7 +181,7 @@ export class AdvertSearchService extends GenericService{
     }
     async getAdvertByUserId(userId:ObjectId):Promise<AdvertModel[]|{error:string}>{
         try{
-            const result = await this.db.collection(this.collection[0]).find({"userId":userId}).sort({"createdIn":-1}).toArray();
+            const result = await this.db.collection(this.collection[0]).find({"userId":userId}).sort({"createdIn":1}).toArray();
             return result
         }catch(e){
             console.log(e)
@@ -221,7 +221,7 @@ export class AdvertSearchService extends GenericService{
                     adverts:{ 
                         $sortArray : {
                             input:"$adverts",
-                            sortBy:{createdIn:-1}
+                            sortBy:{createdIn:1}
                     }}
                   }}
                 ]).toArray();
