@@ -4,7 +4,7 @@ import { LightUser, UserModel } from "../model/userModel";
 import { GenericController } from "./genericController";
 import { TokenService } from "../service/tokenService";
 import * as dotenv from 'dotenv';
-import { MongoServerError, ObjectId } from "mongodb";
+import { ObjectId } from "mongodb";
 import { userAuthMiddlewareStrict } from "../middleware/userAuthMiddlewareStrict";
 import { ImageMiddleWare } from "../middleware/imageMiddleware";
 import path from 'path';

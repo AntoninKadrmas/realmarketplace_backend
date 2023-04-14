@@ -10,6 +10,7 @@ import { TokenService } from './service/tokenService';
 import { AdvertService } from './service/advertService';
 import { AdvertController } from './controller/advertController';
 import { StringIndexAdvert } from './service/stringIndexAdvert';
+import { AdvertSearchService } from './service/advertSearchService';
 dotenv.config();
 
 export class Server{
@@ -42,7 +43,7 @@ export class Server{
     private setControllers(){
         const userController = new UserController(new UserService(),new TokenService())
         const enumControl = new EnumController()
-        const advertController = new AdvertController(new AdvertService())
+        const advertController = new AdvertController(new AdvertService(),new AdvertSearchService())
         this.app.use(userController.path,userController.router);
         this.app.use(enumControl.path,enumControl.router)
         this.app.use(advertController.path,advertController.router)

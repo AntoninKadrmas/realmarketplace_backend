@@ -21,12 +21,15 @@ export class AdvertModel{
     imagesUrls?:string[];
     visible!:boolean;
 }
-export class AdvertModelWithUser extends AdvertModel{
-    user!:LightUser
+export class AdvertWithUserModel extends AdvertModel{
+    user?:LightUser
 }
-
+export class SearchAdvertModel{
+    count!:number[]
+    advert!:AdvertWithUserModel[]  
+}
 export class FavoriteAdvertUser{
-    advert!:AdvertModelWithUser
+    advert!:AdvertWithUserModel
 }
 export class OldImagesUrls{
     url!:string;

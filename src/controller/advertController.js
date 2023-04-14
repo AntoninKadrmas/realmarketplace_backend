@@ -37,8 +37,9 @@ const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
 dotenv.config();
 class AdvertController {
-    constructor(advertService) {
+    constructor(advertService, advertSearchService) {
         this.advertService = advertService;
+        this.advertSearchService = advertSearchService;
         this.path = "/advert";
         this.router = express_1.default.Router();
         this.createAdvert = async (req, res) => {
@@ -167,21 +168,40 @@ class AdvertController {
         };
         this.getAdvert = async (req, res) => {
             try {
-                if (req.query.user == "") {
+                if (this.variableExistsString(req.query.search) && this.variableExistsString(req.query.page)) {
                     const search = req.query.search;
-                    const response = await this.advertService.getAdvertWithOutUser(search);
-                    if (response.hasOwnProperty("error"))
-                        res.status(400).send(response);
-                    else
-                        res.status(200).send(response);
+                    const page = parseInt(req.query.page);
+                    if (req.query.user == undefined) {
+                        const response = await this.advertSearchService.getAdvertSearch(search, page, false);
+                        if (response.hasOwnProperty("error"))
+                            res.status(400).send(response);
+                        else
+                            res.status(200).send(response);
+                    }
+                    else {
+                        const response = await this.advertSearchService.getAdvertSearch(search, page, true);
+                        if (response.hasOwnProperty("error"))
+                            res.status(400).send(response);
+                        else
+                            res.status(200).send(response);
+                    }
                 }
                 else {
-                    const search = req.query.search;
-                    const response = await this.advertService.getAdvertWithUser(search);
-                    if (response.hasOwnProperty("error"))
-                        res.status(400).send(response);
-                    else
-                        res.status(200).send(response);
+                    console.log("--------------thre-----------------");
+                    if (req.query.user == undefined) {
+                        const response = await this.advertSearchService.getAdvertSample(false);
+                        if (response.hasOwnProperty("error"))
+                            res.status(400).send(response);
+                        else
+                            res.status(200).send(response);
+                    }
+                    else {
+                        const response = await this.advertSearchService.getAdvertSample(true);
+                        if (response.hasOwnProperty("error"))
+                            res.status(400).send(response);
+                        else
+                            res.status(200).send(response);
+                    }
                 }
             }
             catch (e) {
@@ -193,7 +213,7 @@ class AdvertController {
             try {
                 const user = JSON.parse(req.query.user);
                 const userId = new mongodb_1.ObjectId(user._id.toString());
-                const response = await this.advertService.getFavoriteAdvertByUserId(userId);
+                const response = await this.advertSearchService.getFavoriteAdvertByUserId(userId);
                 if (response.hasOwnProperty("error"))
                     res.status(400).send(response);
                 else
@@ -249,7 +269,7 @@ class AdvertController {
                 if (req.get("userEmail") != null && req.get("createdIn") != null) {
                     const userEmail = req.get("userEmail");
                     const createdIn = req.get("createdIn");
-                    const adverts = await this.advertService.getAdvertByUserEmailTime(userEmail, createdIn);
+                    const adverts = await this.advertSearchService.getAdvertByUserEmailTime(userEmail, createdIn);
                     if (adverts.hasOwnProperty("error"))
                         res.status(400).send(adverts);
                     else
@@ -258,7 +278,7 @@ class AdvertController {
                 else {
                     const user = JSON.parse(req.query.user);
                     const userId = new mongodb_1.ObjectId(user._id.toString());
-                    const adverts = await this.advertService.getAdvertByUserId(userId);
+                    const adverts = await this.advertSearchService.getAdvertByUserId(userId);
                     if (adverts.hasOwnProperty("error"))
                         res.status(400).send(adverts);
                     else
@@ -315,6 +335,11 @@ class AdvertController {
                     console.log(err);
                 });
         }
+    }
+    variableExistsString(value) {
+        return value != null &&
+            value != undefined &&
+            value != "";
     }
 }
 exports.AdvertController = AdvertController;

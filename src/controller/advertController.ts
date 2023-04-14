@@ -1,6 +1,6 @@
 import { userAuthMiddlewareStrict } from "../middleware/userAuthMiddlewareStrict";
 import { userAuthMiddlewareLenient } from "../middleware/userAuthMiddlewareLenient";
-import { AdvertModel, AdvertModelWithUser, OldImagesUrls } from "../model/advertModel";
+import { AdvertModel, AdvertWithUserModel, OldImagesUrls, SearchAdvertModel } from "../model/advertModel";
 import { ImageMiddleWare } from "../middleware/imageMiddleware";
 import { GenericController } from "./genericController";
 import { AdvertService } from "../service/advertService";
@@ -11,12 +11,13 @@ import { Router } from "express";
 import path from 'path';
 import fs from 'fs';
 import { UserModel } from "../model/userModel";
+import { AdvertSearchService } from "../service/advertSearchService";
 dotenv.config();
 
 export class AdvertController implements GenericController{
     path: string="/advert";
     router: Router=express.Router();
-    constructor(private advertService:AdvertService){
+    constructor(private advertService:AdvertService,private advertSearchService:AdvertSearchService){
         this.initRouter()
     }
     initRouter(): void {
@@ -146,17 +147,30 @@ export class AdvertController implements GenericController{
     }
     getAdvert: RequestHandler = async (req, res) => {
         try{
-            if(req.query.user==""){
+            if(this.variableExistsString(req.query.search as string)&&this.variableExistsString(req.query.page as string)){
                 const search = req.query.search as string
-                const response:AdvertModel[]|{error:string} = await this.advertService.getAdvertWithOutUser(search)
-                if(response.hasOwnProperty("error"))res.status(400).send(response)
-                else res.status(200).send(response)
-            }
-            else{                
-                const search = req.query.search as string
-                const response:AdvertModelWithUser[]|{error:string} = await this.advertService.getAdvertWithUser(search)
-                if(response.hasOwnProperty("error"))res.status(400).send(response)
-                else res.status(200).send(response)
+                const page = parseInt(req.query.page as string)
+                if(req.query.user==undefined){
+                    const response:SearchAdvertModel|{error:string} = await this.advertSearchService.getAdvertSearch(search,page,false)
+                    if(response.hasOwnProperty("error"))res.status(400).send(response)
+                    else res.status(200).send(response)
+                }
+                else{                
+                    const response:SearchAdvertModel|{error:string} = await this.advertSearchService.getAdvertSearch(search,page,true)
+                    if(response.hasOwnProperty("error"))res.status(400).send(response)
+                    else res.status(200).send(response)
+                }
+            }else{
+                if(req.query.user==undefined){
+                    const response:AdvertWithUserModel[]|{error:string} = await this.advertSearchService.getAdvertSample(false)
+                    if(response.hasOwnProperty("error"))res.status(400).send(response)
+                    else res.status(200).send(response)
+                }
+                else{                
+                    const response:AdvertWithUserModel[]|{error:string} = await this.advertSearchService.getAdvertSample(true)
+                    if(response.hasOwnProperty("error"))res.status(400).send(response)
+                    else res.status(200).send(response)
+                }
             }
         }catch(e){
             console.log(e)
@@ -167,7 +181,7 @@ export class AdvertController implements GenericController{
         try{
             const user:UserModel = JSON.parse(req.query.user as string)
             const userId=new ObjectId(user._id!.toString())
-            const response = await this.advertService.getFavoriteAdvertByUserId(userId)
+            const response = await this.advertSearchService.getFavoriteAdvertByUserId(userId)
             if(response.hasOwnProperty("error"))res.status(400).send(response)
             else res.status(200).send(response)
         }catch(e){
@@ -212,13 +226,13 @@ export class AdvertController implements GenericController{
             if(req.get("userEmail")!=null&&req.get("createdIn")!=null){
                 const userEmail = req.get("userEmail")!
                 const createdIn = req.get("createdIn")!
-                const adverts = await this.advertService.getAdvertByUserEmailTime(userEmail,createdIn)
+                const adverts = await this.advertSearchService.getAdvertByUserEmailTime(userEmail,createdIn)
                 if(adverts.hasOwnProperty("error"))res.status(400).send(adverts)
                 else res.status(200).send(adverts)
             }else{
                 const user:UserModel = JSON.parse(req.query.user as string)
                 const userId=new ObjectId(user._id!.toString())
-                const adverts = await this.advertService.getAdvertByUserId(userId)
+                const adverts = await this.advertSearchService.getAdvertByUserId(userId)
                 if(adverts.hasOwnProperty("error"))res.status(400).send(adverts)
                 else res.status(200).send(adverts)
             }
@@ -252,5 +266,10 @@ export class AdvertController implements GenericController{
                 console.log(err)
             })
         }
+    }
+    private variableExistsString(value:string):boolean{
+        return value!=null &&
+            value!=undefined &&
+            value!=""
     }
 }
