@@ -63,6 +63,7 @@ export class AdvertController implements GenericController{
                 else {
                     const responseObject = (response as {success:string,_id:string})
                     advert._id=responseObject._id
+                    delete advert.userId
                     res.status(200).send({success:responseObject.success,advert:advert})
                 }
             }
