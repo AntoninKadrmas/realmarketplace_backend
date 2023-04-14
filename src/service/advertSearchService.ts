@@ -132,8 +132,7 @@ export class AdvertSearchService extends GenericService{
                                 "$eq": [ "$$adverts.visible", true ]
                             }
                         }
-                    }
-                    }
+                    }}
                 }, {$lookup:{
                     from: "users",
                     localField:"adverts.userId",
@@ -221,7 +220,7 @@ export class AdvertSearchService extends GenericService{
                     adverts:{ 
                         $sortArray : {
                             input:"$adverts",
-                            sortBy:{createdIn:1}
+                            sortBy:{createdIn:-1}
                     }}
                   }}
                 ]).toArray();
