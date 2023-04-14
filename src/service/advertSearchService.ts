@@ -6,7 +6,7 @@ import { ObjectId } from "mongodb";
 
 export class AdvertSearchService extends GenericService{
     advertIndex:string
-    pagesize=2
+    pagesize=10
     sampleSize=4
     constructor(){
         super()
