@@ -107,7 +107,7 @@ export class AdvertSearchService extends GenericService{
                 }},]
             const result = await this.db.collection(this.collection[0]).aggregate([...optionsFirst,...userOptions,...optionsSecond])
             .toArray();
-            return result
+            return result[0]
         }catch(e){
             console.log(e)
             return {error:"Database dose not response."}
