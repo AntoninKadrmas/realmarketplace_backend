@@ -200,10 +200,6 @@ export class AdvertSearchService extends GenericService{
                   localField:"_id",
                   foreignField:"userId",
                   as:"adverts"}},
-                  { $sortArray : {
-                    input:"adverts",
-                    sortBy:{createdIn:-1}
-                }},
                   {$project: {
                     adverts:{
                       $filter:{
@@ -216,11 +212,18 @@ export class AdvertSearchService extends GenericService{
                     }
                   }},
                   {$project: {
-                    _id:0,
                     adverts:{
                       userId:0
                     }
                   }},
+                  {$project:{
+                    _id:0,
+                    adverts:{ 
+                        $sortArray : {
+                        input:"$adverts",
+                        sortBy:{createdIn:-1}
+                    }}
+                  }}
                 ]).toArray();
             return result[0].adverts
         }catch(e){
