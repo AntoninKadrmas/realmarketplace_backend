@@ -95,7 +95,7 @@ export class AdvertSearchService extends GenericService{
                 score:{ $meta:'searchScore' },
             }}, ]
             const optionsSecond = [
-                { $sort : { score: -1 ,createdIn:1} },
+                { $sort : { score: -1 ,createdIn:-1} },
                 { $facet: {
                     counts:  [{ $count: "count" }],
                     advert:[{$skip:this.pagesize*page},{$limit:this.pagesize}]
