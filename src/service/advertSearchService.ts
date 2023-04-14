@@ -213,16 +213,11 @@ export class AdvertSearchService extends GenericService{
                   }},
                   {$project: {
                     adverts:{
-                      userId:0
-                    }
-                  }},
-                  {$project:{
-                    _id:0,
-                    adverts:{ 
-                        $sortArray : {
+                      userId:0,
+                      $sortArray : {
                         input:"$adverts",
-                        sortBy:{createdIn:-1}
-                    }}
+                        sortBy:{createdIn:-1}}
+                    }
                   }}
                 ]).toArray();
             return result[0].adverts
