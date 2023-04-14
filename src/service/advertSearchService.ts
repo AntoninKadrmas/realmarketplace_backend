@@ -181,7 +181,7 @@ export class AdvertSearchService extends GenericService{
     }
     async getAdvertByUserId(userId:ObjectId):Promise<AdvertModel[]|{error:string}>{
         try{
-            const result = await this.db.collection(this.collection[0]).find({"userId":userId}).toArray();
+            const result = await this.db.collection(this.collection[0]).find({"userId":userId}).sort({"createdIn":-1}).toArray();
             return result
         }catch(e){
             console.log(e)
@@ -212,12 +212,17 @@ export class AdvertSearchService extends GenericService{
                     }
                   }},
                   {$project: {
+                    _id:0,
                     adverts:{
-                      userId:0,
-                      $sortArray : {
-                        input:"$adverts",
-                        sortBy:{createdIn:-1}}
+                      userId:0
                     }
+                  }},
+                  {$project:{
+                    adverts:{ 
+                        $sortArray : {
+                            input:"$adverts",
+                            sortBy:{createdIn:-1}
+                    }}
                   }}
                 ]).toArray();
             return result[0].adverts
