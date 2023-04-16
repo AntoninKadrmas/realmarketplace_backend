@@ -23,9 +23,9 @@ export async function userAuthMiddlewareStrict(request: express.Request, respons
             else {
                 request.query.user =JSON.stringify(tokenExists.user)
                 await tokenService.updateTokenByTokenId(token!)
+                next()
             }
         }
-        next()
     }catch(e:any){
         console.log(e);
         response.status(401).send({error:"Some error during token handling."})
