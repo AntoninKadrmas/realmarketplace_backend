@@ -11,6 +11,8 @@ import { AdvertService } from './service/advertService';
 import { AdvertController } from './controller/advertController';
 import { StringIndexAdvert } from './service/stringIndexAdvert';
 import { AdvertSearchService } from './service/advertSearchService';
+import mongoSanitize = require('express-mongo-sanitize');
+
 dotenv.config();
 /**
  * Server class take care of server initialization.
@@ -24,6 +26,14 @@ export class Server{
         this.app = express();
         this.app.use(require('body-parser').json())
         this.app.use(cors())
+        this.app.use(
+            mongoSanitize({
+                allowDots: true,
+                onSanitize: ({ req, key }) => {
+                    console.log(`This request[${key}] is sanitized => ${req}`);
+                },
+            }),
+          );
         var log_file:any
         console.log = function(d) {
             const actualDate = new Date()

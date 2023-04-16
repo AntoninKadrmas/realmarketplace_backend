@@ -169,6 +169,7 @@ export class UserController implements GenericController{
             if(loadCredential==null){res.status(400).send("Incorrect request.")}
             else{
                 const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString()
+                console.log(credentials)
                 const passwordOld = credentials.substring(0,credentials.indexOf(':'))
                 const passwordNew = credentials.substring(credentials.indexOf(':')+1,credentials.length)
                 const response:{success:string} | {error:string}= await this.userService.updateUserPassword(user,passwordOld,passwordNew)

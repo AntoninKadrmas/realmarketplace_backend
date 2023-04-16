@@ -22,6 +22,7 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "express-fileupload": "^1.4.0",
+    "express-mongo-sanitize": "^2.2.0",
     "fs": "^0.0.1-security",
     "mongodb": "^4.13.0",
     "morgan": "^1.10.0",
@@ -50,12 +51,12 @@
     "check-coverage": true,
     "all": true,
     "include": [
-        "src/*.ts",
-        "src/*/*.ts"
+      "src/*.ts",
+      "src/*/*.ts"
     ],
     "reporter": [
-        "html"
+      "html"
     ],
     "report-dir": "coverage"
-}
+  }
 }
