@@ -154,7 +154,7 @@ export class TokenService extends GenericService{
      * @private
      */
     private async tokenIsValid(token:TokenModel):Promise<boolean>{ 
-        const valid = token.expirationTime>=(Date.now()/1000)
+        const valid = token.expirationTime>=(Date.now())
         try{
             if(!valid) await this.db.collection(this.collection[0]).deleteOne({_id:token._id})
         }
@@ -170,7 +170,6 @@ export class TokenService extends GenericService{
      * @private
      */
     private getActualValidTime():number{
-        console.log(`${Date.now()/1000+this.expirationTime} ${Date.now()/1000} + ${this.expirationTime}`)
-        return Date.now()/1000+this.expirationTime
+        return Date.now()+this.expirationTime
     }
 }
