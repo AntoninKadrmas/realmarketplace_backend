@@ -14,18 +14,20 @@ export async function userAuthMiddlewareStrict(request: express.Request, respons
         var validToken = /^[a-f\d]{24}$/g
         const token = request.get("Authentication")
         console.log(token+" "+validToken.test(token!))
-        if(!validToken.test(token!))throw new Error("Incorrect token.")
-        const tokenService:TokenService = await TokenService.getInstance()
-        const tokenExists:TokenExistsModel = await tokenService.tokenExists(new ObjectId(token));
-        console.log(tokenExists)
-        if(!tokenExists.valid)throw new Error("Token expired.")
-        else {
-            request.query.user =JSON.stringify(tokenExists.user)
-            await tokenService.updateTokenByTokenId(token!)
+        if(!validToken.test(token!))response.status(401).send({error:"Incorrect token."})
+        else{
+            const tokenService:TokenService = await TokenService.getInstance()
+            const tokenExists:TokenExistsModel = await tokenService.tokenExists(new ObjectId(token));
+            console.log(tokenExists)
+            if(!tokenExists.valid)response.status(401).send({error:"Token expired."})
+            else {
+                request.query.user =JSON.stringify(tokenExists.user)
+                await tokenService.updateTokenByTokenId(token!)
+            }
         }
         next()
     }catch(e:any){
         console.log(e);
-        response.status(401).send({error:e.message})
+        response.status(401).send({error:"Some error during token handling."})
     }
 }
