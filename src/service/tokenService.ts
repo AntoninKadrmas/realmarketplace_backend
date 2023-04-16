@@ -9,6 +9,7 @@ import { UserModel } from "../model/userModel";
  * Extends GenericService class.
  */
 export class TokenService extends GenericService{
+    expirationTime=0
     /**
     * Creates an instance of TokenService.
     * Calls the parent constructor and connects to the database.
@@ -29,6 +30,7 @@ export class TokenService extends GenericService{
         this.client = await instance.getDbClient()                
         this.collection.push(process.env.MONGO_TOKEN_COLLECTION)        
         this.db = this.client.db(process.env.MONGO_DB_NAME)
+        this.expirationTime = !!process.env.TOKEN_EXPIRATION_TIME?parseInt(process.env.TOKEN_EXPIRATION_TIME):1800000
         await this.db.collection(this.collection[0]).createIndex({userId:1},{ unique: true })
     }
     static instance:TokenService
@@ -170,7 +172,7 @@ export class TokenService extends GenericService{
      * @private
      */
     private getActualValidTime():number{
-        const expirationTime:number = !!process.env.TOKEN_EXPIRATION_TIME?parseInt(process.env.TOKEN_EXPIRATION_TIME):1800000
-        return Date.now()/1000+expirationTime
+        console.log(`${Date.now()/1000+this.expirationTime} ${Date.now()/1000} + ${this.expirationTime}`)
+        return Date.now()/1000+this.expirationTime
     }
 }

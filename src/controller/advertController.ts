@@ -275,7 +275,8 @@ export class AdvertController implements GenericController{
     */
     getUserAdverts: RequestHandler = async (req, res) => {
         try{
-            if(req.get("userEmail")!=null&&req.get("createdIn")!=null){
+            if(this.variableExistsString(req.get("userEmail")!)&&
+                this.variableExistsString(req.get("createdIn")!)){
                 const userEmail = req.get("userEmail")!
                 const createdIn = req.get("createdIn")!
                 const adverts = await this.advertSearchService.getAdvertByUserEmailTime(userEmail,createdIn)
