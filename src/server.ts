@@ -12,9 +12,14 @@ import { AdvertController } from './controller/advertController';
 import { StringIndexAdvert } from './service/stringIndexAdvert';
 import { AdvertSearchService } from './service/advertSearchService';
 dotenv.config();
-
+/**
+ * Server class take care of server initialization.
+ */
 export class Server{
     private app:express.Express
+    /**
+     * Set all important modules used in express module and rewrite console lop function so now it work as logger.
+     */
     constructor(){
         this.app = express();
         this.app.use(require('body-parser').json())
@@ -23,23 +28,33 @@ export class Server{
         console.log = function(d) {
             const actualDate = new Date()
             const date =  `${actualDate.getFullYear()}_${actualDate.getMonth()}_${actualDate.getDate()}`
-            const path = `${__dirname}/debug/${date}.log`
+            const folder = `${__dirname.split('src')[0]}debug`
+            const path = `${folder}/${date}.log`
             if(fs.existsSync(path)){
                 if(!log_file) log_file = fs.createWriteStream(path, {flags : 'a'});
                 log_file.write(`[${new Date()}] ${util.format(d) + '\n'}`);
             }
             else {
-                if(!fs.existsSync(`${__dirname}/debug`))fs.mkdirSync(`${__dirname}/debug`)
+
+                if(!fs.existsSync(folder))fs.mkdirSync(`${folder}`)
                 log_file = fs.createWriteStream(path, {flags : 'a'});
                 log_file.write(`[${new Date()}] ${util.format(d) + '\n'}`);
             }
         };
         this.setIndex().then()
     }
-    private async setIndex():Promise<void>{
+    /**
+     * Create search index if it is not already exists.
+     * @private
+     */
+    private async setIndex(){
         const stringIndex = new StringIndexAdvert()
         await stringIndex.setSearchIndex()
     }
+    /**
+     * Set main controllers router and path to app.
+     * @private
+     */
     private setControllers(){
         const userController = new UserController(new UserService(),new TokenService())
         const enumControl = new EnumController()
@@ -48,6 +63,9 @@ export class Server{
         this.app.use(enumControl.path,enumControl.router)
         this.app.use(advertController.path,advertController.router)
     }
+    /**
+     * Start node js backend application on port 3000.
+     */
     async start(){
         this.setControllers()
         this.app.listen(process.env.PORT,() => {    

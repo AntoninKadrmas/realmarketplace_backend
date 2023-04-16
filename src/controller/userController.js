@@ -48,19 +48,29 @@ class UserController {
                     res.status(400).send({ error: "Body does not contains user model." });
                 }
                 else {
-                    user = req.body;
-                    user.createdIn = new Date();
-                    const createUserResponse = await this.userService.createNewUser(user);
-                    if (createUserResponse.hasOwnProperty("userId")) {
-                        const userIds = createUserResponse;
-                        const token = await this.tokenService.createToken(new mongodb_1.ObjectId(userIds.userId));
-                        if (token.hasOwnProperty("error"))
-                            res.status(400).send(token);
+                    let loadCredential = req.headers.authorization;
+                    if (loadCredential == undefined)
+                        res.status(400).send({ error: "Missing credential header." });
+                    else {
+                        const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString();
+                        const email = credentials.substring(0, credentials.indexOf(':'));
+                        const password = credentials.substring(credentials.indexOf(':') + 1, credentials.length);
+                        user = req.body;
+                        user.createdIn = new Date();
+                        user.password = password;
+                        user.email = email;
+                        const createUserResponse = await this.userService.createNewUser(user);
+                        if (createUserResponse.hasOwnProperty("userId")) {
+                            const userIds = createUserResponse;
+                            const token = await this.tokenService.createToken(new mongodb_1.ObjectId(userIds.userId));
+                            if (token.hasOwnProperty("error"))
+                                res.status(400).send(token);
+                            else
+                                res.status(200).send({ "token": token.toString() });
+                        }
                         else
-                            res.status(200).send({ "token": token.toString() });
+                            res.status(400).send(createUserResponse);
                     }
-                    else
-                        res.status(400).send(createUserResponse);
                 }
             }
             catch (e) {
@@ -76,9 +86,9 @@ class UserController {
                 }
                 else {
                     const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString();
-                    const name = credentials.substring(0, credentials.indexOf(':'));
+                    const email = credentials.substring(0, credentials.indexOf(':'));
                     const password = credentials.substring(credentials.indexOf(':') + 1, credentials.length);
-                    const userResponse = await this.userService.getUserDataByEmail(name, password);
+                    const userResponse = await this.userService.getUserDataByEmail(email, password);
                     if (userResponse.hasOwnProperty("error"))
                         res.status(400).send(userResponse);
                     else {
@@ -100,12 +110,9 @@ class UserController {
         this.getUserById = async (req, res) => {
             try {
                 const user = JSON.parse(req.query.user);
-                const userId = new mongodb_1.ObjectId(user._id.toString());
-                const response = await this.userService.getUserDataById(userId);
-                if (response.hasOwnProperty("error"))
-                    res.status(400).send(response);
-                else
-                    res.status(200).send(response);
+                delete user.password;
+                delete user._id;
+                res.status(200).send(user);
             }
             catch (e) {
                 console.log(e);
@@ -118,10 +125,10 @@ class UserController {
                 if (req.body == null)
                     res.status(400).send({ error: "Body does not contains advert information's" });
                 else {
-                    if (req.body.oldUrl != null && req.body.oldUrl != "")
-                        this.deleteFiles([req.body.oldUrl]);
                     const user = JSON.parse(req.query.user);
                     const userId = new mongodb_1.ObjectId(user._id.toString());
+                    if (user.mainImageUrl != null && user.mainImageUrl != "")
+                        this.deleteFiles([user.mainImageUrl]);
                     const file = req.file;
                     const dirUrl = __dirname.split('src')[0] + `${folder}/` + file.filename;
                     if (!fs_1.default.existsSync(dirUrl))

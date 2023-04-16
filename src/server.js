@@ -41,7 +41,13 @@ const advertController_1 = require("./controller/advertController");
 const stringIndexAdvert_1 = require("./service/stringIndexAdvert");
 const advertSearchService_1 = require("./service/advertSearchService");
 dotenv.config();
+/**
+ * Server class take care of server initialization.
+ */
 class Server {
+    /**
+     * Set all important modules used in express module and rewrite console lop function so now it work as logger.
+     */
     constructor() {
         this.app = (0, express_1.default)();
         this.app.use(require('body-parser').json());
@@ -50,25 +56,33 @@ class Server {
         console.log = function (d) {
             const actualDate = new Date();
             const date = `${actualDate.getFullYear()}_${actualDate.getMonth()}_${actualDate.getDate()}`;
-            const path = `${__dirname}/debug/${date}.log`;
+            const folder = `${__dirname.split('src')[0]}debug`;
+            const path = `${folder}/${date}.log`;
             if (fs_1.default.existsSync(path)) {
                 if (!log_file)
                     log_file = fs_1.default.createWriteStream(path, { flags: 'a' });
                 log_file.write(`[${new Date()}] ${util_1.default.format(d) + '\n'}`);
             }
             else {
-                if (!fs_1.default.existsSync(`${__dirname}/debug`))
-                    fs_1.default.mkdirSync(`${__dirname}/debug`);
+                if (!fs_1.default.existsSync(folder))
+                    fs_1.default.mkdirSync(`${folder}`);
                 log_file = fs_1.default.createWriteStream(path, { flags: 'a' });
                 log_file.write(`[${new Date()}] ${util_1.default.format(d) + '\n'}`);
             }
         };
+        console.log(__dirname.split('/src')[0]);
         this.setIndex().then();
     }
+    /**
+     * Create search index if it is not already exists.
+     */
     async setIndex() {
         const stringIndex = new stringIndexAdvert_1.StringIndexAdvert();
         await stringIndex.setSearchIndex();
     }
+    /**
+     * Set main controllers router and path to app.
+     */
     setControllers() {
         const userController = new userController_1.UserController(new userService_1.UserService(), new tokenService_1.TokenService());
         const enumControl = new enumController_1.EnumController();
@@ -77,6 +91,9 @@ class Server {
         this.app.use(enumControl.path, enumControl.router);
         this.app.use(advertController.path, advertController.router);
     }
+    /**
+     * Start node js backend application on port 3000.
+     */
     async start() {
         this.setControllers();
         this.app.listen(process.env.PORT, () => {

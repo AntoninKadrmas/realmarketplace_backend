@@ -30,7 +30,7 @@ const dbConnection_1 = require("../db/dbConnection");
 class AdvertSearchService extends genericService_1.GenericService {
     constructor() {
         super();
-        this.pagesize = 2;
+        this.pagesize = 10;
         this.sampleSize = 4;
         this.advertIndex = process.env.MONGO_SEARCH_INDEX_ADVERT_NAME !== undefined
             ? process.env.MONGO_SEARCH_INDEX_ADVERT_NAME.toString() : '';
@@ -134,7 +134,7 @@ class AdvertSearchService extends genericService_1.GenericService {
             ];
             const result = await this.db.collection(this.collection[0]).aggregate([...optionsFirst, ...userOptions, ...optionsSecond])
                 .toArray();
-            return result;
+            return result[0];
         }
         catch (e) {
             console.log(e);
@@ -212,7 +212,7 @@ class AdvertSearchService extends genericService_1.GenericService {
     }
     async getAdvertByUserId(userId) {
         try {
-            const result = await this.db.collection(this.collection[0]).find({ "userId": userId }).toArray();
+            const result = await this.db.collection(this.collection[0]).find({ "userId": userId }).sort({ "createdIn": 1 }).toArray();
             return result;
         }
         catch (e) {
@@ -250,6 +250,14 @@ class AdvertSearchService extends genericService_1.GenericService {
                             userId: 0
                         }
                     } },
+                { $project: {
+                        adverts: {
+                            $sortArray: {
+                                input: "$adverts",
+                                sortBy: { createdIn: -1 }
+                            }
+                        }
+                    } }
             ]).toArray();
             return result[0].adverts;
         }

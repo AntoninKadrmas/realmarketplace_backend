@@ -75,6 +75,7 @@ class AdvertController {
                     else {
                         const responseObject = response;
                         advert._id = responseObject._id;
+                        delete advert.userId;
                         res.status(200).send({ success: responseObject.success, advert: advert });
                     }
                 }
@@ -187,7 +188,6 @@ class AdvertController {
                     }
                 }
                 else {
-                    console.log("--------------thre-----------------");
                     if (req.query.user == undefined) {
                         const response = await this.advertSearchService.getAdvertSample(false);
                         if (response.hasOwnProperty("error"))

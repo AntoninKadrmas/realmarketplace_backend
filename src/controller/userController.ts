@@ -10,13 +10,24 @@ import { ImageMiddleWare } from "../middleware/imageMiddleware";
 import path from 'path';
 import fs from 'fs';
 dotenv.config();
-
+/**
+ * Controller for operating over users.
+ * It implements the GenericController interface.
+ */
 export class UserController implements GenericController{
     path:string ='/user'
     router:express.Router = express.Router()
+    /**
+     * Creates a new UserController instance and initializes its router
+     * @param userService Service for crud operations over users in database.
+     * @param tokenService Service for crud operations over tokens in database.
+     */
     constructor(private userService:UserService,private tokenService:TokenService){
         this.initRouter()
     }
+    /**
+     * Initializes the router by setting up the routes and their corresponding request handlers.
+     */
     initRouter(){
         const upload_public = new ImageMiddleWare().getStorage(process.env.IMAGE_PROFILE!!)
         this.router.post('/register',this.registerUser)
@@ -28,6 +39,11 @@ export class UserController implements GenericController{
         this.router.post('/image',userAuthMiddlewareStrict,upload_public.single('uploaded_file'),this.userProfileImage)
         this.router.use(express.static(path.join(__dirname.split('src')[0],process.env.IMAGE_PROFILE!!)))
     }
+    /**
+    * A request handler that create new user account.
+    * @param req The express request object.
+    * @param res The either token for authentication or error response.
+    */
     registerUser: RequestHandler = async (req, res) => {
         let user:UserModel
         try{
@@ -58,6 +74,11 @@ export class UserController implements GenericController{
             res.status(400).send({error:"Body does not contains correct user model."})
         }
     }
+    /**
+    * A request handler that verify credential of user.
+    * @param req The express request object.
+    * @param res The either token for authentication or error response.
+    */
     userLogin: RequestHandler = async (req, res) => {
         try{
             let loadCredential = req.headers.authorization
@@ -66,7 +87,7 @@ export class UserController implements GenericController{
                 const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString()
                 const email = credentials.substring(0,credentials.indexOf(':'))
                 const password = credentials.substring(credentials.indexOf(':')+1,credentials.length)
-                const userResponse:UserModel | {error:string} = await this.userService.getUserDataByEmail(email,password)
+                const userResponse:UserModel | {error:string} = await this.userService.getUserDataByEmailPassword(email,password)
                 if(userResponse.hasOwnProperty("error"))res.status(400).send(userResponse)
                 else{
                     const tempUserResponse:UserModel = userResponse as UserModel
@@ -81,6 +102,11 @@ export class UserController implements GenericController{
             res.status(400).send({error:"Server error."})
         }
     }
+    /**
+    * A request handler that return user object.
+    * @param req The express request object.
+    * @param res The either user object or error response.
+    */
     getUserById:RequestHandler = async (req,res)=>{
         try{
             const user:UserModel = JSON.parse(req.query.user as string)
@@ -92,6 +118,11 @@ export class UserController implements GenericController{
             res.status(400).send({error:"Some problem on the server."})
         }
     }
+    /**
+    * A request handler that update user profile image.
+    * @param req The express request object.
+    * @param res The either success response with image url of newly created profile image or error response.
+    */
     userProfileImage:RequestHandler = async (req,res)=>{
         try{
             const folder = process.env.IMAGE_PROFILE!!
@@ -125,6 +156,11 @@ export class UserController implements GenericController{
             res.status(400).send()
         }
     }
+    /**
+    * A request handler that update user password.
+    * @param req The express request object.
+    * @param res The either success or error response.
+    */
     userUpdatePassword: RequestHandler = async (req, res) => {
         try{
             const user:UserModel = JSON.parse(req.query.user as string)
@@ -144,6 +180,11 @@ export class UserController implements GenericController{
             res.status(400).send({error:"Server error."})
         }
     }
+    /**
+    * A request handler that update user profile information's.
+    * @param req The express request object.
+    * @param res The either success or error response.
+    */
     userUpdate: RequestHandler = async (req, res) => {
         try{
             const user:UserModel = JSON.parse(req.query.user as string)
@@ -160,6 +201,11 @@ export class UserController implements GenericController{
             res.status(400).send({error:"Server error."})
         }
     }
+    /**
+    * A request handler that delete user.
+    * @param req The express request object.
+    * @param res The either success or error response.
+    */
     userDelete: RequestHandler = async (req, res) => {
         try{
             const user:UserModel = JSON.parse(req.query.user as string)
@@ -184,6 +230,10 @@ export class UserController implements GenericController{
             res.status(400).send({error:"Server error."})
         }
     }
+    /**
+     * Delete files by its name in profile folder.
+     * @param imagesUrls Name of all file that has to be deleted if exists.
+     */
     private deleteFiles(imagesUrls:string[]){
         const folder = process.env.IMAGE_PROFILE!!
         for(var image of imagesUrls){

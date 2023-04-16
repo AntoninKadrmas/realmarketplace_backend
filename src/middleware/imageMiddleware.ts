@@ -3,12 +3,22 @@ import * as dotenv from 'dotenv';
 import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs';
 dotenv.config();
+/**
+ * Middleware used to save images in the server folder. 
+ */
 export class ImageMiddleWare{
     type:{ [id: string] : string; }=  {
         "image/jpeg":"jpg",
         "image/png":"png",
         "image/jpg":"jpg"
     }
+    /**
+     * Method that prepare each file. 
+     * Filter through them. 
+     * Give them place on the disk and name.
+     * @param useFolder The folder which define place where are images stored.
+     * @returns Configured multer instance.
+     */
     public getStorage(useFolder:string) {
         return multer({
             fileFilter(req,file,callback){
@@ -31,6 +41,10 @@ export class ImageMiddleWare{
             }),
         })
     }
+    /**
+     * Create folder if it already does not exists.
+     * @param path The absolute path to the folder.
+     */
     private existsFolder(path:string){
         if(!fs.existsSync(path)){
             fs.mkdirSync(path);
