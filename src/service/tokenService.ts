@@ -58,7 +58,6 @@ export class TokenService extends GenericService{
                 userId: userId,
                 expirationTime: this.getActualValidTime()
             }
-            console.log(token)
             await await this.db.collection(this.collection[0]).deleteMany({userId:userId})
             const newTokenOrFind = await this.db.collection(this.collection[0]).insertOne(token)
             if(!newTokenOrFind.acknowledged)return "Can't create auth token."
@@ -72,15 +71,13 @@ export class TokenService extends GenericService{
     /**
     * Updates the expiration time of the token with the specified token ID.
     * @param tokenId The ObjectId of the token to be updated.
-    * @returns A Promise that resolves to true if the token is valid, false otherwise.
     */
-    async updateTokenByTokenId(tokenId:string):Promise<boolean>{
+    async updateTokenByTokenId(tokenId:string){
         try{
-            const token = await this.db.collection(this.collection[0]).findOneAndUpdate(
+            await this.db.collection(this.collection[0]).updateOne(
                 {_id:new ObjectId(tokenId)},
-                {$inc:{expirationTime:this.getActualValidTime()}}
+                {$set:{expirationTime:this.getActualValidTime()}}
             )
-            return await this.tokenIsValid(token.value)
         }catch(e){
             console.log(e)
             return false
