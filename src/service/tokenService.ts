@@ -171,6 +171,6 @@ export class TokenService extends GenericService{
      */
     private getActualValidTime():number{
         const expirationTime:number = !!process.env.TOKEN_EXPIRATION_TIME?parseInt(process.env.TOKEN_EXPIRATION_TIME):1800000
-        return new Date().getTime()+expirationTime
+        return Date.now()+expirationTime
     }
 }
