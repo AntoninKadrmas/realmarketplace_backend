@@ -33,16 +33,25 @@ export class UserController implements GenericController{
         try{
             if(req.body==null){res.status(400).send({error:"Body does not contains user model."})}
             else{
-                user = req.body
-                user.createdIn = new Date()
-                const createUserResponse:{userId:string}|{error:string} = await this.userService.createNewUser(user)
-                if(createUserResponse.hasOwnProperty("userId")){
-                    const userIds:{userId:string} = createUserResponse as {userId:string}
-                    const token = await this.tokenService.createToken(new ObjectId(userIds.userId))
-                    if(token.hasOwnProperty("error"))res.status(400).send(token)
-                    else res.status(200).send({"token":token.toString()})
+                let loadCredential = req.headers.authorization
+                if(loadCredential==undefined) res.status(400).send({error:"Missing credential header."})
+                else{
+                    const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString()
+                    const email = credentials.substring(0,credentials.indexOf(':'))
+                    const password = credentials.substring(credentials.indexOf(':')+1,credentials.length)
+                    user = req.body
+                    user.createdIn = new Date()
+                    user.password=password
+                    user.email=email
+                    const createUserResponse:{userId:string}|{error:string} = await this.userService.createNewUser(user)
+                    if(createUserResponse.hasOwnProperty("userId")){
+                        const userIds:{userId:string} = createUserResponse as {userId:string}
+                        const token = await this.tokenService.createToken(new ObjectId(userIds.userId))
+                        if(token.hasOwnProperty("error"))res.status(400).send(token)
+                        else res.status(200).send({"token":token.toString()})
+                    }
+                    else res.status(400).send(createUserResponse)
                 }
-                else res.status(400).send(createUserResponse)
             }
         }catch(e){
             console.log(e)
@@ -55,9 +64,9 @@ export class UserController implements GenericController{
             if(loadCredential==null){res.status(400).send("Incorrect request.")}
             else{
                 const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString()
-                const name = credentials.substring(0,credentials.indexOf(':'))
+                const email = credentials.substring(0,credentials.indexOf(':'))
                 const password = credentials.substring(credentials.indexOf(':')+1,credentials.length)
-                const userResponse:UserModel | {error:string} = await this.userService.getUserDataByEmail(name,password)
+                const userResponse:UserModel | {error:string} = await this.userService.getUserDataByEmail(email,password)
                 if(userResponse.hasOwnProperty("error"))res.status(400).send(userResponse)
                 else{
                     const tempUserResponse:UserModel = userResponse as UserModel
@@ -75,10 +84,9 @@ export class UserController implements GenericController{
     getUserById:RequestHandler = async (req,res)=>{
         try{
             const user:UserModel = JSON.parse(req.query.user as string)
-            const userId=new ObjectId(user._id!.toString())
-            const response:UserModel | {error:string} = await this.userService.getUserDataById(userId)
-            if(response.hasOwnProperty("error"))res.status(400).send(response)
-            else res.status(200).send(response)
+            delete user.password
+            delete user._id
+            res.status(200).send(user)
         }catch(e){
             console.log(e)
             res.status(400).send({error:"Some problem on the server."})
@@ -89,9 +97,9 @@ export class UserController implements GenericController{
             const folder = process.env.IMAGE_PROFILE!!
             if(req.body==null)res.status(400).send({error:"Body does not contains advert information's"})
             else{
-                if(req.body.oldUrl!=null&&req.body.oldUrl!="") this.deleteFiles([req.body.oldUrl])
                 const user:UserModel = JSON.parse(req.query.user as string)
                 const userId=new ObjectId(user._id!.toString())
+                if(user.mainImageUrl!=null&&user.mainImageUrl!="") this.deleteFiles([user.mainImageUrl])
                 const file = req.file!
                 const dirUrl = __dirname.split('src')[0]+`${folder}/`+file.filename
                 if(!fs.existsSync(dirUrl)) res.status(400).send()
