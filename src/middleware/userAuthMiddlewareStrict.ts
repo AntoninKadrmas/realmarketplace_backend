@@ -13,8 +13,9 @@ export async function userAuthMiddlewareStrict(request: express.Request, respons
     try{
         var validToken = /^[a-f\d]{24}$/g
         const token = request.get("Authentication")
-        console.log(token+" "+validToken.test(token!))
-        if(!validToken.test(token!))response.status(401).send({error:"Incorrect token."})
+        const valid = validToken.test(token!)
+        console.log(token+" "+valid)
+        if(!valid)response.status(401).send({error:"Incorrect token."})
         else{
             const tokenService:TokenService = await TokenService.getInstance()
             const tokenExists:TokenExistsModel = await tokenService.tokenExists(new ObjectId(token));
