@@ -32,6 +32,9 @@ const dotenv = __importStar(require("dotenv"));
 const uuid_1 = require("uuid");
 const fs_1 = __importDefault(require("fs"));
 dotenv.config();
+/**
+ * Middleware used to save images in the server folder.
+ */
 class ImageMiddleWare {
     constructor() {
         this.type = {
@@ -40,6 +43,13 @@ class ImageMiddleWare {
             "image/jpg": "jpg"
         };
     }
+    /**
+     * Method that prepare each file.
+     * Filter through them.
+     * Give them place on the disk and name.
+     * @param useFolder The folder which define place where are images stored.
+     * @returns Configured multer instance.
+     */
     getStorage(useFolder) {
         return (0, multer_1.default)({
             fileFilter(req, file, callback) {
@@ -62,6 +72,10 @@ class ImageMiddleWare {
             }),
         });
     }
+    /**
+     * Create folder if it already does not exists.
+     * @param path The absolute path to the folder.
+     */
     existsFolder(path) {
         if (!fs_1.default.existsSync(path)) {
             fs_1.default.mkdirSync(path);

@@ -27,6 +27,9 @@ exports.StringIndexAdvert = void 0;
 const urllib_1 = require("urllib");
 const dotenv = __importStar(require("dotenv"));
 dotenv.config();
+/**
+ * A class for managing a MongoDB full-text search index for an advert collection.
+ */
 class StringIndexAdvert {
     constructor() {
         this.baseUrl = 'https://cloud.mongodb.com/api/atlas/v1.0';
@@ -41,6 +44,13 @@ class StringIndexAdvert {
         this.collection = process.env.MONGO_ADVERT_COLLECTION;
         this.indexName = process.env.MONGO_SEARCH_INDEX_ADVERT_NAME !== undefined ? process.env.MONGO_SEARCH_INDEX_ADVERT_NAME.toString() : '';
     }
+    /**
+     * Determines if a search index with the specified name exists for the adverts collection.
+     *
+     * @param indexName The name of the search index to check for existence.
+     * @returns A boolean indicating if the search index exists or not.
+     * @private
+     */
     async existsSearchIndex(indexName) {
         const allSetINdexes = await (0, urllib_1.request)(`${this.searchIndexUrl}/${this.db}/${this.collection}`, {
             dataType: 'json',
@@ -50,6 +60,9 @@ class StringIndexAdvert {
         });
         return !(allSetINdexes.data.find(x => x.name == indexName));
     }
+    /**
+     * Creates a new search index for the adverts collection if one with the specified name does not already exist.
+     */
     async setSearchIndex() {
         if (await this.existsSearchIndex(this.indexName))
             await (0, urllib_1.request)(this.searchIndexUrl, {

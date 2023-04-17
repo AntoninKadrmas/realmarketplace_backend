@@ -35,7 +35,7 @@ export class AdvertService extends GenericService{
     }
     /**
      * Creates an advert in the database.
-     * @param advert - The advert to be created.
+     * @param advert The advert to be created.
      * @returns A promise that resolves to an object containing a success message and the ID of the created advert,
      * or an object containing an error message.
      */
@@ -51,8 +51,8 @@ export class AdvertService extends GenericService{
     }
     /**
      * Adds an advert to a user's favorite collection.
-     * @param userId - The ID of the user.
-     * @param advertId - The ID of the advert.
+     * @param userId The ID of the user.
+     * @param advertId The ID of the advert.
      * @returns A promise that resolves to an object containing a success message, or an object containing an error message.
      */
     async saveFavoriteAdvertId(userId:ObjectId,advertId:ObjectId):Promise<{success:string}|{error:string}>{

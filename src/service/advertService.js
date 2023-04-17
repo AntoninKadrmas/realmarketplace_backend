@@ -27,14 +27,26 @@ exports.AdvertService = void 0;
 const genericService_1 = require("./genericService");
 const dotenv = __importStar(require("dotenv"));
 const dbConnection_1 = require("../db/dbConnection");
+/**
+ * A service class that provides functionalities related to adverts in a MongoDB database.
+ * Extends GenericService class.
+ */
 class AdvertService extends genericService_1.GenericService {
+    /**
+     * Creates an instance of the AdvertService class.
+     * Initializes the AdvertService by calling the GenericService constructor
+     */
     constructor() {
         super();
         this.pagesize = 2;
-        this.advertIndex = process.env.MONGO_SEARCH_INDEX_ADVERT_NAME !== undefined
-            ? process.env.MONGO_SEARCH_INDEX_ADVERT_NAME.toString() : '';
         this.connect().then();
     }
+    /**
+     * Connects to the database.
+     * Loads environment variables from the dotenv module.
+     * Initializes the database client and adds the advert and favorite collections.
+     * Creates an index on the userId field of the favorite collection.
+     */
     async connect() {
         dotenv.config();
         const instance = dbConnection_1.DBConnection.getInstance();
@@ -44,6 +56,12 @@ class AdvertService extends genericService_1.GenericService {
         this.db = this.client.db(process.env.DBName);
         await this.db.collection(this.collection[1]).createIndex({ userId: 1 }, { unique: true });
     }
+    /**
+     * Creates an advert in the database.
+     * @param advert The advert to be created.
+     * @returns A promise that resolves to an object containing a success message and the ID of the created advert,
+     * or an object containing an error message.
+     */
     async createAdvert(advert) {
         try {
             const result = await this.db.collection(this.collection[0]).insertOne(advert);
@@ -57,6 +75,12 @@ class AdvertService extends genericService_1.GenericService {
             return { error: "Database dose not response." };
         }
     }
+    /**
+     * Adds an advert to a user's favorite collection.
+     * @param userId The ID of the user.
+     * @param advertId The ID of the advert.
+     * @returns A promise that resolves to an object containing a success message, or an object containing an error message.
+     */
     async saveFavoriteAdvertId(userId, advertId) {
         try {
             const result = await this.db.collection(this.collection[1]).updateOne({ 'userId': userId }, { $addToSet: { 'advertId': advertId } }, { upsert: true });
@@ -70,6 +94,12 @@ class AdvertService extends genericService_1.GenericService {
             return { error: "Database dose not response." };
         }
     }
+    /**
+     * Deletes an advert from the user's favorite collection in the database.
+     * @param userId The ID of the user whose favorite collection will be updated.
+     * @param advertId The ID of the advert to be removed from the favorite collection.
+     * @returns A Promise that resolves to either a success or error message.
+     */
     async deleteFavoriteAdvertId(userId, advertId) {
         try {
             const result = await this.db.collection(this.collection[1]).updateOne({ 'userId': userId }, { $pull: { 'advertId': advertId } });
@@ -83,6 +113,11 @@ class AdvertService extends genericService_1.GenericService {
             return { error: "Database dose not response." };
         }
     }
+    /**
+     * Deletes the entire favorite collection of a user from the database.
+     * @param userId The ID of the user whose favorite collection will be deleted.
+     * @returns A Promise that resolves to either a success or error message.
+     */
     async deleteFavoriteAdvertWhole(userId) {
         try {
             const result = await this.db.collection(this.collection[1]).deleteMany({ 'userId': userId });
@@ -98,6 +133,12 @@ class AdvertService extends genericService_1.GenericService {
             return { error: "Database dose not response." };
         }
     }
+    /**
+     * Deletes an advert from the database.
+     * @param advertId The ID of the advert to be deleted.
+     * @param userId The ID of the user who created the advert.
+     * @returns A Promise that resolves to either a success or error message.
+     */
     async deleteAdvert(advertId, userId) {
         try {
             const result = await this.db.collection(this.collection[0]).deleteOne({ "_id": advertId, "userId": userId });
@@ -114,6 +155,13 @@ class AdvertService extends genericService_1.GenericService {
             return { error: "Database dose not response." };
         }
     }
+    /**
+     * Updates an advert in the database.
+     * @param advertId The ID of the advert to be updated.
+     * @param userId The ID of the user who created the advert.
+     * @param advert The updated advert object.
+     * @returns A Promise that resolves to either a success or error message.
+     */
     async updateAdvert(advertId, userId, advert) {
         try {
             const result = await this.db.collection(this.collection[0]).updateOne({ "_id": advertId, "userId": userId }, {
@@ -131,6 +179,13 @@ class AdvertService extends genericService_1.GenericService {
             return { error: "Database dose not response." };
         }
     }
+    /**
+    * Updates an advert visibility in database.
+    * @param advertId The ID of the advert to be updated.
+    * @param userId The ID of the user who created the advert.
+    * @param state The state on which would be the advert visibility updated.
+    * @returns A Promise that resolves to either a success or error message.
+    */
     async updateAdvertVisibility(advertId, userId, state) {
         try {
             const result = await this.db.collection(this.collection[0]).updateOne({ "_id": advertId, "userId": userId }, {

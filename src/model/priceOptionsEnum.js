@@ -1,6 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PriceOptionsEnum = void 0;
+/**
+ * Enum representing the possible options of a advert price.
+ */
 var PriceOptionsEnum;
 (function (PriceOptionsEnum) {
     PriceOptionsEnum["EXACT_PRICE"] = "Exact Price";

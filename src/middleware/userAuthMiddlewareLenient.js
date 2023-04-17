@@ -3,6 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.userAuthMiddlewareLenient = void 0;
 const tokenService_1 = require("../service/tokenService");
 const mongodb_1 = require("mongodb");
+/**
+ * Found if user token is still valid and continue with user whom token belongs to if is valid and if not it will continue without the user.
+ * @param request The request come from user.
+ * @param response The response that will be send back to the user.
+ * @param next The function used to send request and response to another function.
+ */
 async function userAuthMiddlewareLenient(request, response, next) {
     try {
         const token = request.get("Authentication");

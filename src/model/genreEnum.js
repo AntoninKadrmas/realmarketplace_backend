@@ -1,6 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GenreType = exports.GenreItem = exports.GenreNonFictionEnum = exports.GenreFictionEnum = void 0;
+/**
+* Enum representing the possible genres of fiction books.
+*/
 var GenreFictionEnum;
 (function (GenreFictionEnum) {
     GenreFictionEnum["ACTION_AND_ADVETURE"] = "Action and adventure";
@@ -30,6 +33,9 @@ var GenreFictionEnum;
     GenreFictionEnum["WESTERN"] = "Western";
     GenreFictionEnum["YOUNG_ADULT"] = "Young adult";
 })(GenreFictionEnum = exports.GenreFictionEnum || (exports.GenreFictionEnum = {}));
+/**
+* Enum representing the possible genres of nonfiction books.
+*/
 var GenreNonFictionEnum;
 (function (GenreNonFictionEnum) {
     GenreNonFictionEnum["ART_ARCHITECTURE"] = "Art/architecture";
@@ -61,9 +67,15 @@ var GenreNonFictionEnum;
     GenreNonFictionEnum["SPORT_AND_LEISURE"] = "Sports and leisure";
     GenreNonFictionEnum["TRAVEL"] = "Travel";
 })(GenreNonFictionEnum = exports.GenreNonFictionEnum || (exports.GenreNonFictionEnum = {}));
+/**
+* Represents a genre type model.
+*/
 class GenreItem {
 }
 exports.GenreItem = GenreItem;
+/**
+* Enum representing the possible genre types.
+*/
 var GenreType;
 (function (GenreType) {
     GenreType["NON_FICTION"] = "Non Fiction";

@@ -26,16 +26,31 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DBConnection = void 0;
 const mongodb_1 = require("mongodb");
 const dotenv = __importStar(require("dotenv"));
+/**
+ * Database singleton connection class. Used to connect into mongodb database.
+ */
 class DBConnection {
+    /**
+     * Create connection and save mongo client.
+     */
     constructor() {
         this.uri = "";
         dotenv.config();
         this.uri = process.env.MONGO_DB_CONNECTION;
         this.mongoClient = mongodb_1.MongoClient.connect(this.uri);
     }
+    /**
+     * Used for getting db client connection instance
+     * @returns MongoClient db client connection instance
+     */
     async getDbClient() {
         return this.mongoClient;
     }
+    /**
+     * Create new db connection if connection does not exist than return instance of this connection
+     * @returns DBConnection instance
+     * @static
+     */
     static getInstance() {
         if (!DBConnection.instance) {
             DBConnection.instance = new DBConnection();

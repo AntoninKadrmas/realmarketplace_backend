@@ -27,7 +27,16 @@ exports.AdvertSearchService = void 0;
 const genericService_1 = require("./genericService");
 const dotenv = __importStar(require("dotenv"));
 const dbConnection_1 = require("../db/dbConnection");
+/**
+ * A service class that provides functionalities related to fetching advert from a MongoDB database.
+ * Extends GenericService class.
+ */
 class AdvertSearchService extends genericService_1.GenericService {
+    /**
+     * Creates an instance of the AdvertSearchService class.
+     * Initializes the AdvertSearchService by calling the GenericService constructor
+     * and setting the advert index.
+     */
     constructor() {
         super();
         this.pagesize = 10;
@@ -36,6 +45,12 @@ class AdvertSearchService extends genericService_1.GenericService {
             ? process.env.MONGO_SEARCH_INDEX_ADVERT_NAME.toString() : '';
         this.connect().then();
     }
+    /**
+     * Connects to the database.
+     * Loads environment variables from the dotenv module.
+     * Initializes the database client and adds the advert, favorite and user collections.
+     * Creates an index on the userId field of the favorite collection.
+     */
     async connect() {
         dotenv.config();
         const instance = dbConnection_1.DBConnection.getInstance();
@@ -46,6 +61,13 @@ class AdvertSearchService extends genericService_1.GenericService {
         this.db = this.client.db(process.env.DBName);
         await this.db.collection(this.collection[2]).createIndex({ email: 1 }, { unique: true });
     }
+    /**
+     * Search for adverts based on a search term, page number, and user existence status.
+     * @param search The search term to use.
+     * @param page The page number to use.
+     * @param userExists Indicates whether to include user information in the results.
+     * @returns A Promise that resolves with a list of adverts and their user information (if requested), or an error object.
+     */
     async getAdvertSearch(search, page, userExists) {
         try {
             const optionsFirst = [
@@ -121,7 +143,7 @@ class AdvertSearchService extends genericService_1.GenericService {
                         } },
                 ];
             const optionsSecond = [
-                { $sort: { score: -1, createdIn: -1 } },
+                { $sort: { score: 1, createdIn: -1 } },
                 { $facet: {
                         counts: [{ $count: "count" }],
                         advert: [{ $skip: this.pagesize * page }, { $limit: this.pagesize }]
@@ -141,6 +163,11 @@ class AdvertSearchService extends genericService_1.GenericService {
             return { error: "Database dose not response." };
         }
     }
+    /**
+     * Get all favorite adverts for a given user ID.
+     * @param userId The ID of the user to get favorite adverts for.
+     * @returns A Promise containing a list of favorite adverts with user or an error message.
+     */
     async getFavoriteAdvertByUserId(userId) {
         try {
             const result = await this.db.collection(this.collection[1]).aggregate([
@@ -210,6 +237,11 @@ class AdvertSearchService extends genericService_1.GenericService {
             return { error: "Database dose not response." };
         }
     }
+    /**
+     * Get all adverts for a given user ID.
+     * @param userId The ID of the user to get adverts for.
+     * @returns A Promise containing an array of adverts or an error message.
+     */
     async getAdvertByUserId(userId) {
         try {
             const result = await this.db.collection(this.collection[0]).find({ "userId": userId }).sort({ "createdIn": 1 }).toArray();
@@ -220,6 +252,12 @@ class AdvertSearchService extends genericService_1.GenericService {
             return { error: "Database dose not response." };
         }
     }
+    /**
+     * Get adverts for a user based on their email and a time stamp.
+     * @param email The email of the user to get adverts for.
+     * @param createdIn The time stamp of user creation.
+     * @returns A Promise containing an array of adverts or an error message.
+     */
     async getAdvertByUserEmailTime(email, createdIn) {
         try {
             const result = await this.db.collection(this.collection[2]).aggregate([
@@ -266,6 +304,11 @@ class AdvertSearchService extends genericService_1.GenericService {
             return { error: "Database dose not response." };
         }
     }
+    /**
+     * Retrieves a sample of visible adverts from the database, along with the user information if requested.
+     * @param userExists Indicates whether to include user information in the results.
+     * @returns A Promise that resolves with an array of adverts and their user information (if requested), or an error object.
+     */
     async getAdvertSample(userExists) {
         try {
             const options = [

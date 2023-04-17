@@ -18,7 +18,7 @@ dotenv.config();
  * Server class take care of server initialization.
  */
 export class Server{
-    private app:express.Express
+    app:express.Express
     /**
      * Set all important modules used in express module and rewrite console lop function so now it work as logger.
      */

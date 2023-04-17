@@ -40,6 +40,7 @@ const advertService_1 = require("./service/advertService");
 const advertController_1 = require("./controller/advertController");
 const stringIndexAdvert_1 = require("./service/stringIndexAdvert");
 const advertSearchService_1 = require("./service/advertSearchService");
+const mongoSanitize = require("express-mongo-sanitize");
 dotenv.config();
 /**
  * Server class take care of server initialization.
@@ -52,6 +53,12 @@ class Server {
         this.app = (0, express_1.default)();
         this.app.use(require('body-parser').json());
         this.app.use((0, cors_1.default)());
+        this.app.use(mongoSanitize({
+            allowDots: true,
+            onSanitize: ({ req, key }) => {
+                console.log(`This request[${key}] is sanitized => ${req}`);
+            },
+        }));
         var log_file;
         console.log = function (d) {
             const actualDate = new Date();
@@ -70,11 +77,11 @@ class Server {
                 log_file.write(`[${new Date()}] ${util_1.default.format(d) + '\n'}`);
             }
         };
-        console.log(__dirname.split('/src')[0]);
         this.setIndex().then();
     }
     /**
      * Create search index if it is not already exists.
+     * @private
      */
     async setIndex() {
         const stringIndex = new stringIndexAdvert_1.StringIndexAdvert();
@@ -82,6 +89,7 @@ class Server {
     }
     /**
      * Set main controllers router and path to app.
+     * @private
      */
     setControllers() {
         const userController = new userController_1.UserController(new userService_1.UserService(), new tokenService_1.TokenService());

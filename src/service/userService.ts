@@ -38,7 +38,7 @@ export class UserService extends GenericService{
     /**
    * Creates a new user in the database with the provided user data.
    * Hashes the user's password before storing it in the database.
-   * @param user - The user data to be stored in the database.
+   * @param user The user data to be stored in the database.
    * @returns An object containing the ID of the newly created user or an error message.
    */
     async createNewUser(user:UserModel):Promise<{userId:string}|{error:string}>{
@@ -108,7 +108,7 @@ export class UserService extends GenericService{
     /**
     * Updates user main image URL.
     * @param userId The ID of the user whose image will be updated.
-    * @param newUrl - The new URL for user main image.
+    * @param newUrl The new URL for user main image.
     * @returns A Promise that resolves to either a success or error message.
     */
     async updateUserImage(userId:ObjectId,newUrl:string):Promise<{success:string} | {error:string}>{
@@ -128,9 +128,9 @@ export class UserService extends GenericService{
     }
     /**
     * Update user password if user authenticate him self.
-    * @param user - The user model contains password for authenticate and id for delete.
-    * @param oldPassword - The old password user authenticate him self.
-    * @param newPassword - The new password that would update the old one.
+    * @param user The user model contains password for authenticate and id for delete.
+    * @param oldPassword The old password user authenticate him self.
+    * @param newPassword The new password that would update the old one.
     * @returns A Promise that resolves to either a success or error message.
     */
     async updateUserPassword(user:UserModel,oldPassword:string,newPassword:string):Promise<{success:string} | {error:string}>{
@@ -155,8 +155,8 @@ export class UserService extends GenericService{
     }
     /**
     * Update user profile information's.
-    * @param userId - The ID of the user whose information would be updated
-    * @param user - The user model contains updated data
+    * @param userId The ID of the user whose information would be updated
+    * @param user The user model contains updated data
     * @returns A Promise that resolves to either a success or error message.
     */
     async updateUser(userId:ObjectId,user:LightUser):Promise<{success:string}|{error:string}>{
@@ -178,8 +178,8 @@ export class UserService extends GenericService{
     }
     /**
     * Delete user if user authenticate him self.
-    * @param user - The user model contains password for authenticate and id for delete.
-    * @param password - The user password used to verify user
+    * @param user The user model contains password for authenticate and id for delete.
+    * @param password The user password used to verify user
     * @returns A Promise that resolves to either a success or error message.
     */
     async deleteUser(user:UserModel,password:string):Promise<{success:string}|{error:string}>{

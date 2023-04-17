@@ -36,12 +36,26 @@ const dotenv = __importStar(require("dotenv"));
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
 dotenv.config();
+/**
+ * Controller for operating over adverts.
+ * It implements the GenericController interface.
+ */
 class AdvertController {
+    /**
+     * Creates a new AdvertController instance and initializes its router
+     * @param advertService Service that do crud operation over adverts in database.
+     * @param advertSearchService Service for fetching information's about adverts from database.
+     */
     constructor(advertService, advertSearchService) {
         this.advertService = advertService;
         this.advertSearchService = advertSearchService;
         this.path = "/advert";
         this.router = express_1.default.Router();
+        /**
+        * A request handler that create new advert in database.
+        * @param req The express request object.
+        * @param res The either success response with created advert or error response.
+        */
         this.createAdvert = async (req, res) => {
             try {
                 const folder = process.env.IMAGE_PUBLIC;
@@ -85,6 +99,11 @@ class AdvertController {
                 res.status(400).send();
             }
         };
+        /**
+       * A request handler that update old advert in database.
+       * @param req The express request object.
+       * @param res The either success response with newly created img urls or error response.
+       */
         this.updateAdvert = async (req, res) => {
             try {
                 const folder = process.env.IMAGE_PUBLIC;
@@ -141,6 +160,11 @@ class AdvertController {
                 res.status(400).send();
             }
         };
+        /**
+        * A request handler that delete advert in database.
+        * @param req The express request object.
+        * @param res The either success or error response.
+        */
         this.deleteAdvert = async (req, res) => {
             try {
                 if (req.query.advertId == null)
@@ -167,6 +191,11 @@ class AdvertController {
                 res.status(400).send();
             }
         };
+        /**
+        * A request handler that returns searched or sample adverts from database.
+        * @param req The express request object.
+        * @param res The either list of adverts with or without user.
+        */
         this.getAdvert = async (req, res) => {
             try {
                 if (this.variableExistsString(req.query.search) && this.variableExistsString(req.query.page)) {
@@ -209,6 +238,11 @@ class AdvertController {
                 res.status(400).send();
             }
         };
+        /**
+        * A request handler that return favorite adverts from database.
+        * @param req The express request object.
+        * @param res The either favorite adverts list or error response.
+        */
         this.getFavoriteAdvert = async (req, res) => {
             try {
                 const user = JSON.parse(req.query.user);
@@ -224,6 +258,11 @@ class AdvertController {
                 res.status(400).send({ error: "Missing advert id." });
             }
         };
+        /**
+        * A request handler that add new advert into favorite adverts list.
+        * @param req The express request object.
+        * @param res The either success or error response.
+        */
         this.addFavoriteAdvert = async (req, res) => {
             try {
                 if (req.query.advertId == null)
@@ -244,6 +283,11 @@ class AdvertController {
                 res.status(400).send({ error: "Missing advert id." });
             }
         };
+        /**
+        * A request handler that delete advert from favorite adverts list.
+        * @param req The express request object.
+        * @param res The either success or error response.
+        */
         this.deleteFavoriteAdvert = async (req, res) => {
             try {
                 if (req.query.advertId == null)
@@ -264,9 +308,15 @@ class AdvertController {
                 res.status(400).send({ error: "Missing advert id." });
             }
         };
+        /**
+        * A request handler that returns user adverts from database.
+        * @param req The express request object.
+        * @param res The either list of adverts or error response.
+        */
         this.getUserAdverts = async (req, res) => {
             try {
-                if (req.get("userEmail") != null && req.get("createdIn") != null) {
+                if (this.variableExistsString(req.get("userEmail")) &&
+                    this.variableExistsString(req.get("createdIn"))) {
                     const userEmail = req.get("userEmail");
                     const createdIn = req.get("createdIn");
                     const adverts = await this.advertSearchService.getAdvertByUserEmailTime(userEmail, createdIn);
@@ -290,6 +340,11 @@ class AdvertController {
                 res.status(400).send();
             }
         };
+        /**
+        * A request handler that update visibility of advert.
+        * @param req The express request object.
+        * @param res The either success or error response.
+        */
         this.updateAdvertVisibility = async (req, res) => {
             try {
                 if (req.query.advertId == null || req.query.state == null)
@@ -313,6 +368,9 @@ class AdvertController {
         };
         this.initRouter();
     }
+    /**
+     * Initializes the router by setting up the routes and their corresponding request handlers.
+     */
     initRouter() {
         const upload_public = new imageMiddleware_1.ImageMiddleWare().getStorage(process.env.IMAGE_PUBLIC);
         this.router.post("", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, upload_public.array('uploaded_file', 5), this.createAdvert);
@@ -326,6 +384,10 @@ class AdvertController {
         this.router.put("/visible", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.updateAdvertVisibility);
         this.router.use(express_1.default.static(path_1.default.join(__dirname.split('src')[0], process.env.IMAGE_PUBLIC)));
     }
+    /**
+     * Delete files by its name in public folder.
+     * @param imagesUrls Name of all file that has to be deleted if exists.
+     */
     deleteFiles(imagesUrls) {
         const folder = process.env.IMAGE_PUBLIC;
         for (var image of imagesUrls) {
@@ -336,6 +398,11 @@ class AdvertController {
                 });
         }
     }
+    /**
+     * Find if given string exists.
+     * @param value string that would be tested
+     * @returns Boolean value true if string exists else false.
+     */
     variableExistsString(value) {
         return value != null &&
             value != undefined &&

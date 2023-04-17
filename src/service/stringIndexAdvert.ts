@@ -20,7 +20,7 @@ export class StringIndexAdvert{
     /**
      * Determines if a search index with the specified name exists for the adverts collection.
      *
-     * @param indexName - The name of the search index to check for existence.
+     * @param indexName The name of the search index to check for existence.
      * @returns A boolean indicating if the search index exists or not.
      * @private
      */

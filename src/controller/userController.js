@@ -35,12 +35,26 @@ const imageMiddleware_1 = require("../middleware/imageMiddleware");
 const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
 dotenv.config();
+/**
+ * Controller for operating over users.
+ * It implements the GenericController interface.
+ */
 class UserController {
+    /**
+     * Creates a new UserController instance and initializes its router
+     * @param userService Service for crud operations over users in database.
+     * @param tokenService Service for crud operations over tokens in database.
+     */
     constructor(userService, tokenService) {
         this.userService = userService;
         this.tokenService = tokenService;
         this.path = '/user';
         this.router = express_1.default.Router();
+        /**
+        * A request handler that create new user account.
+        * @param req The express request object.
+        * @param res The either token for authentication or error response.
+        */
         this.registerUser = async (req, res) => {
             let user;
             try {
@@ -78,6 +92,11 @@ class UserController {
                 res.status(400).send({ error: "Body does not contains correct user model." });
             }
         };
+        /**
+        * A request handler that verify credential of user.
+        * @param req The express request object.
+        * @param res The either token for authentication or error response.
+        */
         this.userLogin = async (req, res) => {
             try {
                 let loadCredential = req.headers.authorization;
@@ -88,7 +107,7 @@ class UserController {
                     const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString();
                     const email = credentials.substring(0, credentials.indexOf(':'));
                     const password = credentials.substring(credentials.indexOf(':') + 1, credentials.length);
-                    const userResponse = await this.userService.getUserDataByEmail(email, password);
+                    const userResponse = await this.userService.getUserDataByEmailPassword(email, password);
                     if (userResponse.hasOwnProperty("error"))
                         res.status(400).send(userResponse);
                     else {
@@ -107,6 +126,11 @@ class UserController {
                 res.status(400).send({ error: "Server error." });
             }
         };
+        /**
+        * A request handler that return user object.
+        * @param req The express request object.
+        * @param res The either user object or error response.
+        */
         this.getUserById = async (req, res) => {
             try {
                 const user = JSON.parse(req.query.user);
@@ -119,6 +143,11 @@ class UserController {
                 res.status(400).send({ error: "Some problem on the server." });
             }
         };
+        /**
+        * A request handler that update user profile image.
+        * @param req The express request object.
+        * @param res The either success response with image url of newly created profile image or error response.
+        */
         this.userProfileImage = async (req, res) => {
             try {
                 const folder = process.env.IMAGE_PROFILE;
@@ -157,6 +186,11 @@ class UserController {
                 res.status(400).send();
             }
         };
+        /**
+        * A request handler that update user password.
+        * @param req The express request object.
+        * @param res The either success or error response.
+        */
         this.userUpdatePassword = async (req, res) => {
             try {
                 const user = JSON.parse(req.query.user);
@@ -167,6 +201,7 @@ class UserController {
                 }
                 else {
                     const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString();
+                    console.log(credentials);
                     const passwordOld = credentials.substring(0, credentials.indexOf(':'));
                     const passwordNew = credentials.substring(credentials.indexOf(':') + 1, credentials.length);
                     const response = await this.userService.updateUserPassword(user, passwordOld, passwordNew);
@@ -181,6 +216,11 @@ class UserController {
                 res.status(400).send({ error: "Server error." });
             }
         };
+        /**
+        * A request handler that update user profile information's.
+        * @param req The express request object.
+        * @param res The either success or error response.
+        */
         this.userUpdate = async (req, res) => {
             try {
                 const user = JSON.parse(req.query.user);
@@ -201,6 +241,11 @@ class UserController {
                 res.status(400).send({ error: "Server error." });
             }
         };
+        /**
+        * A request handler that delete user.
+        * @param req The express request object.
+        * @param res The either success or error response.
+        */
         this.userDelete = async (req, res) => {
             try {
                 const user = JSON.parse(req.query.user);
@@ -232,6 +277,9 @@ class UserController {
         };
         this.initRouter();
     }
+    /**
+     * Initializes the router by setting up the routes and their corresponding request handlers.
+     */
     initRouter() {
         const upload_public = new imageMiddleware_1.ImageMiddleWare().getStorage(process.env.IMAGE_PROFILE);
         this.router.post('/register', this.registerUser);
@@ -243,6 +291,10 @@ class UserController {
         this.router.post('/image', userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, upload_public.single('uploaded_file'), this.userProfileImage);
         this.router.use(express_1.default.static(path_1.default.join(__dirname.split('src')[0], process.env.IMAGE_PROFILE)));
     }
+    /**
+     * Delete files by its name in profile folder.
+     * @param imagesUrls Name of all file that has to be deleted if exists.
+     */
     deleteFiles(imagesUrls) {
         const folder = process.env.IMAGE_PROFILE;
         for (var image of imagesUrls) {
