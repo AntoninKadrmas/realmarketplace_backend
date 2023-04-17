@@ -45,9 +45,10 @@ class UserController {
      * @param userService Service for crud operations over users in database.
      * @param tokenService Service for crud operations over tokens in database.
      */
-    constructor(userService, tokenService) {
+    constructor(userService, tokenService, tool) {
         this.userService = userService;
         this.tokenService = tokenService;
+        this.tool = tool;
         this.path = '/user';
         this.router = express_1.default.Router();
         /**
@@ -58,32 +59,38 @@ class UserController {
         this.registerUser = async (req, res) => {
             let user;
             try {
-                if (req.body == null) {
+                if (req.body == undefined) {
                     res.status(400).send({ error: "Body does not contains user model." });
                 }
                 else {
                     let loadCredential = req.headers.authorization;
+                    console.log(loadCredential);
                     if (loadCredential == undefined)
                         res.status(400).send({ error: "Missing credential header." });
                     else {
-                        const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString();
+                        const credentials = Buffer.from(loadCredential.split(" ")[1], 'base64').toString();
+                        console.log(credentials);
                         const email = credentials.substring(0, credentials.indexOf(':'));
                         const password = credentials.substring(credentials.indexOf(':') + 1, credentials.length);
                         user = req.body;
                         user.createdIn = new Date();
                         user.password = password;
                         user.email = email;
-                        const createUserResponse = await this.userService.createNewUser(user);
-                        if (createUserResponse.hasOwnProperty("userId")) {
-                            const userIds = createUserResponse;
-                            const token = await this.tokenService.createToken(new mongodb_1.ObjectId(userIds.userId));
-                            if (token.hasOwnProperty("error"))
-                                res.status(400).send(token);
+                        if (!this.tool.validUser(user, false, true))
+                            res.status(400).send({ error: "Invalid user model format." });
+                        else {
+                            const createUserResponse = await this.userService.createNewUser(user);
+                            if (createUserResponse.hasOwnProperty("userId")) {
+                                const userIds = createUserResponse;
+                                const token = await this.tokenService.createToken(new mongodb_1.ObjectId(userIds.userId));
+                                if (token.hasOwnProperty("error"))
+                                    res.status(400).send(token);
+                                else
+                                    res.status(200).send({ "token": token.toString() });
+                            }
                             else
-                                res.status(200).send({ "token": token.toString() });
+                                res.status(400).send(createUserResponse);
                         }
-                        else
-                            res.status(400).send(createUserResponse);
                     }
                 }
             }
@@ -100,24 +107,30 @@ class UserController {
         this.userLogin = async (req, res) => {
             try {
                 let loadCredential = req.headers.authorization;
-                if (loadCredential == null) {
-                    res.status(400).send("Incorrect request.");
+                if (loadCredential == undefined) {
+                    res.status(400).send("Missing credential header.");
                 }
                 else {
-                    const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString();
+                    const credentials = Buffer.from(loadCredential.split(" ")[1], 'base64').toString();
                     const email = credentials.substring(0, credentials.indexOf(':'));
                     const password = credentials.substring(credentials.indexOf(':') + 1, credentials.length);
-                    const userResponse = await this.userService.getUserDataByEmailPassword(email, password);
-                    if (userResponse.hasOwnProperty("error"))
-                        res.status(400).send(userResponse);
+                    if (!this.tool.validEmail(email))
+                        res.status(400).send({ error: "Invalid user email format." });
+                    else if (!this.tool.validPassword(password))
+                        res.status(400).send({ error: "Invalid user password format." });
                     else {
-                        const tempUserResponse = userResponse;
-                        const token = await this.tokenService.createToken(new mongodb_1.ObjectId(tempUserResponse._id));
-                        console.log(`token: ${token}`);
-                        if (token.hasOwnProperty("error"))
-                            res.status(400).send(token);
-                        else
-                            res.status(200).send({ "token": token.toString() });
+                        const userResponse = await this.userService.getUserDataByEmailPassword(email, password);
+                        if (userResponse.hasOwnProperty("error"))
+                            res.status(400).send(userResponse);
+                        else {
+                            const tempUserResponse = userResponse;
+                            const token = await this.tokenService.createToken(new mongodb_1.ObjectId(tempUserResponse._id));
+                            console.log(`token: ${token}`);
+                            if (token.hasOwnProperty("error"))
+                                res.status(400).send(token);
+                            else
+                                res.status(200).send({ "token": token.toString() });
+                        }
                     }
                 }
             }
@@ -157,7 +170,7 @@ class UserController {
                     const user = JSON.parse(req.query.user);
                     const userId = new mongodb_1.ObjectId(user._id.toString());
                     if (user.mainImageUrl != null && user.mainImageUrl != "")
-                        this.deleteFiles([user.mainImageUrl]);
+                        this.tool.deleteFiles([user.mainImageUrl], this.folder);
                     const file = req.file;
                     const dirUrl = __dirname.split('src')[0] + `${folder}/` + file.filename;
                     if (!fs_1.default.existsSync(dirUrl))
@@ -170,7 +183,7 @@ class UserController {
                             const imageUrl = `/${file.filename}`;
                             const response = await this.userService.updateUserImage(userId, imageUrl);
                             if (response.hasOwnProperty("error")) {
-                                this.deleteFiles([imageUrl]);
+                                this.tool.deleteFiles([imageUrl], this.folder);
                                 res.status(400).send(response);
                             }
                             else {
@@ -200,15 +213,21 @@ class UserController {
                     res.status(400).send("Incorrect request.");
                 }
                 else {
-                    const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString();
+                    const credentials = Buffer.from(loadCredential.split(" ")[1], 'base64').toString();
                     console.log(credentials);
                     const passwordOld = credentials.substring(0, credentials.indexOf(':'));
                     const passwordNew = credentials.substring(credentials.indexOf(':') + 1, credentials.length);
-                    const response = await this.userService.updateUserPassword(user, passwordOld, passwordNew);
-                    if (response.hasOwnProperty("error"))
-                        res.status(400).send(response);
-                    else
-                        res.status(200).send(response);
+                    if (!this.tool.validPassword(passwordOld))
+                        res.status(400).send({ error: "Invalid old password format." });
+                    else if (!this.tool.validPassword(passwordNew))
+                        res.status(400).send({ error: "Invalid new password format." });
+                    else {
+                        const response = await this.userService.updateUserPassword(user, passwordOld, passwordNew);
+                        if (response.hasOwnProperty("error"))
+                            res.status(400).send(response);
+                        else
+                            res.status(200).send(response);
+                    }
                 }
             }
             catch (e) {
@@ -229,11 +248,15 @@ class UserController {
                     res.status(400).send({ error: "Body does not contains user model." });
                 else {
                     const user = req.body;
-                    const response = await this.userService.updateUser(userId, user);
-                    if (response.hasOwnProperty("error"))
-                        res.status(400).send(response);
-                    else
-                        res.status(200).send(response);
+                    if (!this.tool.validUser(user, true, false))
+                        res.status(400).send({ error: "Invalid user model format." });
+                    else {
+                        const response = await this.userService.updateUser(userId, user);
+                        if (response.hasOwnProperty("error"))
+                            res.status(400).send(response);
+                        else
+                            res.status(200).send(response);
+                    }
                 }
             }
             catch (e) {
@@ -255,18 +278,22 @@ class UserController {
                     res.status(400).send("Incorrect request.");
                 }
                 else {
-                    const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString();
+                    const credentials = Buffer.from(loadCredential.split(" ")[1], 'base64').toString();
                     const password = credentials.substring(0, credentials.indexOf(':'));
-                    const response = await this.userService.deleteUser(user, password);
-                    if (response.hasOwnProperty("error"))
-                        res.status(400).send(response);
+                    if (this.tool.validPassword(password))
+                        res.status(400).send({ error: "Invalid user password." });
                     else {
-                        this.deleteFiles([user.mainImageUrl]);
-                        const deleteUrls = await this.userService.deleteUserAdverts(userId);
-                        if (!response.hasOwnProperty("error"))
-                            this.deleteFiles(deleteUrls);
-                        await this.tokenService.deleteToken(userId);
-                        res.status(200).send(response);
+                        const response = await this.userService.deleteUser(user, password);
+                        if (response.hasOwnProperty("error"))
+                            res.status(400).send(response);
+                        else {
+                            this.tool.deleteFiles([user.mainImageUrl], this.folder);
+                            const deleteUrls = await this.userService.deleteUserAdverts(userId);
+                            if (!response.hasOwnProperty("error"))
+                                this.tool.deleteFiles(deleteUrls, this.folder);
+                            await this.tokenService.deleteToken(userId);
+                            res.status(200).send(response);
+                        }
                     }
                 }
             }
@@ -276,6 +303,7 @@ class UserController {
             }
         };
         this.initRouter();
+        this.folder = process.env.IMAGE_PROFILE;
     }
     /**
      * Initializes the router by setting up the routes and their corresponding request handlers.
@@ -290,21 +318,6 @@ class UserController {
         this.router.delete('/', userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.userDelete);
         this.router.post('/image', userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, upload_public.single('uploaded_file'), this.userProfileImage);
         this.router.use(express_1.default.static(path_1.default.join(__dirname.split('src')[0], process.env.IMAGE_PROFILE)));
-    }
-    /**
-     * Delete files by its name in profile folder.
-     * @param imagesUrls Name of all file that has to be deleted if exists.
-     */
-    deleteFiles(imagesUrls) {
-        const folder = process.env.IMAGE_PROFILE;
-        for (var image of imagesUrls) {
-            const oldDirUrl = __dirname.split('src')[0] + folder + image;
-            console.log(`${oldDirUrl} ---- ${fs_1.default.existsSync(oldDirUrl)}`);
-            if (fs_1.default.existsSync(oldDirUrl))
-                fs_1.default.unlink(oldDirUrl, (err) => {
-                    console.log(err);
-                });
-        }
     }
 }
 exports.UserController = UserController;

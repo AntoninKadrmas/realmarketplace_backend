@@ -46,9 +46,10 @@ class AdvertController {
      * @param advertService Service that do crud operation over adverts in database.
      * @param advertSearchService Service for fetching information's about adverts from database.
      */
-    constructor(advertService, advertSearchService) {
+    constructor(advertService, advertSearchService, tools) {
         this.advertService = advertService;
         this.advertSearchService = advertSearchService;
+        this.tools = tools;
         this.path = "/advert";
         this.router = express_1.default.Router();
         /**
@@ -114,7 +115,7 @@ class AdvertController {
                     const advertId = new mongodb_1.ObjectId(req.body._id.toString());
                     const user = JSON.parse(req.query.user);
                     const userId = new mongodb_1.ObjectId(user._id.toString());
-                    this.deleteFiles(deleteUrl);
+                    this.tools.deleteFiles(deleteUrl, this.folder);
                     const tempOldUrls = req.body.imagesUrls.split(";;");
                     const oldUrls = [];
                     for (let oldUrl of tempOldUrls) {
@@ -177,7 +178,7 @@ class AdvertController {
                     if (advertId == null || imagesUrls == null)
                         res.status(400).send({ error: "Missing advert id or delete urls." });
                     else {
-                        this.deleteFiles(imagesUrls);
+                        this.tools.deleteFiles(imagesUrls, this.folder);
                         const response = await this.advertService.deleteAdvert(advertId, userId);
                         if (response.hasOwnProperty("error"))
                             res.status(400).send(response);
@@ -198,7 +199,7 @@ class AdvertController {
         */
         this.getAdvert = async (req, res) => {
             try {
-                if (this.variableExistsString(req.query.search) && this.variableExistsString(req.query.page)) {
+                if (this.tools.validString(req.query.search) && this.tools.validString(req.query.page)) {
                     const search = req.query.search;
                     const page = parseInt(req.query.page);
                     if (req.query.user == undefined) {
@@ -315,8 +316,8 @@ class AdvertController {
         */
         this.getUserAdverts = async (req, res) => {
             try {
-                if (this.variableExistsString(req.get("userEmail")) &&
-                    this.variableExistsString(req.get("createdIn"))) {
+                if (this.tools.validString(req.get("userEmail")) &&
+                    this.tools.validString(req.get("createdIn"))) {
                     const userEmail = req.get("userEmail");
                     const createdIn = req.get("createdIn");
                     const adverts = await this.advertSearchService.getAdvertByUserEmailTime(userEmail, createdIn);
@@ -367,6 +368,7 @@ class AdvertController {
             }
         };
         this.initRouter();
+        this.folder = process.env.IMAGE_PUBLIC;
     }
     /**
      * Initializes the router by setting up the routes and their corresponding request handlers.
@@ -383,30 +385,6 @@ class AdvertController {
         this.router.delete("/favorite", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.deleteFavoriteAdvert);
         this.router.put("/visible", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.updateAdvertVisibility);
         this.router.use(express_1.default.static(path_1.default.join(__dirname.split('src')[0], process.env.IMAGE_PUBLIC)));
-    }
-    /**
-     * Delete files by its name in public folder.
-     * @param imagesUrls Name of all file that has to be deleted if exists.
-     */
-    deleteFiles(imagesUrls) {
-        const folder = process.env.IMAGE_PUBLIC;
-        for (var image of imagesUrls) {
-            const oldDirUrl = __dirname.split('src')[0] + folder + image;
-            if (fs_1.default.existsSync(oldDirUrl))
-                fs_1.default.unlink(oldDirUrl, (err) => {
-                    console.log(err);
-                });
-        }
-    }
-    /**
-     * Find if given string exists.
-     * @param value string that would be tested
-     * @returns Boolean value true if string exists else false.
-     */
-    variableExistsString(value) {
-        return value != null &&
-            value != undefined &&
-            value != "";
     }
 }
 exports.AdvertController = AdvertController;

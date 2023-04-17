@@ -1,3 +1,4 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-require("./controller/userController.spec");
+const server_1 = require("./server");
+new server_1.Server().start();

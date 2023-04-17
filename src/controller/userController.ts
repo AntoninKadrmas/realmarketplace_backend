@@ -9,6 +9,7 @@ import { userAuthMiddlewareStrict } from "../middleware/userAuthMiddlewareStrict
 import { ImageMiddleWare } from "../middleware/imageMiddleware";
 import path from 'path';
 import fs from 'fs';
+import { ToolService } from "../service/toolService";
 dotenv.config();
 /**
  * Controller for operating over users.
@@ -17,13 +18,15 @@ dotenv.config();
 export class UserController implements GenericController{
     path:string ='/user'
     router:express.Router = express.Router()
+    folder:string
     /**
      * Creates a new UserController instance and initializes its router
      * @param userService Service for crud operations over users in database.
      * @param tokenService Service for crud operations over tokens in database.
      */
-    constructor(private userService:UserService,private tokenService:TokenService){
+    constructor(private userService:UserService,private tokenService:TokenService,private tool:ToolService){
         this.initRouter()
+        this.folder = process.env.IMAGE_PROFILE!!
     }
     /**
      * Initializes the router by setting up the routes and their corresponding request handlers.
@@ -47,26 +50,31 @@ export class UserController implements GenericController{
     registerUser: RequestHandler = async (req, res) => {
         let user:UserModel
         try{
-            if(req.body==null){res.status(400).send({error:"Body does not contains user model."})}
+            if(req.body==undefined){res.status(400).send({error:"Body does not contains user model."})}
             else{
                 let loadCredential = req.headers.authorization
+                console.log(loadCredential)
                 if(loadCredential==undefined) res.status(400).send({error:"Missing credential header."})
                 else{
-                    const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString()
+                    const credentials = Buffer.from(loadCredential.split(" ")[1], 'base64').toString()
+                    console.log(credentials)
                     const email = credentials.substring(0,credentials.indexOf(':'))
                     const password = credentials.substring(credentials.indexOf(':')+1,credentials.length)
                     user = req.body
                     user.createdIn = new Date()
                     user.password=password
                     user.email=email
-                    const createUserResponse:{userId:string}|{error:string} = await this.userService.createNewUser(user)
-                    if(createUserResponse.hasOwnProperty("userId")){
-                        const userIds:{userId:string} = createUserResponse as {userId:string}
-                        const token = await this.tokenService.createToken(new ObjectId(userIds.userId))
-                        if(token.hasOwnProperty("error"))res.status(400).send(token)
-                        else res.status(200).send({"token":token.toString()})
+                    if(!this.tool.validUser(user,false,true))res.status(400).send({error:"Invalid user model format."})
+                    else{
+                        const createUserResponse:{userId:string}|{error:string} = await this.userService.createNewUser(user)
+                        if(createUserResponse.hasOwnProperty("userId")){
+                            const userIds:{userId:string} = createUserResponse as {userId:string}
+                            const token = await this.tokenService.createToken(new ObjectId(userIds.userId))
+                            if(token.hasOwnProperty("error"))res.status(400).send(token)
+                            else res.status(200).send({"token":token.toString()})
+                        }
+                        else res.status(400).send(createUserResponse)
                     }
-                    else res.status(400).send(createUserResponse)
                 }
             }
         }catch(e){
@@ -82,19 +90,23 @@ export class UserController implements GenericController{
     userLogin: RequestHandler = async (req, res) => {
         try{
             let loadCredential = req.headers.authorization
-            if(loadCredential==null){res.status(400).send("Incorrect request.")}
+            if(loadCredential==undefined){res.status(400).send("Missing credential header.")}
             else{
-                const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString()
+                const credentials = Buffer.from(loadCredential.split(" ")[1], 'base64').toString()
                 const email = credentials.substring(0,credentials.indexOf(':'))
                 const password = credentials.substring(credentials.indexOf(':')+1,credentials.length)
-                const userResponse:UserModel | {error:string} = await this.userService.getUserDataByEmailPassword(email,password)
-                if(userResponse.hasOwnProperty("error"))res.status(400).send(userResponse)
+                if(!this.tool.validEmail(email))res.status(400).send({error:"Invalid user email format."})
+                else if(!this.tool.validPassword(password))res.status(400).send({error:"Invalid user password format."})
                 else{
-                    const tempUserResponse:UserModel = userResponse as UserModel
-                    const token = await this.tokenService.createToken(new ObjectId(tempUserResponse._id!))
-                    console.log(`token: ${token}`)
-                    if(token.hasOwnProperty("error")) res.status(400).send(token)
-                    else res.status(200).send({"token":token.toString()})
+                    const userResponse:UserModel | {error:string} = await this.userService.getUserDataByEmailPassword(email,password)
+                    if(userResponse.hasOwnProperty("error"))res.status(400).send(userResponse)
+                    else{
+                        const tempUserResponse:UserModel = userResponse as UserModel
+                        const token = await this.tokenService.createToken(new ObjectId(tempUserResponse._id!))
+                        console.log(`token: ${token}`)
+                        if(token.hasOwnProperty("error")) res.status(400).send(token)
+                        else res.status(200).send({"token":token.toString()})
+                    }
                 }
             }
         }catch(e){
@@ -130,7 +142,7 @@ export class UserController implements GenericController{
             else{
                 const user:UserModel = JSON.parse(req.query.user as string)
                 const userId=new ObjectId(user._id!.toString())
-                if(user.mainImageUrl!=null&&user.mainImageUrl!="") this.deleteFiles([user.mainImageUrl])
+                if(user.mainImageUrl!=null&&user.mainImageUrl!="") this.tool.deleteFiles([user.mainImageUrl],this.folder)
                 const file = req.file!
                 const dirUrl = __dirname.split('src')[0]+`${folder}/`+file.filename
                 if(!fs.existsSync(dirUrl)) res.status(400).send()
@@ -141,7 +153,7 @@ export class UserController implements GenericController{
                         const imageUrl = `/${file.filename}`
                         const response:{success:string} | {error:string}  = await this.userService.updateUserImage(userId,imageUrl)
                         if(response.hasOwnProperty("error")){
-                            this.deleteFiles([imageUrl])
+                            this.tool.deleteFiles([imageUrl],this.folder)
                             res.status(400).send(response)
                         }
                         else {
@@ -168,13 +180,17 @@ export class UserController implements GenericController{
             let loadCredential = req.headers.authorization
             if(loadCredential==null){res.status(400).send("Incorrect request.")}
             else{
-                const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString()
+                const credentials = Buffer.from(loadCredential.split(" ")[1], 'base64').toString()
                 console.log(credentials)
                 const passwordOld = credentials.substring(0,credentials.indexOf(':'))
                 const passwordNew = credentials.substring(credentials.indexOf(':')+1,credentials.length)
-                const response:{success:string} | {error:string}= await this.userService.updateUserPassword(user,passwordOld,passwordNew)
-                if(response.hasOwnProperty("error"))res.status(400).send(response)
-                else res.status(200).send(response)
+                if(!this.tool.validPassword(passwordOld))res.status(400).send({error:"Invalid old password format."})
+                else if(!this.tool.validPassword(passwordNew))res.status(400).send({error:"Invalid new password format."})
+                else{
+                    const response:{success:string} | {error:string}= await this.userService.updateUserPassword(user,passwordOld,passwordNew)
+                    if(response.hasOwnProperty("error"))res.status(400).send(response)
+                    else res.status(200).send(response)
+                }
             }
         }catch(e){
             console.log(e)
@@ -193,9 +209,12 @@ export class UserController implements GenericController{
             if(req.body==null) res.status(400).send({error:"Body does not contains user model."})
             else{
                 const user:LightUser = req.body
-                const response:{success:string} | {error:string}= await this.userService.updateUser(userId,user)
-                if(response.hasOwnProperty("error"))res.status(400).send(response)
-                else res.status(200).send(response)
+                if(!this.tool.validUser(user,true,false))res.status(400).send({error:"Invalid user model format."})
+                else{
+                    const response:{success:string} | {error:string}= await this.userService.updateUser(userId,user)
+                    if(response.hasOwnProperty("error"))res.status(400).send(response)
+                    else res.status(200).send(response)
+                }
             }
         }catch(e){
             console.log(e)
@@ -214,16 +233,19 @@ export class UserController implements GenericController{
             let loadCredential = req.headers.authorization
             if(loadCredential==null){res.status(400).send("Incorrect request.")}
             else{
-                const credentials = new Buffer(loadCredential.split(" ")[1], 'base64').toString()
+                const credentials = Buffer.from(loadCredential.split(" ")[1], 'base64').toString()
                 const password = credentials.substring(0,credentials.indexOf(':'))
-                const response:{success:string} | {error:string}= await this.userService.deleteUser(user,password)
-                if(response.hasOwnProperty("error"))res.status(400).send(response)
-                else {
-                    this.deleteFiles([user.mainImageUrl])
-                    const deleteUrls = await this.userService.deleteUserAdverts(userId)
-                    if(!response.hasOwnProperty("error"))this.deleteFiles(deleteUrls as string[])
-                    await this.tokenService.deleteToken(userId)
-                    res.status(200).send(response)
+                if(this.tool.validPassword(password))res.status(400).send({error:"Invalid user password."})
+                else{
+                    const response:{success:string} | {error:string}= await this.userService.deleteUser(user,password)
+                    if(response.hasOwnProperty("error"))res.status(400).send(response)
+                    else {
+                        this.tool.deleteFiles([user.mainImageUrl],this.folder)
+                        const deleteUrls = await this.userService.deleteUserAdverts(userId)
+                        if(!response.hasOwnProperty("error"))this.tool.deleteFiles(deleteUrls as string[],this.folder)
+                        await this.tokenService.deleteToken(userId)
+                        res.status(200).send(response)
+                    }
                 }
             }
         }catch(e){
@@ -231,18 +253,5 @@ export class UserController implements GenericController{
             res.status(400).send({error:"Server error."})
         }
     }
-    /**
-     * Delete files by its name in profile folder.
-     * @param imagesUrls Name of all file that has to be deleted if exists.
-     */
-    private deleteFiles(imagesUrls:string[]){
-        const folder = process.env.IMAGE_PROFILE!!
-        for(var image of imagesUrls){
-            const oldDirUrl=__dirname.split('src')[0]+folder+image
-            console.log(`${oldDirUrl} ---- ${fs.existsSync(oldDirUrl)}`)
-            if(fs.existsSync(oldDirUrl)) fs.unlink(oldDirUrl,(err)=>{
-                console.log(err)
-            })
-        }
-    }
+  
 }

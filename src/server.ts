@@ -12,6 +12,7 @@ import { AdvertController } from './controller/advertController';
 import { StringIndexAdvert } from './service/stringIndexAdvert';
 import { AdvertSearchService } from './service/advertSearchService';
 import mongoSanitize = require('express-mongo-sanitize');
+import { ToolService } from './service/toolService';
 
 dotenv.config();
 /**
@@ -66,9 +67,9 @@ export class Server{
      * @private
      */
     private setControllers(){
-        const userController = new UserController(new UserService(),new TokenService())
+        const userController = new UserController(new UserService(),new TokenService(),new ToolService())
         const enumControl = new EnumController()
-        const advertController = new AdvertController(new AdvertService(),new AdvertSearchService())
+        const advertController = new AdvertController(new AdvertService(),new AdvertSearchService(),new ToolService())
         this.app.use(userController.path,userController.router);
         this.app.use(enumControl.path,enumControl.router)
         this.app.use(advertController.path,advertController.router)
@@ -84,4 +85,3 @@ export class Server{
         })
     }
 }
-new Server().start()

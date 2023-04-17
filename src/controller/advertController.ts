@@ -12,6 +12,7 @@ import path from 'path';
 import fs from 'fs';
 import { UserModel } from "../model/userModel";
 import { AdvertSearchService } from "../service/advertSearchService";
+import { ToolService } from "../service/toolService";
 dotenv.config();
 /**
  * Controller for operating over adverts.
@@ -20,13 +21,15 @@ dotenv.config();
 export class AdvertController implements GenericController{
     path: string="/advert";
     router: Router=express.Router();
+    folder:string
     /**
      * Creates a new AdvertController instance and initializes its router
      * @param advertService Service that do crud operation over adverts in database.
      * @param advertSearchService Service for fetching information's about adverts from database.
      */
-    constructor(private advertService:AdvertService,private advertSearchService:AdvertSearchService){
+    constructor(private advertService:AdvertService,private advertSearchService:AdvertSearchService,private tools:ToolService){
         this.initRouter()
+        this.folder = process.env.IMAGE_PUBLIC!!
     }
     /**
      * Initializes the router by setting up the routes and their corresponding request handlers.
@@ -102,7 +105,7 @@ export class AdvertController implements GenericController{
                 const advertId = new ObjectId(req.body._id.toString())
                 const user:UserModel = JSON.parse(req.query.user as string)
                 const userId=new ObjectId(user._id!.toString())
-                this.deleteFiles(deleteUrl)
+                this.tools.deleteFiles(deleteUrl,this.folder)
                 const tempOldUrls = req.body.imagesUrls.split(";;")
                 const oldUrls:OldImagesUrls[] = [] 
                 for(let oldUrl of tempOldUrls){
@@ -160,7 +163,7 @@ export class AdvertController implements GenericController{
                 const advertId = new ObjectId(req.query.advertId.toString())
                 if(advertId==null||imagesUrls==null)res.status(400).send({error:"Missing advert id or delete urls."})
                 else{
-                    this.deleteFiles(imagesUrls)
+                    this.tools.deleteFiles(imagesUrls,this.folder)
                     const response = await this.advertService.deleteAdvert(advertId,userId)
                     if(response.hasOwnProperty("error"))res.status(400).send(response)
                     else res.status(200).send(response)
@@ -179,7 +182,7 @@ export class AdvertController implements GenericController{
     */
     getAdvert: RequestHandler = async (req, res) => {
         try{
-            if(this.variableExistsString(req.query.search as string)&&this.variableExistsString(req.query.page as string)){
+            if(this.tools.validString(req.query.search as string)&&this.tools.validString(req.query.page as string)){
                 const search = req.query.search as string
                 const page = parseInt(req.query.page as string)
                 if(req.query.user==undefined){
@@ -275,8 +278,8 @@ export class AdvertController implements GenericController{
     */
     getUserAdverts: RequestHandler = async (req, res) => {
         try{
-            if(this.variableExistsString(req.get("userEmail")!)&&
-                this.variableExistsString(req.get("createdIn")!)){
+            if(this.tools.validString(req.get("userEmail")!)&&
+                this.tools.validString(req.get("createdIn")!)){
                 const userEmail = req.get("userEmail")!
                 const createdIn = req.get("createdIn")!
                 const adverts = await this.advertSearchService.getAdvertByUserEmailTime(userEmail,createdIn)
@@ -316,27 +319,5 @@ export class AdvertController implements GenericController{
             res.status(400).send()
         }
     }
-    /**
-     * Delete files by its name in public folder.
-     * @param imagesUrls Name of all file that has to be deleted if exists.
-     */
-    private deleteFiles(imagesUrls:string[]){
-        const folder = process.env.IMAGE_PUBLIC!!
-        for(var image of imagesUrls){
-            const oldDirUrl=__dirname.split('src')[0]+folder+image
-            if(fs.existsSync(oldDirUrl)) fs.unlink(oldDirUrl,(err)=>{
-                console.log(err)
-            })
-        }
-    }
-    /**
-     * Find if given string exists.
-     * @param value string that would be tested
-     * @returns Boolean value true if string exists else false.
-     */
-    private variableExistsString(value:string):boolean{
-        return value!=null &&
-            value!=undefined &&
-            value!=""
-    }
+    
 }

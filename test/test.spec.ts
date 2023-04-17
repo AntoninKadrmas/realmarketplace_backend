@@ -1,3 +1,1 @@
-
-import "./controller/userControllerCreate.spec"
-
+import "./controller/userController.spec"

@@ -53,7 +53,7 @@ export class UserModelLogin {
  */
 export class LightUser {
     /** The time stamp when the user was created. */
-    createdIn!: string;
+    createdIn!: Date;
     /** The email address of the user. */
     email!: string;
     /** The first name of the user. */

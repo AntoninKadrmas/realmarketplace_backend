@@ -1,27 +1,20 @@
-import { UserModel, UserValid } from "../../src/model/userModel";
-
+import { defaultUser } from "../tools/globalTool";
 export class HeadersTools{
-    public static defaultUser:UserModel={
-        firstName: "Antonin",
-        lastName: "Novak",
-        email: "novak.antonin.test.realmarketplaceoriginal.2023@gmail.com",
-        phone: "123456789",
-        createdIn: new Date(),
-        validated: new UserValid(),
-        mainImageUrl: ""
-    }
-    public static userToken:string;
-    public static getTokenHeader(){
-        let header={
-            "Authentication":this.userToken
+    static getTokenHeader(token:string){
+        return{
+            "Authentication":token
         }
-        return header
     }
-    public static getAuthHeader(value1:string,value2:string){
-        let header={
+    static getAuthHeader(value1:string,value2:string){
+        return{
             "Authorization":this.getBasicHeader(value1,value2)
         }
-        return header
+    }
+    static getAuthHeaderWithToken(token:string,value1:string,value2:string){
+        return{
+            "Authorization":this.getBasicHeader(value1,value2),
+            "Authentication":token
+        }
     }
     static getBasicHeader(value1:string,value2:string):string{
         return 'Basic ' + Buffer.from(value1 + ':' + value2).toString('base64');
