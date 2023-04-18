@@ -7,7 +7,7 @@ const mocha_1 = require("mocha");
 const chai_1 = require("chai");
 const supertest_1 = __importDefault(require("supertest"));
 const headersTools_1 = require("../tools/headersTools");
-const globalTool_1 = require("../tools/globalTool");
+const defaultModels_1 = require("../tools/defaultModels");
 const dbConnection_1 = require("../../src/db/dbConnection");
 const server_1 = require("../../src/server");
 const toolService_1 = require("../../src/service/toolService");
@@ -29,7 +29,7 @@ const path_1 = __importDefault(require("path"));
     });
     (0, mocha_1.describe)("Register user endpoint post(/user/register)", () => {
         (0, mocha_1.it)("should not create new user without user in body", async () => {
-            const user = { ...globalTool_1.defaultUser };
+            const user = { ...defaultModels_1.defaultUser };
             const res = await (0, supertest_1.default)(app).post(`/user/register`)
                 .set(headersTools_1.HeadersTools.getAuthHeader(user.email, user.password))
                 .send();
@@ -37,14 +37,14 @@ const path_1 = __importDefault(require("path"));
             (0, chai_1.expect)(res.body.error).to.eq("Body does not contains user model.");
         });
         (0, mocha_1.it)("should not create new user without Authorization header", async () => {
-            const user = { ...globalTool_1.defaultUser };
+            const user = { ...defaultModels_1.defaultUser };
             const res = await (0, supertest_1.default)(app).post(`/user/register`)
                 .send(user);
             (0, chai_1.expect)(res.status).to.be.eq(400);
             (0, chai_1.expect)(res.body.error).to.eq("Missing credential header.");
         });
         (0, mocha_1.it)("should not create new user with invalid password.", async () => {
-            const user = { ...globalTool_1.defaultUser };
+            const user = { ...defaultModels_1.defaultUser };
             const res = await (0, supertest_1.default)(app).post(`/user/register`)
                 .set(headersTools_1.HeadersTools.getAuthHeader(user.email, "error"))
                 .send(user);
@@ -52,7 +52,7 @@ const path_1 = __importDefault(require("path"));
             (0, chai_1.expect)(res.body.error).to.eq("Invalid user model format.");
         });
         (0, mocha_1.it)("should not create new user with invalid email.", async () => {
-            const user = { ...globalTool_1.defaultUser };
+            const user = { ...defaultModels_1.defaultUser };
             const res = await (0, supertest_1.default)(app).post(`/user/register`)
                 .set(headersTools_1.HeadersTools.getAuthHeader("error", user.password))
                 .send(user);
@@ -60,7 +60,7 @@ const path_1 = __importDefault(require("path"));
             (0, chai_1.expect)(res.body.error).to.eq("Invalid user model format.");
         });
         (0, mocha_1.it)("should create new user", async () => {
-            const user = { ...globalTool_1.defaultUser };
+            const user = { ...defaultModels_1.defaultUser };
             const res = await (0, supertest_1.default)(app).post(`/user/register`)
                 .set(headersTools_1.HeadersTools.getAuthHeader(user.email, user.password))
                 .send(user);
@@ -69,7 +69,7 @@ const path_1 = __importDefault(require("path"));
             userToken = res.body.token;
         });
         (0, mocha_1.it)("should not create a user with the same email.", async () => {
-            const user = { ...globalTool_1.defaultUser };
+            const user = { ...defaultModels_1.defaultUser };
             const res = await (0, supertest_1.default)(app).post(`/user/register`)
                 .set(headersTools_1.HeadersTools.getAuthHeader(user.email, user.password))
                 .send(user);
@@ -85,7 +85,7 @@ const path_1 = __importDefault(require("path"));
             (0, chai_1.expect)(res.body.error).to.eq("Missing credential header.");
         });
         (0, mocha_1.it)("should not login user invalid email", async () => {
-            const user = { ...globalTool_1.defaultUser };
+            const user = { ...defaultModels_1.defaultUser };
             const res = await (0, supertest_1.default)(app).post(`/user/login`)
                 .set(headersTools_1.HeadersTools.getAuthHeader("error", user.password))
                 .send();
@@ -93,7 +93,7 @@ const path_1 = __importDefault(require("path"));
             (0, chai_1.expect)(res.body.error).to.eq("Invalid user email format.");
         });
         (0, mocha_1.it)("should not login user invalid password", async () => {
-            const user = { ...globalTool_1.defaultUser };
+            const user = { ...defaultModels_1.defaultUser };
             const res = await (0, supertest_1.default)(app).post(`/user/login`)
                 .set(headersTools_1.HeadersTools.getAuthHeader(user.email, "error"))
                 .send();
@@ -101,7 +101,7 @@ const path_1 = __importDefault(require("path"));
             (0, chai_1.expect)(res.body.error).to.eq("Invalid user password format.");
         });
         (0, mocha_1.it)("should not login user incorrect email", async () => {
-            const user = { ...globalTool_1.defaultUser };
+            const user = { ...defaultModels_1.defaultUser };
             const res = await (0, supertest_1.default)(app).post(`/user/login`)
                 .set(headersTools_1.HeadersTools.getAuthHeader(`error${user.email}`, user.password))
                 .send();
@@ -109,7 +109,7 @@ const path_1 = __importDefault(require("path"));
             (0, chai_1.expect)(res.body.error).to.eq("Nor user exists with this Email Address.");
         });
         (0, mocha_1.it)("should not login user incorrect password", async () => {
-            const user = { ...globalTool_1.defaultUser };
+            const user = { ...defaultModels_1.defaultUser };
             const res = await (0, supertest_1.default)(app).post(`/user/login`)
                 .set(headersTools_1.HeadersTools.getAuthHeader(user.email, `${user.password}error`))
                 .send();
@@ -117,7 +117,7 @@ const path_1 = __importDefault(require("path"));
             (0, chai_1.expect)(res.body.error).to.eq("Incorrect password.");
         });
         (0, mocha_1.it)("should login user", async () => {
-            const user = { ...globalTool_1.defaultUser };
+            const user = { ...defaultModels_1.defaultUser };
             const res = await (0, supertest_1.default)(app).post(`/user/login`)
                 .set(headersTools_1.HeadersTools.getAuthHeader(user.email, user.password))
                 .send();
@@ -141,13 +141,13 @@ const path_1 = __importDefault(require("path"));
             const user = res.body;
             console.log(res.body);
             (0, chai_1.expect)(res.status).to.be.eq(200);
-            (0, chai_1.expect)(user.email).to.eq(globalTool_1.defaultUser.email);
-            (0, chai_1.expect)(user.phone).to.eq(globalTool_1.defaultUser.phone);
-            (0, chai_1.expect)(user.firstName).to.eq(globalTool_1.defaultUser.firstName);
-            (0, chai_1.expect)(user.lastName).to.eq(globalTool_1.defaultUser.lastName);
-            (0, chai_1.expect)(user.mainImageUrl).to.eq(globalTool_1.defaultUser.mainImageUrl);
-            (0, chai_1.expect)(user.validated).to.deep.eq(globalTool_1.defaultUser.validated);
-            globalTool_1.defaultUser.createdIn = user.createdIn;
+            (0, chai_1.expect)(user.email).to.eq(defaultModels_1.defaultUser.email);
+            (0, chai_1.expect)(user.phone).to.eq(defaultModels_1.defaultUser.phone);
+            (0, chai_1.expect)(user.firstName).to.eq(defaultModels_1.defaultUser.firstName);
+            (0, chai_1.expect)(user.lastName).to.eq(defaultModels_1.defaultUser.lastName);
+            (0, chai_1.expect)(user.mainImageUrl).to.eq(defaultModels_1.defaultUser.mainImageUrl);
+            (0, chai_1.expect)(user.validated).to.deep.eq(defaultModels_1.defaultUser.validated);
+            defaultModels_1.defaultUser.createdIn = user.createdIn;
             (0, chai_1.expect)(tools.validUser(user, true)).to.be.true;
         });
     });
@@ -160,7 +160,7 @@ const path_1 = __importDefault(require("path"));
             (0, chai_1.expect)(res.body.error).to.eq("Missing credential header.");
         });
         (0, mocha_1.it)("should not update user password invalid new password.", async () => {
-            const user = { ...globalTool_1.defaultUser };
+            const user = { ...defaultModels_1.defaultUser };
             const res = await (0, supertest_1.default)(app).post(`/user`)
                 .set(headersTools_1.HeadersTools.getAuthHeaderWithToken(userToken, user.password, "error"))
                 .send();
@@ -168,7 +168,7 @@ const path_1 = __importDefault(require("path"));
             (0, chai_1.expect)(res.body.error).to.eq("Invalid new password format.");
         });
         (0, mocha_1.it)("should not update user password invalid old password.", async () => {
-            const user = { ...globalTool_1.defaultUser };
+            const user = { ...defaultModels_1.defaultUser };
             const res = await (0, supertest_1.default)(app).post(`/user`)
                 .set(headersTools_1.HeadersTools.getAuthHeaderWithToken(userToken, "error", user.password))
                 .send();
@@ -176,7 +176,7 @@ const path_1 = __importDefault(require("path"));
             (0, chai_1.expect)(res.body.error).to.eq("Invalid old password format.");
         });
         (0, mocha_1.it)("should not update user password incorrect old password.", async () => {
-            const user = { ...globalTool_1.defaultUser };
+            const user = { ...defaultModels_1.defaultUser };
             const res = await (0, supertest_1.default)(app).post(`/user`)
                 .set(headersTools_1.HeadersTools.getAuthHeaderWithToken(userToken, user.password + "error", user.password))
                 .send();
@@ -184,14 +184,14 @@ const path_1 = __importDefault(require("path"));
             (0, chai_1.expect)(res.body.error).to.eq("Incorrect password.");
         });
         (0, mocha_1.it)("should update user password.", async () => {
-            const user = { ...globalTool_1.defaultUser };
+            const user = { ...defaultModels_1.defaultUser };
             const newPassword = user.password + "_new";
             const res = await (0, supertest_1.default)(app).post(`/user`)
                 .set(headersTools_1.HeadersTools.getAuthHeaderWithToken(userToken, user.password, newPassword))
                 .send();
             (0, chai_1.expect)(res.status).to.be.eq(200);
             (0, chai_1.expect)(res.body.success).to.eq("User password successfully updated.");
-            globalTool_1.defaultUser.password = newPassword;
+            defaultModels_1.defaultUser.password = newPassword;
         });
     });
     (0, mocha_1.describe)("Update user profile put(/user)", () => {
@@ -203,7 +203,7 @@ const path_1 = __importDefault(require("path"));
             (0, chai_1.expect)(res.body.error).to.eq("Body does not contains user model.");
         });
         (0, mocha_1.it)("should not update user profile invalid user model.", async () => {
-            const user = { ...globalTool_1.defaultUser };
+            const user = { ...defaultModels_1.defaultUser };
             user.email = "error";
             const res = await (0, supertest_1.default)(app).put(`/user`)
                 .set(headersTools_1.HeadersTools.getTokenHeader(userToken))
@@ -212,7 +212,7 @@ const path_1 = __importDefault(require("path"));
             (0, chai_1.expect)(res.body.error).to.eq("Invalid user model format.");
         });
         (0, mocha_1.it)("should update user profile.", async () => {
-            const user = { ...globalTool_1.defaultUser };
+            const user = { ...defaultModels_1.defaultUser };
             user.phone = "987654321";
             user.firstName = "Pepa";
             const res = await (0, supertest_1.default)(app).put(`/user`)
@@ -220,8 +220,8 @@ const path_1 = __importDefault(require("path"));
                 .send(user);
             (0, chai_1.expect)(res.status).to.be.eq(200);
             (0, chai_1.expect)(res.body.success).to.eq("User profile successfully updated.");
-            globalTool_1.defaultUser.phone = user.phone;
-            globalTool_1.defaultUser.firstName = user.firstName;
+            defaultModels_1.defaultUser.phone = user.phone;
+            defaultModels_1.defaultUser.firstName = user.firstName;
         });
         (0, mocha_1.it)("should get updated user information's.", async () => {
             const res = await (0, supertest_1.default)(app).get(`/user`)
@@ -229,9 +229,9 @@ const path_1 = __importDefault(require("path"));
                 .send();
             const user = res.body;
             (0, chai_1.expect)(res.status).to.be.eq(200);
-            (0, chai_1.expect)(user.email).to.eq(globalTool_1.defaultUser.email);
-            (0, chai_1.expect)(user.phone).to.eq(globalTool_1.defaultUser.phone); //new
-            (0, chai_1.expect)(user.firstName).to.eq(globalTool_1.defaultUser.firstName); //new
+            (0, chai_1.expect)(user.email).to.eq(defaultModels_1.defaultUser.email);
+            (0, chai_1.expect)(user.phone).to.eq(defaultModels_1.defaultUser.phone); //new
+            (0, chai_1.expect)(user.firstName).to.eq(defaultModels_1.defaultUser.firstName); //new
         });
     });
     (0, mocha_1.describe)("Upload user profile image post(/user/image)", () => {
@@ -273,7 +273,7 @@ const path_1 = __importDefault(require("path"));
             (0, chai_1.expect)(res.body.error).to.eq("Invalid user password.");
         });
         (0, mocha_1.it)("should not delete old user incorrect password.", async () => {
-            const user = { ...globalTool_1.defaultUser };
+            const user = { ...defaultModels_1.defaultUser };
             const res = await (0, supertest_1.default)(app).delete(`/user`)
                 .set(headersTools_1.HeadersTools.getAuthHeaderWithToken(userToken, user.password + "error", ""))
                 .send();
@@ -281,7 +281,7 @@ const path_1 = __importDefault(require("path"));
             (0, chai_1.expect)(res.body.error).to.eq("Incorrect password.");
         });
         (0, mocha_1.it)("should delete old user.", async () => {
-            const user = { ...globalTool_1.defaultUser };
+            const user = { ...defaultModels_1.defaultUser };
             const res = await (0, supertest_1.default)(app).delete(`/user`)
                 .set(headersTools_1.HeadersTools.getAuthHeaderWithToken(userToken, user.password, ""))
                 .send();
@@ -289,7 +289,7 @@ const path_1 = __importDefault(require("path"));
             (0, chai_1.expect)(res.body.success).to.eq("User was successfully deleted.");
         });
         (0, mocha_1.it)("should not delete already deleted user", async () => {
-            const user = { ...globalTool_1.defaultUser };
+            const user = { ...defaultModels_1.defaultUser };
             const res = await (0, supertest_1.default)(app).delete(`/user`)
                 .set(headersTools_1.HeadersTools.getAuthHeaderWithToken(userToken, user.password, ""))
                 .send();

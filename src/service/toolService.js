@@ -34,6 +34,15 @@ class ToolService {
             typeof (value) == "string";
     }
     /**
+     * True if given boolean is valid.
+     * @param value Boolean value that would be tested
+     * @returns Boolean value true if boolean is valid else false.
+     */
+    validBoolean(value) {
+        return value.toString().toLowerCase() == "true" ||
+            value.toString().toLowerCase() == "false";
+    }
+    /**
      * True if given email address is correct.
      * @param email Email address that would be tested
      * @returns Boolean value true if email address is correct else false.

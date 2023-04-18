@@ -35,7 +35,7 @@ export class Server{
                 },
             }),
           );
-        var log_file:any
+        let log_file:any
         console.log = function(d) {
             const actualDate = new Date()
             const date =  `${actualDate.getFullYear()}_${actualDate.getMonth()}_${actualDate.getDate()}`
@@ -79,6 +79,6 @@ export class Server{
      */
     async start(){
         this.setControllers()
-        return this.app.listen(process.env.PORT)
+        return this.app.listen(process.env.PORT!=undefined?parseInt(process.env.PORT):3000)
     }
 }

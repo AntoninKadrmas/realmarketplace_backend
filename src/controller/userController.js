@@ -298,14 +298,14 @@ class UserController {
                 res.status(400).send({ error: "Server error." });
             }
         };
+        this.folder = process.env.FOLDER_IMAGE_PROFILE != undefined ? process.env.FOLDER_IMAGE_PROFILE : "profile";
         this.initRouter();
-        this.folder = process.env.FOLDER_IMAGE_PROFILE;
     }
     /**
      * Initializes the router by setting up the routes and their corresponding request handlers.
      */
     initRouter() {
-        const upload_public = new imageMiddleware_1.ImageMiddleWare().getStorage(process.env.FOLDER_IMAGE_PROFILE);
+        const upload_public = new imageMiddleware_1.ImageMiddleWare().getStorage(this.folder);
         this.router.post('/register', this.registerUser);
         this.router.post('/login', this.userLogin);
         this.router.get('/', userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.getUserById);
@@ -313,7 +313,7 @@ class UserController {
         this.router.put('/', userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.userUpdate);
         this.router.delete('/', userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.userDelete);
         this.router.post('/image', userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, upload_public.single('uploaded_file'), this.userProfileImage);
-        this.router.use(express_1.default.static(path_1.default.join(__dirname.split('src')[0], process.env.FOLDER_IMAGE_PROFILE)));
+        this.router.use(express_1.default.static(path_1.default.join(__dirname.split('src')[0], this.folder)));
     }
 }
 exports.UserController = UserController;

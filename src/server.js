@@ -60,7 +60,7 @@ class Server {
                 console.log(`This request[${key}] is sanitized => ${req}`);
             },
         }));
-        var log_file;
+        let log_file;
         console.log = function (d) {
             const actualDate = new Date();
             const date = `${actualDate.getFullYear()}_${actualDate.getMonth()}_${actualDate.getDate()}`;

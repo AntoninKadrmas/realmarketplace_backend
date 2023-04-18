@@ -25,14 +25,14 @@ export class UserController implements GenericController{
      * @param tokenService Service for crud operations over tokens in database.
      */
     constructor(private userService:UserService,private tokenService:TokenService,private tool:ToolService){
+        this.folder = process.env.FOLDER_IMAGE_PROFILE!=undefined?process.env.FOLDER_IMAGE_PROFILE:"profile"
         this.initRouter()
-        this.folder = process.env.FOLDER_IMAGE_PROFILE!!
     }
     /**
      * Initializes the router by setting up the routes and their corresponding request handlers.
      */
     initRouter(){
-        const upload_public = new ImageMiddleWare().getStorage(process.env.FOLDER_IMAGE_PROFILE!!)
+        const upload_public = new ImageMiddleWare().getStorage(this.folder)
         this.router.post('/register',this.registerUser)
         this.router.post('/login',this.userLogin)
         this.router.get('/',userAuthMiddlewareStrict,this.getUserById)
@@ -40,7 +40,7 @@ export class UserController implements GenericController{
         this.router.put('/',userAuthMiddlewareStrict,this.userUpdate)
         this.router.delete('/',userAuthMiddlewareStrict,this.userDelete)
         this.router.post('/image',userAuthMiddlewareStrict,upload_public.single('uploaded_file'),this.userProfileImage)
-        this.router.use(express.static(path.join(__dirname.split('src')[0],process.env.FOLDER_IMAGE_PROFILE!!)))
+        this.router.use(express.static(path.join(__dirname.split('src')[0],this.folder)))
     }
     /**
     * A request handler that create new user account.

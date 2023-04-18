@@ -2,7 +2,7 @@ import {after, describe, it} from "mocha";
 import {expect, use} from "chai";
 import request from "supertest";
 import { HeadersTools } from "../tools/headersTools";
-import { defaultUser } from "../tools/globalTool";
+import { defaultUser } from "../tools/defaultModels";
 import { DBConnection } from "../../src/db/dbConnection";
 import { Server } from "../../src/server";
 import {ToolService} from "../../src/service/toolService";
