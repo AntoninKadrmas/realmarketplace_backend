@@ -81,7 +81,7 @@ class TokenService extends genericService_1.GenericService {
                 userId: userId,
                 expirationTime: this.getActualValidTime()
             };
-            await await this.db.collection(this.collection[0]).deleteMany({ userId: userId });
+            await this.db.collection(this.collection[0]).deleteMany({ userId: userId });
             const newTokenOrFind = await this.db.collection(this.collection[0]).insertOne(token);
             if (!newTokenOrFind.acknowledged)
                 return "Can't create auth token.";
@@ -165,9 +165,9 @@ class TokenService extends genericService_1.GenericService {
         try {
             const result = await this.db.collection(this.collection[0]).deleteMany({ userId: userId });
             if (result.acknowledged && result.deletedCount == 1)
-                return { success: "Advert successfully deleted." };
+                return { success: "Token successfully deleted." };
             else if (result.acknowledged && result.deletedCount == 0)
-                return { error: "Can't delete foreign advert." };
+                return { error: "Can't delete foreign token." };
             else
                 return { error: "There is some problem with database." };
         }

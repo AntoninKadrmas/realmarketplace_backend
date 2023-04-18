@@ -59,24 +59,22 @@ class UserController {
         this.registerUser = async (req, res) => {
             let user;
             try {
-                if (req.body == undefined) {
+                if (Object.keys(req.body).length == 0) {
                     res.status(400).send({ error: "Body does not contains user model." });
                 }
                 else {
                     let loadCredential = req.headers.authorization;
-                    console.log(loadCredential);
-                    if (loadCredential == undefined)
+                    if (loadCredential == undefined || loadCredential == null)
                         res.status(400).send({ error: "Missing credential header." });
                     else {
                         const credentials = Buffer.from(loadCredential.split(" ")[1], 'base64').toString();
-                        console.log(credentials);
                         const email = credentials.substring(0, credentials.indexOf(':'));
                         const password = credentials.substring(credentials.indexOf(':') + 1, credentials.length);
                         user = req.body;
                         user.createdIn = new Date();
                         user.password = password;
                         user.email = email;
-                        if (!this.tool.validUser(user, false, true))
+                        if (!this.tool.validUser(user, false))
                             res.status(400).send({ error: "Invalid user model format." });
                         else {
                             const createUserResponse = await this.userService.createNewUser(user);
@@ -108,7 +106,7 @@ class UserController {
             try {
                 let loadCredential = req.headers.authorization;
                 if (loadCredential == undefined) {
-                    res.status(400).send("Missing credential header.");
+                    res.status(400).send({ error: "Missing credential header." });
                 }
                 else {
                     const credentials = Buffer.from(loadCredential.split(" ")[1], 'base64').toString();
@@ -164,7 +162,7 @@ class UserController {
         this.userProfileImage = async (req, res) => {
             try {
                 const folder = process.env.IMAGE_PROFILE;
-                if (req.body == null)
+                if (Object.keys(req.body).length == 0)
                     res.status(400).send({ error: "Body does not contains advert information's" });
                 else {
                     const user = JSON.parse(req.query.user);
@@ -174,7 +172,7 @@ class UserController {
                     const file = req.file;
                     const dirUrl = __dirname.split('src')[0] + `${folder}/` + file.filename;
                     if (!fs_1.default.existsSync(dirUrl))
-                        res.status(400).send();
+                        res.status(400).send({ error: "Server error." });
                     else {
                         const dirUrl = __dirname.split('src')[0] + `${folder}/` + file.filename;
                         if (!fs_1.default.existsSync(dirUrl))
@@ -196,7 +194,7 @@ class UserController {
             }
             catch (e) {
                 console.log(e);
-                res.status(400).send();
+                res.status(400).send({ error: "Server error." });
             }
         };
         /**
@@ -210,7 +208,7 @@ class UserController {
                 console.log(user);
                 let loadCredential = req.headers.authorization;
                 if (loadCredential == null) {
-                    res.status(400).send("Incorrect request.");
+                    res.status(400).send({ error: "Missing credential header." });
                 }
                 else {
                     const credentials = Buffer.from(loadCredential.split(" ")[1], 'base64').toString();
@@ -244,11 +242,11 @@ class UserController {
             try {
                 const user = JSON.parse(req.query.user);
                 const userId = new mongodb_1.ObjectId(user._id.toString());
-                if (req.body == null)
+                if (Object.keys(req.body).length == 0)
                     res.status(400).send({ error: "Body does not contains user model." });
                 else {
                     const user = req.body;
-                    if (!this.tool.validUser(user, true, false))
+                    if (!this.tool.validUser(user, true))
                         res.status(400).send({ error: "Invalid user model format." });
                     else {
                         const response = await this.userService.updateUser(userId, user);
@@ -274,19 +272,20 @@ class UserController {
                 const user = JSON.parse(req.query.user);
                 const userId = new mongodb_1.ObjectId(user._id.toString());
                 let loadCredential = req.headers.authorization;
-                if (loadCredential == null) {
-                    res.status(400).send("Incorrect request.");
+                if (loadCredential == null || loadCredential == undefined) {
+                    res.status(400).send({ error: "Missing credential header." });
                 }
                 else {
                     const credentials = Buffer.from(loadCredential.split(" ")[1], 'base64').toString();
                     const password = credentials.substring(0, credentials.indexOf(':'));
-                    if (this.tool.validPassword(password))
+                    if (!this.tool.validPassword(password))
                         res.status(400).send({ error: "Invalid user password." });
                     else {
                         const response = await this.userService.deleteUser(user, password);
                         if (response.hasOwnProperty("error"))
                             res.status(400).send(response);
                         else {
+                            console.log(userId);
                             this.tool.deleteFiles([user.mainImageUrl], this.folder);
                             const deleteUrls = await this.userService.deleteUserAdverts(userId);
                             if (!response.hasOwnProperty("error"))

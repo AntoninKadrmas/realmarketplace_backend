@@ -6,7 +6,7 @@ import { ObjectId } from 'mongodb';
 /**
  * Found if user token is still valid and continue with user whom token belongs to if is valid and if not it will return with 401(unauthorized).
  * @param request The request come from user.
- * @param response The response that will be send back to the user.
+ * @param response The response that will be sent back to the user.
  * @param next The function used to send request and response to another function.
  */
 export async function userAuthMiddlewareStrict(request: express.Request, response: express.Response, next: NextFunction) {

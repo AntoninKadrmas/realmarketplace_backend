@@ -1,14 +1,16 @@
 import fs from 'fs';
 import { UserModel } from '../model/userModel';
-
+import path from 'path';
 export class ToolService{
     /**
      * Delete files by its name in public folder.
      * @param imagesUrls Name of all file that has to be deleted if exists.
      */
     deleteFiles(imagesUrls:string[],folder:string){
-        for(var image of imagesUrls){
-            const oldDirUrl=__dirname.split('src')[0]+folder+image
+        for(let image of imagesUrls){
+            image = image.replace("/","")
+            const oldDirUrl=path.join(__dirname.split('src')[0],folder,image)
+            console.log(oldDirUrl)
             if(fs.existsSync(oldDirUrl)) fs.unlink(oldDirUrl,(err)=>{
                 console.log(err)
             })
@@ -68,22 +70,14 @@ export class ToolService{
             /.*[^A-Za-z0-9\\s]+./g.test(password)&&
             password.indexOf(":")==-1
     }
-    validDate(dateString:Date):boolean{
-        try{
-            Date.parse(dateString.toISOString())
-            return true
-        }
-        catch(e){return false}
-    }
     createdIn!: Date;
 
-    validUser(user:UserModel,ignorePassword:boolean,ignoreCreatedIn:boolean):boolean{
+    validUser(user:UserModel,ignorePassword:boolean):boolean{
         return this.validString(user.firstName)&&
             this.validString(user.lastName)&&
             this.validNumber(user.phone)&&this.validLength(user.phone,9,9)&&
             (this.validString(user.mainImageUrl)||user.mainImageUrl=="")&&
             this.validEmail(user.email)&&
-            (this.validPassword(user.password!=undefined?user.password.toString():"")||ignorePassword)&&
-            (this.validDate(user.createdIn)||ignoreCreatedIn)
+            (this.validPassword(user.password!=undefined?user.password.toString():"")||ignorePassword)
     }
 }

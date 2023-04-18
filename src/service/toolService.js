@@ -5,14 +5,17 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ToolService = void 0;
 const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
 class ToolService {
     /**
      * Delete files by its name in public folder.
      * @param imagesUrls Name of all file that has to be deleted if exists.
      */
     deleteFiles(imagesUrls, folder) {
-        for (var image of imagesUrls) {
-            const oldDirUrl = __dirname.split('src')[0] + folder + image;
+        for (let image of imagesUrls) {
+            image = image.replace("/", "");
+            const oldDirUrl = path_1.default.join(__dirname.split('src')[0], folder, image);
+            console.log(oldDirUrl);
             if (fs_1.default.existsSync(oldDirUrl))
                 fs_1.default.unlink(oldDirUrl, (err) => {
                     console.log(err);
@@ -75,23 +78,13 @@ class ToolService {
             /.*[^A-Za-z0-9\\s]+./g.test(password) &&
             password.indexOf(":") == -1;
     }
-    validDate(dateString) {
-        try {
-            Date.parse(dateString.toISOString());
-            return true;
-        }
-        catch (e) {
-            return false;
-        }
-    }
-    validUser(user, ignorePassword, ignoreCreatedIn) {
+    validUser(user, ignorePassword) {
         return this.validString(user.firstName) &&
             this.validString(user.lastName) &&
             this.validNumber(user.phone) && this.validLength(user.phone, 9, 9) &&
             (this.validString(user.mainImageUrl) || user.mainImageUrl == "") &&
             this.validEmail(user.email) &&
-            (this.validPassword(user.password != undefined ? user.password.toString() : "") || ignorePassword) &&
-            (this.validDate(user.createdIn) || ignoreCreatedIn);
+            (this.validPassword(user.password != undefined ? user.password.toString() : "") || ignorePassword);
     }
 }
 exports.ToolService = ToolService;

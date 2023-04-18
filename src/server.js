@@ -105,10 +105,7 @@ class Server {
      */
     async start() {
         this.setControllers();
-        this.app.listen(process.env.PORT, () => {
-            console.log('The application is listening '
-                + 'on port http://localhost:' + process.env.PORT);
-        });
+        return this.app.listen(process.env.PORT);
     }
 }
 exports.Server = Server;

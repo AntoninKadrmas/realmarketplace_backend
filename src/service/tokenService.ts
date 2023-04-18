@@ -58,7 +58,7 @@ export class TokenService extends GenericService{
                 userId: userId,
                 expirationTime: this.getActualValidTime()
             }
-            await await this.db.collection(this.collection[0]).deleteMany({userId:userId})
+            await this.db.collection(this.collection[0]).deleteMany({userId:userId})
             const newTokenOrFind = await this.db.collection(this.collection[0]).insertOne(token)
             if(!newTokenOrFind.acknowledged)return "Can't create auth token."
             else return newTokenOrFind.insertedId
@@ -138,8 +138,8 @@ export class TokenService extends GenericService{
     async deleteToken(userId:ObjectId):Promise<{success:string}|{error:string}>{
         try{
             const result =  await this.db.collection(this.collection[0]).deleteMany({userId:userId}) 
-            if(result.acknowledged&&result.deletedCount==1)return {success:"Advert successfully deleted."}
-            else if(result.acknowledged&&result.deletedCount==0)return {error:"Can't delete foreign advert."}
+            if(result.acknowledged&&result.deletedCount==1)return {success:"Token successfully deleted."}
+            else if(result.acknowledged&&result.deletedCount==0)return {error:"Can't delete foreign token."}
             else return {error:"There is some problem with database."}
         }
         catch(e){
