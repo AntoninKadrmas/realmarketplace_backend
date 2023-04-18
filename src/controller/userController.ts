@@ -142,7 +142,7 @@ export class UserController implements GenericController{
             else{
                 const file = req.file!
                 const dirUrl = path.join(__dirname.split('src')[0],folder,file.filename)
-                console.log("path  "+dirUrl)
+                console.log(dirUrl)
                 if(!fs.existsSync(dirUrl)) res.status(400).send("Error when saving image.")
                 else{
                     const imageUrl = `/${file.filename}`
