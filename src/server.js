@@ -105,7 +105,7 @@ class Server {
      */
     async start() {
         this.setControllers();
-        return this.app.listen(process.env.PORT);
+        return this.app.listen(process.env.PORT != undefined ? parseInt(process.env.PORT) : 3000);
     }
 }
 exports.Server = Server;

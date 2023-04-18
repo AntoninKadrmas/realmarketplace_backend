@@ -6,6 +6,17 @@ Modules:
 - https://www.npmjs.com/package/mocha
 - https://www.npmjs.com/package/chai
 - https://www.npmjs.com/package/nyc
+- https://www.npmjs.com/package/supertest
+- https://www.npmjs.com/package/bcrypt
+- https://www.npmjs.com/package/express
+- https://www.npmjs.com/package/express-mongo-sanitize
+- https://www.npmjs.com/package/multer
+- https://www.npmjs.com/package/mongodb
+- https://www.npmjs.com/package/urllib
+- https://www.npmjs.com/package/uuid
+- https://www.npmjs.com/package/typescript
+- https://www.npmjs.com/package/body-parser
+- https://www.npmjs.com/package/cors
 
 Now to run backend:
 - if you want to run backend just type = npm start
