@@ -29,13 +29,13 @@ export class AdvertController implements GenericController{
      */
     constructor(private advertService:AdvertService,private advertSearchService:AdvertSearchService,private tools:ToolService){
         this.initRouter()
-        this.folder = process.env.IMAGE_PUBLIC!!
+        this.folder = process.env.FOLDER_IMAGE_PUBLIC!!
     }
     /**
      * Initializes the router by setting up the routes and their corresponding request handlers.
      */
     initRouter(): void {
-        const upload_public = new ImageMiddleWare().getStorage(process.env.IMAGE_PUBLIC!!)
+        const upload_public = new ImageMiddleWare().getStorage(process.env.FOLDER_IMAGE_PUBLIC!!)
         this.router.post("",userAuthMiddlewareStrict,upload_public.array('uploaded_file',5),this.createAdvert)
         this.router.put("",userAuthMiddlewareStrict,upload_public.array('uploaded_file',5),this.updateAdvert)
         this.router.delete("",userAuthMiddlewareStrict,this.deleteAdvert)
@@ -45,7 +45,7 @@ export class AdvertController implements GenericController{
         this.router.post("/favorite",userAuthMiddlewareStrict,this.addFavoriteAdvert)
         this.router.delete("/favorite",userAuthMiddlewareStrict,this.deleteFavoriteAdvert)
         this.router.put("/visible",userAuthMiddlewareStrict,this.updateAdvertVisibility)
-        this.router.use(express.static(path.join(__dirname.split('src')[0],process.env.IMAGE_PUBLIC!!)))
+        this.router.use(express.static(path.join(__dirname.split('src')[0],process.env.FOLDER_IMAGE_PUBLIC!!)))
     }
     /**
     * A request handler that create new advert in database.
@@ -54,7 +54,7 @@ export class AdvertController implements GenericController{
     */
     createAdvert: RequestHandler = async (req, res) => {
         try{
-            const folder = process.env.IMAGE_PUBLIC!!
+            const folder = process.env.FOLDER_IMAGE_PUBLIC!!
             if(req.body==null)res.status(400).send({error:"Body does not contains advert information's"})
             else{
                 const advert:AdvertModel = req.body as AdvertModel
@@ -98,7 +98,7 @@ export class AdvertController implements GenericController{
     */
     updateAdvert: RequestHandler = async (req, res) => {
         try{
-            const folder = process.env.IMAGE_PUBLIC!!
+            const folder = process.env.FOLDER_IMAGE_PUBLIC!!
             if(req.body==null)res.status(400).send({error:"Body does not contains advert information's"})
             else{
                 const deleteUrl=req.body.deletedUrls.split(";").filter((x:string)=>x!="")

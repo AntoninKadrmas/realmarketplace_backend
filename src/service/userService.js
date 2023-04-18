@@ -85,37 +85,33 @@ class UserService extends genericService_1.GenericService {
             }
         }
     }
-    /**
-    * Retrieves user data from the database using the provided user ID.
-    * @param userId The ID of the user by which would be the user found.
-    * @returns The user data or an error message.
-    */
-    async getUserDataById(userId) {
-        try {
-            const result = await this.db.collection(this.collection[0]).aggregate([
-                { $match: { '_id': userId } },
-                { $project: {
-                        _id: 0,
-                        createdIn: 1,
-                        email: 1,
-                        firstName: 1,
-                        lastName: 1,
-                        mainImageUrl: 1,
-                        phone: 1,
-                        validated: 1
-                    }
-                }
-            ]).toArray();
-            if (result.length > 0)
-                return result[0];
-            else
-                return { error: "User does not exists." };
-        }
-        catch (e) {
-            console.log(e);
-            return { error: "Database dose not response." };
-        }
-    }
+    // /**
+    // * Retrieves user data from the database using the provided user ID.
+    // * @param userId The ID of the user by which would be the user found.
+    // * @returns The user data or an error message.
+    // */
+    // async getUserDataById(userId:ObjectId):Promise<LightUser | {error:string}>{
+    //     try{
+    //         const result =  await this.db.collection(this.collection[0]).aggregate([
+    //             {$match:{'_id': userId}},
+    //             {$project:{
+    //               _id:0,
+    //               createdIn:1,
+    //               email:1,
+    //               firstName:1,
+    //               lastName:1,
+    //               mainImageUrl:1,
+    //               phone:1,
+    //               validated:1
+    //             }
+    //           }]).toArray();
+    //         if(result.length>0)return result[0]
+    //         else return {error:"User does not exists."}
+    //     }catch(e){
+    //         console.log(e)
+    //         return {error:"Database dose not response."}
+    //     }
+    // }
     /**
     * Retrieves user data by email and password.
     * @param email The user email address which would be used to find user

@@ -59,7 +59,7 @@ class AdvertController {
         */
         this.createAdvert = async (req, res) => {
             try {
-                const folder = process.env.IMAGE_PUBLIC;
+                const folder = process.env.FOLDER_IMAGE_PUBLIC;
                 if (req.body == null)
                     res.status(400).send({ error: "Body does not contains advert information's" });
                 else {
@@ -73,7 +73,7 @@ class AdvertController {
                     if (req.files != null) {
                         //@ts-ignore
                         for (let file of req.files) {
-                            const dirUrl = __dirname.split('src')[0] + `${folder}/` + file.filename;
+                            const dirUrl = path_1.default.join(__dirname.split('src')[0], folder, file.filename);
                             if (!fs_1.default.existsSync(dirUrl)) { }
                             else {
                                 const imageUrl = `/${file.filename}`;
@@ -107,7 +107,7 @@ class AdvertController {
        */
         this.updateAdvert = async (req, res) => {
             try {
-                const folder = process.env.IMAGE_PUBLIC;
+                const folder = process.env.FOLDER_IMAGE_PUBLIC;
                 if (req.body == null)
                     res.status(400).send({ error: "Body does not contains advert information's" });
                 else {
@@ -134,7 +134,7 @@ class AdvertController {
                     if (req.files != null) {
                         //@ts-ignore
                         for (let file of req.files) {
-                            const dirUrl = __dirname.split('src')[0] + `${folder}/` + file.filename;
+                            const dirUrl = path_1.default.join(__dirname.split('src')[0], folder, file.filename);
                             if (!fs_1.default.existsSync(dirUrl)) { }
                             else {
                                 const imageUrl = `/${file.filename}`;
@@ -368,13 +368,13 @@ class AdvertController {
             }
         };
         this.initRouter();
-        this.folder = process.env.IMAGE_PUBLIC;
+        this.folder = process.env.FOLDER_IMAGE_PUBLIC;
     }
     /**
      * Initializes the router by setting up the routes and their corresponding request handlers.
      */
     initRouter() {
-        const upload_public = new imageMiddleware_1.ImageMiddleWare().getStorage(process.env.IMAGE_PUBLIC);
+        const upload_public = new imageMiddleware_1.ImageMiddleWare().getStorage(process.env.FOLDER_IMAGE_PUBLIC);
         this.router.post("", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, upload_public.array('uploaded_file', 5), this.createAdvert);
         this.router.put("", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, upload_public.array('uploaded_file', 5), this.updateAdvert);
         this.router.delete("", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.deleteAdvert);
@@ -384,7 +384,7 @@ class AdvertController {
         this.router.post("/favorite", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.addFavoriteAdvert);
         this.router.delete("/favorite", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.deleteFavoriteAdvert);
         this.router.put("/visible", userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.updateAdvertVisibility);
-        this.router.use(express_1.default.static(path_1.default.join(__dirname.split('src')[0], process.env.IMAGE_PUBLIC)));
+        this.router.use(express_1.default.static(path_1.default.join(__dirname.split('src')[0], process.env.FOLDER_IMAGE_PUBLIC)));
     }
 }
 exports.AdvertController = AdvertController;

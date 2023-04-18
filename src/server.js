@@ -64,7 +64,7 @@ class Server {
         console.log = function (d) {
             const actualDate = new Date();
             const date = `${actualDate.getFullYear()}_${actualDate.getMonth()}_${actualDate.getDate()}`;
-            const folder = `${__dirname.split('src')[0]}debug`;
+            const folder = `${__dirname.split('src')[0]}${process.env.FOLDER_LOGS != undefined ? process.env.FOLDER_LOGS : "debug"}`;
             const path = `${folder}/${date}.log`;
             if (fs_1.default.existsSync(path)) {
                 if (!log_file)

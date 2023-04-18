@@ -10,8 +10,8 @@ import { ObjectId } from "mongodb";
  */
 export class AdvertSearchService extends GenericService{
     advertIndex:string
-    pagesize=10
-    sampleSize=4
+    pageSize:number=0
+    sampleSize:number=0
     /**
      * Creates an instance of the AdvertSearchService class.
      * Initializes the AdvertSearchService by calling the GenericService constructor
@@ -37,6 +37,8 @@ export class AdvertSearchService extends GenericService{
         this.collection.push(process.env.MONGO_FAVORITE_COLLECTION)    
         this.collection.push(process.env.MONGO_USER_COLLECTION)    
         this.db = this.client.db(process.env.DBName)
+        this.pageSize = process.env.NUMBER_IN_SEARCH!=undefined?parseInt(process.env.NUMBER_IN_SEARCH):10
+        this.sampleSize = process.env.NUMBER_IN_SAMPLE!=undefined?parseInt(process.env.NUMBER_IN_SAMPLE):4
         await this.db.collection(this.collection[2]).createIndex({email:1},{ unique: true })
     }
     /**
@@ -120,7 +122,7 @@ export class AdvertSearchService extends GenericService{
                 { $sort : { score:1 ,createdIn:-1} },
                 { $facet: {
                     counts:  [{ $count: "count" }],
-                    advert:[{$skip:this.pagesize*page},{$limit:this.pagesize}]
+                    advert:[{$skip:this.pageSize*page},{$limit:this.pageSize}]
                 }},{$addFields: {
                     "count": "$counts.count"
                 }},{$project:{

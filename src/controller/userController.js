@@ -161,33 +161,28 @@ class UserController {
         */
         this.userProfileImage = async (req, res) => {
             try {
-                const folder = process.env.IMAGE_PROFILE;
-                if (Object.keys(req.body).length == 0)
-                    res.status(400).send({ error: "Body does not contains advert information's" });
+                const folder = process.env.FOLDER_IMAGE_PROFILE;
+                const user = JSON.parse(req.query.user);
+                const userId = new mongodb_1.ObjectId(user._id.toString());
+                if (user.mainImageUrl != null && user.mainImageUrl != "")
+                    this.tool.deleteFiles([user.mainImageUrl], this.folder);
+                if (req.file == undefined || req.file == null)
+                    res.status(400).send({ error: "No image was send to upload." });
                 else {
-                    const user = JSON.parse(req.query.user);
-                    const userId = new mongodb_1.ObjectId(user._id.toString());
-                    if (user.mainImageUrl != null && user.mainImageUrl != "")
-                        this.tool.deleteFiles([user.mainImageUrl], this.folder);
                     const file = req.file;
-                    const dirUrl = __dirname.split('src')[0] + `${folder}/` + file.filename;
+                    const dirUrl = path_1.default.join(__dirname.split('src')[0], folder, file.filename);
                     if (!fs_1.default.existsSync(dirUrl))
-                        res.status(400).send({ error: "Server error." });
+                        res.status(400).send({ error: "Error when saving image." });
                     else {
-                        const dirUrl = __dirname.split('src')[0] + `${folder}/` + file.filename;
-                        if (!fs_1.default.existsSync(dirUrl))
-                            res.status(400).send("Error when saving image.");
+                        const imageUrl = `/${file.filename}`;
+                        const response = await this.userService.updateUserImage(userId, imageUrl);
+                        if (response.hasOwnProperty("error")) {
+                            this.tool.deleteFiles([imageUrl], this.folder);
+                            res.status(400).send(response);
+                        }
                         else {
-                            const imageUrl = `/${file.filename}`;
-                            const response = await this.userService.updateUserImage(userId, imageUrl);
-                            if (response.hasOwnProperty("error")) {
-                                this.tool.deleteFiles([imageUrl], this.folder);
-                                res.status(400).send(response);
-                            }
-                            else {
-                                const success = response;
-                                res.status(200).send({ success: success.success, imageUrls: [imageUrl] });
-                            }
+                            const success = response;
+                            res.status(200).send({ success: success.success, imageUrls: [imageUrl] });
                         }
                     }
                 }
@@ -245,11 +240,13 @@ class UserController {
                 if (Object.keys(req.body).length == 0)
                     res.status(400).send({ error: "Body does not contains user model." });
                 else {
-                    const user = req.body;
-                    if (!this.tool.validUser(user, true))
+                    const userLight = req.body;
+                    console.log(userLight);
+                    console.log(this.tool.validUser(userLight, true));
+                    if (!this.tool.validUser(userLight, true))
                         res.status(400).send({ error: "Invalid user model format." });
                     else {
-                        const response = await this.userService.updateUser(userId, user);
+                        const response = await this.userService.updateUser(userId, userLight);
                         if (response.hasOwnProperty("error"))
                             res.status(400).send(response);
                         else
@@ -302,13 +299,13 @@ class UserController {
             }
         };
         this.initRouter();
-        this.folder = process.env.IMAGE_PROFILE;
+        this.folder = process.env.FOLDER_IMAGE_PROFILE;
     }
     /**
      * Initializes the router by setting up the routes and their corresponding request handlers.
      */
     initRouter() {
-        const upload_public = new imageMiddleware_1.ImageMiddleWare().getStorage(process.env.IMAGE_PROFILE);
+        const upload_public = new imageMiddleware_1.ImageMiddleWare().getStorage(process.env.FOLDER_IMAGE_PROFILE);
         this.router.post('/register', this.registerUser);
         this.router.post('/login', this.userLogin);
         this.router.get('/', userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.getUserById);
@@ -316,7 +313,7 @@ class UserController {
         this.router.put('/', userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.userUpdate);
         this.router.delete('/', userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, this.userDelete);
         this.router.post('/image', userAuthMiddlewareStrict_1.userAuthMiddlewareStrict, upload_public.single('uploaded_file'), this.userProfileImage);
-        this.router.use(express_1.default.static(path_1.default.join(__dirname.split('src')[0], process.env.IMAGE_PROFILE)));
+        this.router.use(express_1.default.static(path_1.default.join(__dirname.split('src')[0], process.env.FOLDER_IMAGE_PROFILE)));
     }
 }
 exports.UserController = UserController;
