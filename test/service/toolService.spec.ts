@@ -189,4 +189,34 @@ describe("Tool service unit tests",()=>{
             expect(result).to.be.true
         });
     })
+    describe("Valid boolean function",()=>{
+        it('should return false -> null', function () {
+            const result = toolService.validBoolean(null)
+            expect(result).to.be.false;
+        });
+        it('should return false -> undefined', function () {
+            const result = toolService.validBoolean(undefined)
+            expect(result).to.be.false;
+        });
+        it('should return false -> ""', function () {
+            const result = toolService.validBoolean("")
+            expect(result).to.be.false;
+        });
+        it('should return false -> "tru"', function () {
+            const result = toolService.validBoolean("tru")
+            expect(result).to.be.false;
+        });
+        it('should return true -> "fals"', function () {
+            const result = toolService.validBoolean("fals")
+            expect(result).to.be.true;
+        });
+        it('should return true -> "false"', function () {
+            const result = toolService.validBoolean("false")
+            expect(result).to.be.true;
+        });
+        it('should return true -> "true"', function () {
+            const result = toolService.validBoolean("true")
+            expect(result).to.be.true;
+        });
+    })
 })

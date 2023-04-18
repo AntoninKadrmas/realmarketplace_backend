@@ -22,7 +22,7 @@ export class ImageMiddleWare{
     public getStorage(useFolder:string) {
         return multer({
             fileFilter(req,file,callback){
-                if(!file.originalname.match(/\.(png|jpg|jpeg)$/)){
+                if(!file.originalname.match(/\.*(png|jpg|jpeg)$/)){
                     return  callback(new Error('Image is in bad format.'))
                 }
                 else{
