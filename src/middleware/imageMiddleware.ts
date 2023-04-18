@@ -23,7 +23,7 @@ export class ImageMiddleWare{
         return multer({
             fileFilter(req,file,callback){
                 console.log(`${file.originalname} ---------------original name`)
-                if(!file.originalname.match(/\.*(png|jpg|jpeg|PNG|JPG|JPEG)$/)){
+                if(!file.originalname.match(/\.*(png|jpg|jpeg|svg|PNG|JPG|JPEG|SVG)$/)){
                     return  callback(new Error('Image is in bad format.'))
                 }
                 else{
