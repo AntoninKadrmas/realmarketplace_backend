@@ -22,8 +22,8 @@ export class ImageMiddleWare{
     public getStorage(useFolder:string) {
         return multer({
             fileFilter(req,file,callback){
-                console.log(file.originalname)
-                if(!file.originalname.match(/\.*(png|jpg|jpeg)$/)){
+                console.log(`${file.originalname} ---------------original name`)
+                if(!file.originalname.match(/\.*(png|jpg|jpeg|PNG|JPG|JPEG)$/)){
                     return  callback(new Error('Image is in bad format.'))
                 }
                 else{
