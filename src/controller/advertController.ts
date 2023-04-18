@@ -67,7 +67,7 @@ export class AdvertController implements GenericController{
                 if(req.files!=null){
                     //@ts-ignore
                     for(let file of req.files){
-                        const dirUrl = __dirname.split('src')[0]+`${folder}/`+file.filename
+                        const dirUrl = path.join(__dirname.split('src')[0],folder,file.filename)
                         if(!fs.existsSync(dirUrl)){}
                         else{
                             const imageUrl = `/${file.filename}`
@@ -124,7 +124,7 @@ export class AdvertController implements GenericController{
                 if(req.files!=null){
                     //@ts-ignore
                     for(let file of req.files){
-                        const dirUrl = __dirname.split('src')[0]+`${folder}/`+file.filename
+                        const dirUrl = path.join(__dirname.split('src')[0],folder,file.filename)
                         if(!fs.existsSync(dirUrl)){}
                         else{
                             const imageUrl = `/${file.filename}`
