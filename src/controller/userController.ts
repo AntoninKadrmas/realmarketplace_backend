@@ -139,22 +139,19 @@ export class UserController implements GenericController{
             const user:UserModel = JSON.parse(req.query.user as string)
             const userId=new ObjectId(user._id!.toString())
             if(user.mainImageUrl!=null&&user.mainImageUrl!="") this.tool.deleteFiles([user.mainImageUrl],this.folder)
+            const file = req.file!
+            const dirUrl = path.join(__dirname.split('src')[0],folder,file.filename)
+            if(!fs.existsSync(dirUrl)) res.status(400).send("Error when saving image.")
             else{
-                const file = req.file!
-                const dirUrl = path.join(__dirname.split('src')[0],folder,file.filename)
-                console.log(dirUrl)
-                if(!fs.existsSync(dirUrl)) res.status(400).send("Error when saving image.")
-                else{
-                    const imageUrl = `/${file.filename}`
-                    const response:{success:string} | {error:string}  = await this.userService.updateUserImage(userId,imageUrl)
-                    if(response.hasOwnProperty("error")){
-                        this.tool.deleteFiles([imageUrl],this.folder)
-                        res.status(400).send(response)
-                    }
-                    else {
-                        const success = response as {success:string}
-                        res.status(200).send({success:success.success,imageUrls:[imageUrl]})
-                    }
+                const imageUrl = `/${file.filename}`
+                const response:{success:string} | {error:string}  = await this.userService.updateUserImage(userId,imageUrl)
+                if(response.hasOwnProperty("error")){
+                    this.tool.deleteFiles([imageUrl],this.folder)
+                    res.status(400).send(response)
+                }
+                else {
+                    const success = response as {success:string}
+                    res.status(200).send({success:success.success,imageUrls:[imageUrl]})
                 }
             }
         }catch(e){
