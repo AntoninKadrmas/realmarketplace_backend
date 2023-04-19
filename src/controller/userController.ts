@@ -9,7 +9,7 @@ import { userAuthMiddlewareStrict } from "../middleware/userAuthMiddlewareStrict
 import { ImageMiddleWare } from "../middleware/imageMiddleware";
 import path from 'path';
 import fs from 'fs';
-import uuid from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import { ToolService } from "../service/toolService";
 dotenv.config();
 /**
@@ -250,7 +250,7 @@ export class UserController implements GenericController{
     //guest user feature
     createGuestAccount: RequestHandler = async (req, res) => {
         try{
-            const id = uuid.v4()
+            const id = uuidv4()
             const user:UserModel={
                 createdIn: new Date(),
                 email: `${id}@gmail.com`,
