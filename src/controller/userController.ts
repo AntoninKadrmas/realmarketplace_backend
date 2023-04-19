@@ -1,6 +1,6 @@
 import express, { RequestHandler} from "express";
 import { UserService } from "../service/userService";
-import { LightUser, UserModel } from "../model/userModel";
+import {LightUser, UserModel, UserValid} from "../model/userModel";
 import { GenericController } from "./genericController";
 import { TokenService } from "../service/tokenService";
 import * as dotenv from 'dotenv';
@@ -9,6 +9,7 @@ import { userAuthMiddlewareStrict } from "../middleware/userAuthMiddlewareStrict
 import { ImageMiddleWare } from "../middleware/imageMiddleware";
 import path from 'path';
 import fs from 'fs';
+import uuid from 'uuid';
 import { ToolService } from "../service/toolService";
 dotenv.config();
 /**
@@ -35,6 +36,7 @@ export class UserController implements GenericController{
         const upload_public = new ImageMiddleWare().getStorage(this.folder)
         this.router.post('/register',this.registerUser)
         this.router.post('/login',this.userLogin)
+        this.router.post('/guest',this.createGuestAccount)
         this.router.get('/',userAuthMiddlewareStrict,this.getUserById)
         this.router.post('/',userAuthMiddlewareStrict,this.userUpdatePassword)
         this.router.put('/',userAuthMiddlewareStrict,this.userUpdate)
@@ -170,12 +172,10 @@ export class UserController implements GenericController{
     userUpdatePassword: RequestHandler = async (req, res) => {
         try{
             const user:UserModel = JSON.parse(req.query.user as string)
-            console.log(user)
             let loadCredential = req.headers.authorization
             if(loadCredential==null){res.status(400).send({error:"Missing credential header."})}
             else{
                 const credentials = Buffer.from(loadCredential.split(" ")[1], 'base64').toString()
-                console.log(credentials)
                 const passwordOld = credentials.substring(0,credentials.indexOf(':'))
                 const passwordNew = credentials.substring(credentials.indexOf(':')+1,credentials.length)
                 if(!this.tool.validPassword(passwordOld))res.status(400).send({error:"Invalid old password format."})
@@ -203,8 +203,6 @@ export class UserController implements GenericController{
             if(Object.keys(req.body).length==0) res.status(400).send({error:"Body does not contains user model."})
             else{
                 const userLight:LightUser = req.body
-                console.log(userLight)
-                console.log(this.tool.validUser(userLight,true))
                 if(!this.tool.validUser(userLight,true))res.status(400).send({error:"Invalid user model format."})
                 else{
                     const response:{success:string} | {error:string}= await this.userService.updateUser(userId,userLight)
@@ -236,7 +234,6 @@ export class UserController implements GenericController{
                     const response:{success:string} | {error:string}= await this.userService.deleteUser(user,password)
                     if(response.hasOwnProperty("error"))res.status(400).send(response)
                     else {
-                        console.log(userId)
                         this.tool.deleteFiles([user.mainImageUrl],this.folder)
                         const deleteUrls = await this.userService.deleteUserAdverts(userId)
                         if(!response.hasOwnProperty("error"))this.tool.deleteFiles(deleteUrls as string[],this.folder)
@@ -250,5 +247,26 @@ export class UserController implements GenericController{
             res.status(400).send({error:"Server error."})
         }
     }
-  
+    //guest user feature
+    createGuestAccount: RequestHandler = async (req, res) => {
+        try{
+            const id = uuid.v4()
+            const user:UserModel={
+                createdIn: new Date(),
+                email: `${id}@gmail.com`,
+                firstName: `First_${id}`,
+                lastName: `Last_${id}`,
+                mainImageUrl: "",
+                phone: "123456789",
+                validated: new UserValid(),
+                password:"Guest1234!"
+            }
+            const response = await this.userService.createNewUser(user)
+            if(response.hasOwnProperty("error"))res.status(400).send(response)
+            else res.status(200).send({email:user.email,"token":(response as {userId:string}).userId.toString()})
+        }catch (e) {
+            console.log(e)
+            res.status(400).send({error:"Server error."})
+        }
+    }
 }

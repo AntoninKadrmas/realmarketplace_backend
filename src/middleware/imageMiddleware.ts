@@ -22,13 +22,9 @@ export class ImageMiddleWare{
     public getStorage(useFolder:string) {
         return multer({
             fileFilter(req,file,callback){
-                console.log(`${file.originalname} ---------------original name`)
-                if(!file.originalname.match(/\.*(png|jpg|jpeg|svg|PNG|JPG|JPEG|SVG)$/)){
+                if(!file.originalname.toLowerCase().match(/\.(png|jpg|jpeg|svg)$/))
                     return  callback(new Error('Image is in bad format.'))
-                }
-                else{
-                    callback(null,true)
-                }
+                else callback(null,true)
             },
             storage:multer.diskStorage({
                 destination:(req,file,callback)=>{
