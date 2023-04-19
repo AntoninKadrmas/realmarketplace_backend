@@ -103,7 +103,6 @@ export class UserController implements GenericController{
                     else{
                         const tempUserResponse:UserModel = userResponse as UserModel
                         const token = await this.tokenService.createToken(new ObjectId(tempUserResponse._id!))
-                        console.log(`token: ${token}`)
                         if(token.hasOwnProperty("error")) res.status(400).send(token)
                         else res.status(200).send({"token":token.toString()})
                     }
@@ -263,7 +262,11 @@ export class UserController implements GenericController{
             }
             const response = await this.userService.createNewUser(user)
             if(response.hasOwnProperty("error"))res.status(400).send(response)
-            else res.status(200).send({email:user.email,"token":(response as {userId:string}).userId.toString()})
+            else {
+                const token = await this.tokenService.createToken(new ObjectId((response as {userId:string}).userId.toString()))
+                if(response.hasOwnProperty("error")) res.status(200).send({email:user.email,"token":""})
+                else res.status(200).send({email:user.email,"token":token})
+            }
         }catch (e) {
             console.log(e)
             res.status(400).send({error:"Server error."})
