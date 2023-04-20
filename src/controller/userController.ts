@@ -253,8 +253,8 @@ export class UserController implements GenericController{
             const user:UserModel={
                 createdIn: new Date(),
                 email: `${id}@gmail.com`,
-                firstName: `First_${id}`,
-                lastName: `Last_${id}`,
+                firstName: `First`,
+                lastName: `Last`,
                 mainImageUrl: "",
                 phone: "123456789",
                 validated: new UserValid(),
