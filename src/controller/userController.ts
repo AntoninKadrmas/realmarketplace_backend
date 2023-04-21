@@ -36,7 +36,6 @@ export class UserController implements GenericController{
         const upload_public = new ImageMiddleWare().getStorage(this.folder)
         this.router.post('/register',this.registerUser)
         this.router.post('/login',this.userLogin)
-        this.router.post('/guest',this.createGuestAccount)
         this.router.get('/',userAuthMiddlewareStrict,this.getUserById)
         this.router.post('/',userAuthMiddlewareStrict,this.userUpdatePassword)
         this.router.put('/',userAuthMiddlewareStrict,this.userUpdate)
@@ -242,32 +241,6 @@ export class UserController implements GenericController{
                 }
             }
         }catch(e){
-            console.log(e)
-            res.status(400).send({error:"Server error."})
-        }
-    }
-    //guest user feature
-    createGuestAccount: RequestHandler = async (req, res) => {
-        try{
-            const id = uuidv4()
-            const user:UserModel={
-                createdIn: new Date(),
-                email: `${id}@gmail.com`,
-                firstName: `First`,
-                lastName: `Last`,
-                mainImageUrl: "",
-                phone: "123456789",
-                validated: new UserValid(),
-                password:"Guest1234!"
-            }
-            const response = await this.userService.createNewUser(user)
-            if(response.hasOwnProperty("error"))res.status(400).send(response)
-            else {
-                const token = await this.tokenService.createToken(new ObjectId((response as {userId:string}).userId.toString()))
-                if(response.hasOwnProperty("error")) res.status(200).send({email:user.email,"token":""})
-                else res.status(200).send({email:user.email,"token":token})
-            }
-        }catch (e) {
             console.log(e)
             res.status(400).send({error:"Server error."})
         }
