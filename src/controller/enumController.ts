@@ -12,6 +12,7 @@ import {  PriceOptionsEnum } from "../model/priceOptionsEnum";
 export class EnumController implements GenericController{
     path: string = "/enum";
     router: Router = express.Router();
+    enable:boolean
     private enumPriceOptionList:string[]=[]
     private enumConditionOptionList:string[]=[]
     private enumGenreOptionList:GenreItem[]=[]
@@ -21,6 +22,7 @@ export class EnumController implements GenericController{
     constructor(){
         this.initRouter()
         this.initEnumOptions()
+        this.enable = process.env.PRODUCTION_ENABLE!=undefined?process.env.PRODUCTION_ENABLE.toString()=="true":false
     }
     /**
      * Initializes the router by setting up the routes and their corresponding request handlers.
@@ -93,6 +95,6 @@ export class EnumController implements GenericController{
      * @param res The boolean value represent in production mode.
      */
     getInProgress: RequestHandler = async (req, res) => {
-        res.status(200).send({enable:true})
+        res.status(200).send({enable:this.enable})
     }
 }
