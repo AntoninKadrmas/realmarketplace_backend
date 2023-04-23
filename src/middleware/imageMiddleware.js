@@ -53,12 +53,10 @@ class ImageMiddleWare {
     getStorage(useFolder) {
         return (0, multer_1.default)({
             fileFilter(req, file, callback) {
-                if (!file.originalname.match(/\.(png|jpg|jpeg)$/)) {
+                if (!file.originalname.toLowerCase().match(/\.(png|jpg|jpeg|svg)$/))
                     return callback(new Error('Image is in bad format.'));
-                }
-                else {
+                else
                     callback(null, true);
-                }
             },
             storage: multer_1.default.diskStorage({
                 destination: (req, file, callback) => {

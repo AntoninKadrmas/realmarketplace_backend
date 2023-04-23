@@ -24,8 +24,18 @@ export class UserModel {
     validated!: UserValid;
     /** The URL of the user's main image. */
     mainImageUrl: string = "";
+    /** The temporary reset password filed. */
+    resetPassword?:ResetPassword
 }
-  
+/**
+ * Represents the temporary reset password filed.
+ */
+export class ResetPassword{
+    /** The expiration time of the temporary password in milliseconds. */
+    expirationTime!:string;
+    /** The temporary password of the user. */
+    password!:string
+}
 /**
  * Represents the validation status of a user.
  */

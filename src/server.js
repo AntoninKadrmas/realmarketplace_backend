@@ -42,6 +42,8 @@ const stringIndexAdvert_1 = require("./service/stringIndexAdvert");
 const advertSearchService_1 = require("./service/advertSearchService");
 const mongoSanitize = require("express-mongo-sanitize");
 const toolService_1 = require("./service/toolService");
+const emailController_1 = require("./controller/emailController");
+const emailService_1 = require("./service/emailService");
 dotenv.config();
 /**
  * Server class take care of server initialization.
@@ -96,9 +98,11 @@ class Server {
         const userController = new userController_1.UserController(new userService_1.UserService(), new tokenService_1.TokenService(), new toolService_1.ToolService());
         const enumControl = new enumController_1.EnumController();
         const advertController = new advertController_1.AdvertController(new advertService_1.AdvertService(), new advertSearchService_1.AdvertSearchService(), new toolService_1.ToolService());
+        const emailController = new emailController_1.EmailController(new emailService_1.EmailService(), new userService_1.UserService(), new toolService_1.ToolService());
         this.app.use(userController.path, userController.router);
         this.app.use(enumControl.path, enumControl.router);
         this.app.use(advertController.path, advertController.router);
+        this.app.use(emailController.path, emailController.router);
     }
     /**
      * Start node js backend application on port 3000.

@@ -120,8 +120,9 @@ export class UserController implements GenericController{
     getUserById:RequestHandler = async (req,res)=>{
         try{
             const user:UserModel = JSON.parse(req.query.user as string)
-            delete user.password
-            delete user._id
+            if(user.password!=null)delete user.password
+            if(user._id!=null)delete user._id
+            if(user.resetPassword!=null)delete user.resetPassword
             res.status(200).send(user)
         }catch(e){
             console.log(e)

@@ -13,7 +13,9 @@ import { AdvertService } from "./advertService";
 export class UserService extends GenericService{
     salt_rounds!:number
     advertService = new AdvertService()
-     /**
+    expirationTime=0
+
+    /**
     * Creates an instance of UserService.
     * Calls the parent constructor and connects to the database.
     */
@@ -33,6 +35,7 @@ export class UserService extends GenericService{
         this.db = this.client.db(process.env.MONGO_DB_NAME)
         this.collection.push(process.env.MONGO_USER_COLLECTION)
         this.collection.push(process.env.MONGO_ADVERT_COLLECTION)
+        this.expirationTime = !!process.env.USER_RESET_PASSWORD_TIME?parseInt(process.env.USER_RESET_PASSWORD_TIME):1800000
         this.salt_rounds = process.env.SALT_ROUNDS!=null?parseInt(process.env.SALT_ROUNDS):10
     }
     /**
@@ -57,34 +60,51 @@ export class UserService extends GenericService{
             }
         }
     }
-    // /**
-    // * Retrieves user data from the database using the provided user ID.
-    // * @param userId The ID of the user by which would be the user found.
-    // * @returns The user data or an error message.
-    // */
-    // async getUserDataById(userId:ObjectId):Promise<LightUser | {error:string}>{
-    //     try{
-    //         const result =  await this.db.collection(this.collection[0]).aggregate([
-    //             {$match:{'_id': userId}},
-    //             {$project:{
-    //               _id:0,
-    //               createdIn:1,
-    //               email:1,
-    //               firstName:1,
-    //               lastName:1,
-    //               mainImageUrl:1,
-    //               phone:1,
-    //               validated:1
-    //             }
-    //           }]).toArray();
-    //         if(result.length>0)return result[0]
-    //         else return {error:"User does not exists."}
-    //     }catch(e){
-    //         console.log(e)
-    //         return {error:"Database dose not response."}
-    //     }
-    // }
-    
+    /**
+    * Add user temporary password to user account.
+     * @param userId The ID of the user whose temporary password would be updated.
+     * @returns The user data or an error message.
+    */
+    async addTemporaryPasswordToUser(userId:ObjectId,password:string):Promise<{success:string} | {error:string}>{
+        try{
+            const result = await this.db.collection(this.collection[0]).updateOne({_id:userId},{
+                $set:{
+                    resetPassword:{
+                        expirationTime:this.getActualValidTime(),
+                        password:await this.hashPassword(password)
+                    }
+                }
+            })
+            if(result.acknowledged&&result.modifiedCount==1)return {success:"User temporary password was updated."}
+            else if(result.acknowledged&&result.modifiedCount==0)return {error:"User does not exists."}
+            else return {error:"There is some problem with database."}
+        }catch(e){
+            console.log(e)
+            return {error:"Database dose not response."}
+        }
+    }
+    /**
+     * Gets the expiration time of tokens, in milliseconds, from the environment variables or uses a default value.
+     * @returns The expiration time of tokens, in milliseconds.
+     * @private
+     */
+    private getActualValidTime():number{
+        return Date.now()+this.expirationTime
+    }
+    /**
+     * Retrieves user data by email.
+     * @param email The user email address which would be used to find user
+     * @returns A Promise that resolves to either a UserModel if email exists or error message.
+     */
+    async getUserByEmail(email:string):Promise<UserModel | {error:string}>{
+        try{
+            const result:UserModel =  await this.db.collection(this.collection[0]).findOne({'email':email})
+            return result
+        }catch (e) {
+            console.log(e)
+            return {error:"Database dose not response."}
+        }
+    }
     /**
     * Retrieves user data by email and password.
     * @param email The user email address which would be used to find user
@@ -93,11 +113,20 @@ export class UserService extends GenericService{
     */
     async getUserDataByEmailPassword(email:string,password:string):Promise<UserModel | {error:string}>{
         try{
-            const result:UserModel =  await this.db.collection(this.collection[0]).findOne({'email':email})
+            let result:UserModel | {error:string} = await this.getUserByEmail(email)
             if(!result) return {error:"Nor user exists with this Email Address."}
-            if(await this.comparePassword(password,result.password!)){
-                delete result.password
-                return result
+            const user = result as UserModel
+            if(await this.comparePassword(password,user.password!)){
+                delete user.password
+                if(user.resetPassword!=null)delete user.resetPassword
+                return user
+            }else if(user.resetPassword!=null){
+                if(await this.comparePassword(password,user.resetPassword.password)
+                    && parseFloat(user.resetPassword.expirationTime)>=(Date.now())){
+                    delete user.password
+                    delete user.resetPassword
+                    return user
+                }
             }
             return {error:"Incorrect password."}
         }catch(e){
@@ -135,7 +164,14 @@ export class UserService extends GenericService{
     */
     async updateUserPassword(user:UserModel,oldPassword:string,newPassword:string):Promise<{success:string} | {error:string}>{
         try{
-            if(await this.comparePassword(oldPassword,user.password!)){
+            let exists=false
+            if(await this.comparePassword(oldPassword,user.password!))exists=true
+            else if(user.resetPassword!=null){
+                if(await this.comparePassword(oldPassword,user.resetPassword.password)
+                    && parseFloat(user.resetPassword.expirationTime)>=(Date.now())
+                )exists=true
+            }
+            if(exists){
                 const password = await this.hashPassword(newPassword)
                 const userId=new ObjectId(user._id!.toString())
                 const result =  await this.db.collection(this.collection[0]).updateOne({_id:userId},{

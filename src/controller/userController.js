@@ -123,7 +123,6 @@ class UserController {
                         else {
                             const tempUserResponse = userResponse;
                             const token = await this.tokenService.createToken(new mongodb_1.ObjectId(tempUserResponse._id));
-                            console.log(`token: ${token}`);
                             if (token.hasOwnProperty("error"))
                                 res.status(400).send(token);
                             else
@@ -145,8 +144,12 @@ class UserController {
         this.getUserById = async (req, res) => {
             try {
                 const user = JSON.parse(req.query.user);
-                delete user.password;
-                delete user._id;
+                if (user.password != null)
+                    delete user.password;
+                if (user._id != null)
+                    delete user._id;
+                if (user.resetPassword != null)
+                    delete user.resetPassword;
                 res.status(200).send(user);
             }
             catch (e) {
@@ -200,14 +203,12 @@ class UserController {
         this.userUpdatePassword = async (req, res) => {
             try {
                 const user = JSON.parse(req.query.user);
-                console.log(user);
                 let loadCredential = req.headers.authorization;
                 if (loadCredential == null) {
                     res.status(400).send({ error: "Missing credential header." });
                 }
                 else {
                     const credentials = Buffer.from(loadCredential.split(" ")[1], 'base64').toString();
-                    console.log(credentials);
                     const passwordOld = credentials.substring(0, credentials.indexOf(':'));
                     const passwordNew = credentials.substring(credentials.indexOf(':') + 1, credentials.length);
                     if (!this.tool.validPassword(passwordOld))
@@ -241,8 +242,6 @@ class UserController {
                     res.status(400).send({ error: "Body does not contains user model." });
                 else {
                     const userLight = req.body;
-                    console.log(userLight);
-                    console.log(this.tool.validUser(userLight, true));
                     if (!this.tool.validUser(userLight, true))
                         res.status(400).send({ error: "Invalid user model format." });
                     else {
@@ -282,7 +281,6 @@ class UserController {
                         if (response.hasOwnProperty("error"))
                             res.status(400).send(response);
                         else {
-                            console.log(userId);
                             this.tool.deleteFiles([user.mainImageUrl], this.folder);
                             const deleteUrls = await this.userService.deleteUserAdverts(userId);
                             if (!response.hasOwnProperty("error"))

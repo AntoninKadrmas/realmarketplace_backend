@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-// import "./controller/advertController.spec"
-require("./controller/enumController.spec");
-require("./controller/userController.spec");
-require("./service/toolService.spec");
+require("./controller/advertController.spec");
+// import "./controller/enumController.spec"
+// import "./controller/userController.spec"
+// import "./service/toolService.spec"

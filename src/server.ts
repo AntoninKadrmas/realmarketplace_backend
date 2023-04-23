@@ -13,6 +13,8 @@ import { StringIndexAdvert } from './service/stringIndexAdvert';
 import { AdvertSearchService } from './service/advertSearchService';
 import mongoSanitize = require('express-mongo-sanitize');
 import { ToolService } from './service/toolService';
+import {EmailController} from "./controller/emailController";
+import {EmailService} from "./service/emailService";
 
 dotenv.config();
 /**
@@ -46,7 +48,6 @@ export class Server{
                 log_file.write(`[${new Date()}] ${util.format(d) + '\n'}`);
             }
             else {
-
                 if(!fs.existsSync(folder))fs.mkdirSync(`${folder}`)
                 log_file = fs.createWriteStream(path, {flags : 'a'});
                 log_file.write(`[${new Date()}] ${util.format(d) + '\n'}`);
@@ -67,12 +68,14 @@ export class Server{
      * @private
      */
     private setControllers(){
-        const userController = new UserController(new UserService(),new TokenService(),new ToolService())
         const enumControl = new EnumController()
+        const userController = new UserController(new UserService(),new TokenService(),new ToolService())
         const advertController = new AdvertController(new AdvertService(),new AdvertSearchService(),new ToolService())
+        const emailController = new EmailController(new EmailService(),new UserService(),new ToolService())
         this.app.use(userController.path,userController.router);
         this.app.use(enumControl.path,enumControl.router)
         this.app.use(advertController.path,advertController.router)
+        this.app.use(emailController.path,emailController.router)
     }
     /**
      * Start node js backend application on port 3000.

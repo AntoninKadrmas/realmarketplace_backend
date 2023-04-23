@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LightUser = exports.UserModelLogin = exports.UserValid = exports.UserModel = void 0;
+exports.LightUser = exports.UserModelLogin = exports.UserValid = exports.ResetPassword = exports.UserModel = void 0;
 /**
  * Represents a user model.
  */
@@ -11,6 +11,12 @@ class UserModel {
     }
 }
 exports.UserModel = UserModel;
+/**
+ * Represents the temporary reset password filed.
+ */
+class ResetPassword {
+}
+exports.ResetPassword = ResetPassword;
 /**
  * Represents the validation status of a user.
  */
