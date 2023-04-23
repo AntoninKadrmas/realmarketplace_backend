@@ -53,7 +53,7 @@ class EmailService {
     async sendEmailForgetPassword(to) {
         try {
             let newHtml = this.htmlResetPassword.toString();
-            const newPassword = (0, uuid_1.v4)().replace("-", "_");
+            const newPassword = `Pas_${(0, uuid_1.v4)().toString().replaceAll('-', '_')}_!`;
             newHtml = newHtml.replace('value_that_would_be_replaced_wit_password', newPassword.toString());
             const mailOptions = {
                 from: 'realmarketplaceoriginal@gmail.com',

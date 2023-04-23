@@ -95,8 +95,8 @@ class Server {
      * @private
      */
     setControllers() {
-        const userController = new userController_1.UserController(new userService_1.UserService(), new tokenService_1.TokenService(), new toolService_1.ToolService());
         const enumControl = new enumController_1.EnumController();
+        const userController = new userController_1.UserController(new userService_1.UserService(), new tokenService_1.TokenService(), new toolService_1.ToolService());
         const advertController = new advertController_1.AdvertController(new advertService_1.AdvertService(), new advertSearchService_1.AdvertSearchService(), new toolService_1.ToolService());
         const emailController = new emailController_1.EmailController(new emailService_1.EmailService(), new userService_1.UserService(), new toolService_1.ToolService());
         this.app.use(userController.path, userController.router);
