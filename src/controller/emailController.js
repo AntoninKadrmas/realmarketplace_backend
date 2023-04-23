@@ -13,7 +13,7 @@ class EmailController {
         this.toolService = toolService;
         this.path = "/email";
         this.router = express_1.default.Router();
-        this.resetPassword = async (req, res) => {
+        this.passwordRecovery = async (req, res) => {
             try {
                 const email = req.query.email?.toString();
                 if (!this.toolService.validEmail(email))
@@ -47,7 +47,7 @@ class EmailController {
         this.initRouter();
     }
     initRouter() {
-        this.router.post("/resetPassword", this.resetPassword);
+        this.router.post("/passwordRecovery", this.passwordRecovery);
     }
 }
 exports.EmailController = EmailController;

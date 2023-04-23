@@ -49,17 +49,8 @@ class EnumController {
             res.set("Cache-Control", "max-age=3600");
             res.status(200).send(this.enumPriceOptionList);
         };
-        /**
-         * A request handler that returns if app is in production mode.
-         * @param req The express request object.
-         * @param res The boolean value represent in production mode.
-         */
-        this.getInProgress = async (req, res) => {
-            res.status(200).send({ enable: this.enable });
-        };
         this.initRouter();
         this.initEnumOptions();
-        this.enable = process.env.PRODUCTION_ENABLE != undefined ? process.env.PRODUCTION_ENABLE.toString() == "true" : false;
     }
     /**
      * Initializes the router by setting up the routes and their corresponding request handlers.
@@ -68,7 +59,6 @@ class EnumController {
         this.router.get('/book-condition', this.getBookCondition);
         this.router.get('/genre-type', this.getGenre);
         this.router.get('/price-option', this.getPriceOption);
-        this.router.get('', this.getInProgress);
     }
     /**
     * Initializes the enum options lists by mapping the available options from the corresponding enums.

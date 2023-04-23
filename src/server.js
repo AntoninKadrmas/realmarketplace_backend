@@ -56,6 +56,13 @@ class Server {
         this.app = (0, express_1.default)();
         this.app.use(require('body-parser').json());
         this.app.use((0, cors_1.default)());
+        this.app.use(function (req, res, next) {
+            const enable = process.env.PRODUCTION_ENABLE != undefined ? process.env.PRODUCTION_ENABLE.toString() == "true" : false;
+            if (enable)
+                next();
+            else
+                res.status(503).send({ error: "Server not in production mode." });
+        });
         this.app.use(mongoSanitize({
             allowDots: true,
             onSanitize: ({ req, key }) => {

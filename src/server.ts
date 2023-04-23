@@ -29,6 +29,11 @@ export class Server{
         this.app = express();
         this.app.use(require('body-parser').json())
         this.app.use(cors())
+        this.app.use (function (req, res, next) {
+            const enable = process.env.PRODUCTION_ENABLE!=undefined?process.env.PRODUCTION_ENABLE.toString()=="true":false
+            if(enable) next();
+            else res.status(503 ).send({error:"Server not in production mode."})
+        });
         this.app.use(
             mongoSanitize({
                 allowDots: true,
