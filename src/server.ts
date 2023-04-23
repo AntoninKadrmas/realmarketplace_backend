@@ -32,7 +32,7 @@ export class Server{
         this.app.use (function (req, res, next) {
             const enable = process.env.PRODUCTION_ENABLE!=undefined?process.env.PRODUCTION_ENABLE.toString()=="true":false
             if(enable) next();
-            else res.status(503 ).send({error:"Server not in production mode."})
+            else res.status(503 ).send({error:"Server production mode is disabled."})
         });
         this.app.use(
             mongoSanitize({
