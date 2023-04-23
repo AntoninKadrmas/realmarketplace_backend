@@ -50,8 +50,15 @@ Backend configuration file:
 
     #port on which would be server listening (default 3000)
     PORT=3000
-    #token expiration time (default 1800000)
-    TOKEN_EXPIRATION_TIME=1800000
+    #token expiration time (default 900000)
+    TOKEN_EXPIRATION_TIME=900000
+    #temporary password expiration time (default 300000)
+    USER_RESET_PASSWORD_TIME=300000
+
+    #gmail address
+    GMAIL_ADDRESS="some.gmail@gmail.com"
+    #gmail app password
+    EMAIL_PASSWORD="gmail_app_password"
 
     #name of the folder where would be saved all advert images (default public)
     FOLDER_IMAGE_PUBLIC = "public"
@@ -64,6 +71,9 @@ Backend configuration file:
     NUMBER_IN_SAMPLE=4
     #number of adverts that would be returned when searching with query search (default 10)
     NUMBER_IN_SEARCH=10
+
+    #boolean value that represent if server would (true) or would not (false) response (default false)
+    PRODUCTION_ENABLE=true
 
     #number fo salt round when encrypting password (default 10)
     SALT_ROUNDS=10

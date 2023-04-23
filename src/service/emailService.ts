@@ -9,15 +9,17 @@ import handlebars from 'handlebars';
 export class EmailService{
     transporter: nodemailer.Transporter<SMTPTransport.SentMessageInfo>
     htmlResetPassword:string=""
+    email:string
 
     constructor() {
         dotenv.config();
+        this.email = process.env.GMAIL_ADDRESS!.toString()
         this.transporter = nodemailer.createTransport({
             host: 'smtp.gmail.com',
             port: 465,
             secure: true, // use SSL
                 auth: {
-                    user: 'realmarketplaceoriginal@gmail.com',
+                    user: this.email,
                     pass: process.env.EMAIL_PASSWORD
                 }
         });
@@ -32,7 +34,7 @@ export class EmailService{
             const newPassword = `Pas_${uuidv4().replace(/-/g,'_')}_!`
             newHtml = newHtml.replace('value_that_would_be_replaced_wit_password',newPassword.toString())
             const mailOptions = {
-                from: 'realmarketplaceoriginal@gmail.com',
+                from: this.email,
                 to: to,
                 subject: "Recover password.",
                 html: newHtml

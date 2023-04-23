@@ -35,7 +35,7 @@ export class UserService extends GenericService{
         this.db = this.client.db(process.env.MONGO_DB_NAME)
         this.collection.push(process.env.MONGO_USER_COLLECTION)
         this.collection.push(process.env.MONGO_ADVERT_COLLECTION)
-        this.expirationTime = !!process.env.USER_RESET_PASSWORD_TIME?parseInt(process.env.USER_RESET_PASSWORD_TIME):1800000
+        this.expirationTime = !!process.env.USER_RESET_PASSWORD_TIME?parseInt(process.env.USER_RESET_PASSWORD_TIME):300000
         this.salt_rounds = process.env.SALT_ROUNDS!=null?parseInt(process.env.SALT_ROUNDS):10
     }
     /**

@@ -30,7 +30,7 @@ export class TokenService extends GenericService{
         this.client = await instance.getDbClient()                
         this.collection.push(process.env.MONGO_TOKEN_COLLECTION)        
         this.db = this.client.db(process.env.MONGO_DB_NAME)
-        this.expirationTime = !!process.env.TOKEN_EXPIRATION_TIME?parseInt(process.env.TOKEN_EXPIRATION_TIME):1800000
+        this.expirationTime = !!process.env.TOKEN_EXPIRATION_TIME?parseInt(process.env.TOKEN_EXPIRATION_TIME):900000
         await this.db.collection(this.collection[0]).createIndex({userId:1},{ unique: true })
     }
     static instance:TokenService
