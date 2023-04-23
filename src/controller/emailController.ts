@@ -14,9 +14,9 @@ export class EmailController implements GenericController{
         this.initRouter()
     }
     initRouter(): void {
-        this.router.post("/resetPassword",this.resetPassword)
+        this.router.post("/passwordRecovery",this.passwordRecovery)
     }
-    resetPassword: RequestHandler = async (req, res) => {
+    passwordRecovery: RequestHandler = async (req, res) => {
         try{
             const email = req.query.email?.toString()
             if(!this.toolService.validEmail(email))res.status(400).send({error:"Invalid user email format."})
