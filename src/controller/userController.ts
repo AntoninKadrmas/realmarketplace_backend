@@ -19,21 +19,19 @@ dotenv.config();
 export class UserController implements GenericController{
     path:string ='/user'
     router:express.Router = express.Router()
-    folder:string
     /**
      * Creates a new UserController instance and initializes its router
      * @param userService Service for crud operations over users in database.
      * @param tokenService Service for crud operations over tokens in database.
      */
     constructor(private userService:UserService,private tokenService:TokenService,private tool:ToolService){
-        this.folder = process.env.FOLDER_IMAGE_PROFILE!=undefined?process.env.FOLDER_IMAGE_PROFILE:"profile"
         this.initRouter()
     }
     /**
      * Initializes the router by setting up the routes and their corresponding request handlers.
      */
     initRouter(){
-        const upload_public = new ImageMiddleWare().getStorage(this.folder)
+        const upload_public = new ImageMiddleWare().getStorage(this.tool.folderUser)
         this.router.post('/register',this.registerUser)
         this.router.post('/login',this.userLogin)
         this.router.get('/',userAuthMiddlewareStrict,this.getUserById)
@@ -41,7 +39,7 @@ export class UserController implements GenericController{
         this.router.put('/',userAuthMiddlewareStrict,this.userUpdate)
         this.router.delete('/',userAuthMiddlewareStrict,this.userDelete)
         this.router.post('/image',userAuthMiddlewareStrict,upload_public.single('uploaded_file'),this.userProfileImage)
-        this.router.use(express.static(path.join(__dirname.split('src')[0],this.folder)))
+        this.router.use(express.static(path.join(__dirname.split('src')[0],this.tool.folderUser)))
     }
     /**
     * A request handler that create new user account.
@@ -139,7 +137,7 @@ export class UserController implements GenericController{
             const folder = process.env.FOLDER_IMAGE_PROFILE!!
             const user:UserModel = JSON.parse(req.query.user as string)
             const userId=new ObjectId(user._id!.toString())
-            if(user.mainImageUrl!=null&&user.mainImageUrl!="") this.tool.deleteFiles([user.mainImageUrl],this.folder)
+            if(user.mainImageUrl!=null&&user.mainImageUrl!="") this.tool.deleteFiles([user.mainImageUrl],this.tool.folderUser)
             if(req.file==undefined||req.file==null)res.status(400).send({error:"No image was send to upload."})
             else{
                 const file = req.file!
@@ -149,7 +147,7 @@ export class UserController implements GenericController{
                     const imageUrl = `/${file.filename}`
                     const response:{success:string} | {error:string}  = await this.userService.updateUserImage(userId,imageUrl)
                     if(response.hasOwnProperty("error")){
-                        this.tool.deleteFiles([imageUrl],this.folder)
+                        this.tool.deleteFiles([imageUrl],this.tool.folderUser)
                         res.status(400).send(response)
                     }
                     else {
@@ -233,9 +231,9 @@ export class UserController implements GenericController{
                     const response:{success:string} | {error:string}= await this.userService.deleteUser(user,password)
                     if(response.hasOwnProperty("error"))res.status(400).send(response)
                     else {
-                        this.tool.deleteFiles([user.mainImageUrl],this.folder)
+                        this.tool.deleteFiles([user.mainImageUrl],this.tool.folderUser)
                         const deleteUrls = await this.userService.deleteUserAdverts(userId)
-                        if(!response.hasOwnProperty("error"))this.tool.deleteFiles(deleteUrls as string[],this.folder)
+                        if(!response.hasOwnProperty("error"))this.tool.deleteFiles(deleteUrls as string[],this.tool.folderAdvert)
                         await this.tokenService.deleteToken(userId)
                         res.status(200).send(response)
                     }

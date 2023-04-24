@@ -2,6 +2,12 @@ import fs from 'fs';
 import { UserModel } from '../model/userModel';
 import path from 'path';
 export class ToolService{
+    folderUser:string
+    folderAdvert:string
+    constructor() {
+        this.folderUser = process.env.FOLDER_IMAGE_PROFILE!=undefined?process.env.FOLDER_IMAGE_PROFILE:"profile"
+        this.folderAdvert = process.env.FOLDER_IMAGE_PUBLIC!=undefined?process.env.FOLDER_IMAGE_PUBLIC:"public"
+    }
     /**
      * Delete files by its name in public folder.
      * @param imagesUrls Name of all image files that have to be deleted if exists.

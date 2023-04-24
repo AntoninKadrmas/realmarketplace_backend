@@ -21,21 +21,19 @@ dotenv.config();
 export class AdvertController implements GenericController{
     path: string="/advert";
     router: Router=express.Router();
-    folder:string
     /**
      * Creates a new AdvertController instance and initializes its router
      * @param advertService Service that do crud operation over adverts in database.
      * @param advertSearchService Service for fetching information's about adverts from database.
      */
     constructor(private advertService:AdvertService,private advertSearchService:AdvertSearchService,private tools:ToolService){
-        this.folder = process.env.FOLDER_IMAGE_PUBLIC!=undefined?process.env.FOLDER_IMAGE_PUBLIC:"public"
         this.initRouter()
     }
     /**
      * Initializes the router by setting up the routes and their corresponding request handlers.
      */
     initRouter(): void {
-        const upload_public = new ImageMiddleWare().getStorage(this.folder)
+        const upload_public = new ImageMiddleWare().getStorage(this.tools.folderAdvert)
         this.router.post("",userAuthMiddlewareStrict,upload_public.array('uploaded_file',5),this.createAdvert)
         this.router.put("",userAuthMiddlewareStrict,upload_public.array('uploaded_file',5),this.updateAdvert)
         this.router.delete("",userAuthMiddlewareStrict,this.deleteAdvert)
@@ -45,7 +43,7 @@ export class AdvertController implements GenericController{
         this.router.post("/favorite",userAuthMiddlewareStrict,this.addFavoriteAdvert)
         this.router.delete("/favorite",userAuthMiddlewareStrict,this.deleteFavoriteAdvert)
         this.router.put("/visible",userAuthMiddlewareStrict,this.updateAdvertVisibility)
-        this.router.use(express.static(path.join(__dirname.split('src')[0],this.folder)))
+        this.router.use(express.static(path.join(__dirname.split('src')[0],this.tools.folderAdvert)))
     }
     /**
     * A request handler that create new advert in database.
@@ -66,7 +64,7 @@ export class AdvertController implements GenericController{
                 if(req.files!=null){
                     //@ts-ignore
                     for(let file of req.files){
-                        const dirUrl = path.join(__dirname.split('src')[0],this.folder,file.filename)
+                        const dirUrl = path.join(__dirname.split('src')[0],this.tools.folderAdvert,file.filename)
                         if(!fs.existsSync(dirUrl)){}
                         else{
                             const imageUrl = `/${file.filename}`
@@ -103,7 +101,7 @@ export class AdvertController implements GenericController{
                 const advertId = new ObjectId(req.body._id.toString())
                 const user:UserModel = JSON.parse(req.query.user as string)
                 const userId=new ObjectId(user._id!.toString())
-                this.tools.deleteFiles(deleteUrl,this.folder)
+                this.tools.deleteFiles(deleteUrl,this.tools.folderAdvert)
                 const tempOldUrls = req.body.imagesUrls.split(";;")
                 const oldUrls:OldImagesUrls[] = [] 
                 for(let oldUrl of tempOldUrls){
@@ -122,7 +120,7 @@ export class AdvertController implements GenericController{
                 if(req.files!=null){
                     //@ts-ignore
                     for(let file of req.files){
-                        const dirUrl = path.join(__dirname.split('src')[0],this.folder,file.filename)
+                        const dirUrl = path.join(__dirname.split('src')[0],this.tools.folderAdvert,file.filename)
                         if(!fs.existsSync(dirUrl)){}
                         else{
                             const imageUrl = `/${file.filename}`
@@ -161,7 +159,7 @@ export class AdvertController implements GenericController{
                 const advertId = new ObjectId(req.query.advertId!.toString())
                 if(advertId==null||imagesUrls==null)res.status(400).send({error:"Missing advert id or delete urls."})
                 else{
-                    this.tools.deleteFiles(imagesUrls,this.folder)
+                    this.tools.deleteFiles(imagesUrls,this.tools.folderAdvert)
                     const response = await this.advertService.deleteAdvert(advertId,userId)
                     if(response.hasOwnProperty("error"))res.status(400).send(response)
                     else res.status(200).send(response)
