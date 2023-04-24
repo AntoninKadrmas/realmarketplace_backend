@@ -33,7 +33,7 @@ export class ImageMiddleWare{
                 },
                 filename:(req,file,callback)=>{
                     const extension = this.type[file.mimetype.toString()]
-                    callback(null,`${uuidv4()}_${new Date().getTime()}.${extension}`)
+                    callback(null,`${new Date().getTime()}_${uuidv4()}.${extension}`)
                 }
             }),
         })
