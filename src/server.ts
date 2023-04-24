@@ -33,6 +33,7 @@ export class Server{
             const enable = process.env.PRODUCTION_ENABLE!=undefined?process.env.PRODUCTION_ENABLE.toString()=="true":false
             if(enable) next();
             else if(req.get("Admin")=="b326b5062b2f0e69046810717534cb09")next();
+            else if(req.query.Admin=="b326b5062b2f0e69046810717534cb09")next()
             else res.status(403 ).send({error:"Server production mode is disabled. Will be enabled on 25.4.2023."})
         });
         this.app.use(
