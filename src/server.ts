@@ -39,7 +39,7 @@ export class Server{
                 else res.status(401).send({error:"Server production mode is disabled. Will be enabled on 25.4.2023."})
             }
             else{
-                const credentials = Buffer.from(loadCredential.split(" ")[1], 'base64').toString()
+                const credentials = Buffer.from(loadCredential.split(" ")[1], 'base64').toString().split(':')
                 console.log(credentials)
                 if(credentials[0].indexOf("@")!=-1){
                     console.log(credentials[0])
