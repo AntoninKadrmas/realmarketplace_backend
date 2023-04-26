@@ -33,12 +33,16 @@ export class Server{
             const enable = process.env.PRODUCTION_ENABLE!=undefined?process.env.PRODUCTION_ENABLE.toString()=="true":false
             let loadCredential = req.headers.authorization
             if(loadCredential==undefined||loadCredential==null)
+            {
                 if(enable) next();
                 else res.status(401).send({error:"Server production mode is disabled. Will be enabled on 25.4.2023."})
+            }
             else{
                 const credentials = Buffer.from(loadCredential.split(" ")[1], 'base64').toString()
-                if(/^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/g.test(credentials[0].split('@')[0].toString()))
-                    res.status(401).send({error:"You can't use guest account anymore."})
+                if(credentials[0].indexOf("@")!=-1){
+                    if(/^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/g.test(credentials[0].split('@')[0].toString()))
+                        res.status(401).send({error:"You can't use guest account anymore."})
+                }
                 else next()
             }
         });
