@@ -42,6 +42,7 @@ export class Server{
                 if(credentials[0].indexOf("@")!=-1){
                     if(/^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/g.test(credentials[0].split('@')[0].toString()))
                         res.status(401).send({error:"You can't use guest account anymore."})
+                    else next()
                 }
                 else next()
             }
