@@ -32,6 +32,7 @@ export class Server{
         this.app.use (function (req, res, next) {
             const enable = process.env.PRODUCTION_ENABLE!=undefined?process.env.PRODUCTION_ENABLE.toString()=="true":false
             let loadCredential = req.headers.authorization
+            console.log(loadCredential)
             if(loadCredential==undefined||loadCredential==null)
             {
                 if(enable) next();
@@ -39,7 +40,11 @@ export class Server{
             }
             else{
                 const credentials = Buffer.from(loadCredential.split(" ")[1], 'base64').toString()
+                console.log(credentials)
                 if(credentials[0].indexOf("@")!=-1){
+                    console.log(credentials[0])
+                    console.log(credentials[0].split("@"))
+                    console.log(/^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/g.test(credentials[0].split('@')[0].toString()))
                     if(/^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/g.test(credentials[0].split('@')[0].toString()))
                         res.status(401).send({error:"You can't use guest account anymore."})
                 }
